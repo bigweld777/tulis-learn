@@ -288,8 +288,8 @@ What is force majeure? | Unforeseeable circumstances that prevent someone from f
       auth_name: "Imię i nazwisko",
       auth_btn_register: "Zarejestruj się",
       mgmt_deck_title: "Nazwa talii",
-      mgmt_title: "⚙️ Panel Zarządzania & Baza Danych",
-      mgmt_sub: "Zarządzaj swoimi taliami, kontem, statystykami i kopią zapasową w bazie danych.",
+      mgmt_title: "👤 Twoje Konto & Biblioteka Talii",
+      mgmt_sub: "Zarządzaj swoimi taliami, historią powtórek i postępami w nauce.",
       mgmt_tab_decks: "📚 Moje Talie",
       mgmt_tab_history: "📊 Historia Powtórek",
       mgmt_tab_profile: "👤 Profil & Konto",
@@ -534,8 +534,8 @@ What is force majeure? | Unforeseeable circumstances that prevent someone from f
       auth_name: "Full Name",
       auth_btn_register: "Create Account",
       mgmt_deck_title: "Deck title",
-      mgmt_title: "⚙️ Management Dashboard & Database",
-      mgmt_sub: "Manage your decks, account, analytics and backups.",
+      mgmt_title: "👤 Your Account & Deck Library",
+      mgmt_sub: "Manage your study decks, repetition history, and learning progress.",
       mgmt_tab_decks: "📚 My Decks",
       mgmt_tab_history: "📊 Study History",
       mgmt_tab_profile: "👤 Profile & Account",
@@ -2435,7 +2435,7 @@ What is force majeure? | Unforeseeable circumstances that prevent someone from f
     if ($("dashUserBadge")) $("dashUserBadge").textContent = userRole;
 
     if ($("mgmtUserName")) $("mgmtUserName").textContent = userName;
-    if ($("mgmtUserEmail")) $("mgmtUserEmail").textContent = user ? user.email : "guest@tulislearn.com";
+    if ($("mgmtUserEmail")) $("mgmtUserEmail").textContent = user ? user.email : (currentLang === "en" ? "Local guest session" : "Lokalna sesja gościa");
     if ($("mgmtAvatar")) $("mgmtAvatar").textContent = userInitials;
     if ($("mgmtUserBadge")) $("mgmtUserBadge").textContent = userRole;
     if ($("mgmtStreak")) $("mgmtStreak").textContent = `${streak} dni`;
