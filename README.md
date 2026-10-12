@@ -67,27 +67,36 @@ Projekt zawiera zautomatyzowany audyt weryfikujący spójność DOM, ikony SVG, 
 node test_suite.js
 ```
 
-Wynik: **32/32 testów zdanych (100% pass rate)**.
+Wynik: **41/41 testów zdanych (100% pass rate)**.
 
 ---
 
 ## 🌐 Wdrożenie na GitHub / GitHub Pages / Netlify
 
-### 1. Inicjalizacja repozytorium Git:
+### 1. Inicjalizacja repozytorium Git (już wykonana):
 ```bash
-git init
 git add .
-git commit -m "feat: complete Tulis Learn full-stack platform with PWA, SQLite and AI tutor"
+git commit -m "feat: complete Tulis Learn platform with SQLite, FSRS and Netlify support"
 ```
 
-### 2. Podpięcie pod Twoje repozytorium na GitHubie:
+### 2. Podpięcie pod Twoje repozytorium na GitHubie (GitHub Student):
+1. Utwórz nowe, puste repozytorium na [github.com/new](https://github.com/new) (np. o nazwie `tulis-learn`).
+2. W terminalu wykonaj:
 ```bash
-git remote add origin https://github.com/<TWOJ_LOGIN>/<NAZWA_REPOZYTORIUM>.git
+git remote add origin https://github.com/<TWOJ_LOGIN>/tulis-learn.git
 git branch -M main
 git push -u origin main
 ```
 
-### 3. Hosting na GitHub Pages:
-- W ustawieniach repozytorium na GitHubie: **Settings -> Pages**.
+### 3. Automatyczne wdrożenie na Netlify (zalecane):
+1. Wejdź na [app.netlify.com](https://app.netlify.com) i kliknij **Add new site ➔ Import an existing project**.
+2. Wybierz **GitHub** i wskaż repozytorium `tulis-learn`.
+3. Parametry wdrożenia zostaną automatycznie wykryte z pliku `netlify.toml`:
+   - **Publish directory:** `.`
+   - **Build command:** *(pozostaw puste)*
+4. Kliknij **Deploy site**. Strona otrzyma natychmiast bezpłatny adres SSL (np. `tulis-learn.netlify.app`). Każdy kolejny `git push` zaktualizuje stronę automatycznie!
+
+### 4. Hosting na GitHub Pages (alternatywa):
+- W repozytorium GitHub: **Settings -> Pages**.
 - Wybierz źródło: `Deploy from a branch` -> branch `main` -> folder `/ (root)`.
-- Gotowe! Dzięki wbudowanemu `localFallbackApi` i `sw.js` aplikacja natychmiast działa w 100% bez konfiguracji zewnętrznych serwerów.
+- Gotowe! Dzięki wbudowanemu `localFallbackApi` i `sw.js` aplikacja natychmiast działa w 100% w przeglądarce.
