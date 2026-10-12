@@ -204,7 +204,7 @@ What is force majeure? | Unforeseeable circumstances that prevent someone from f
       quiz_finish: "Zobacz wynik",
       tech_eyebrow: "SILNIK KOGNITYWNY · ARCHITEKTURA AI",
       tech_title: "Zaawansowany potok semantyczny.<br />Od notatek do trwałej wiedzy.",
-      tech_intro: "Połącz fiszki z adaptacyjnym harmonogramem FSRS, przejrzyj wspólne słowa na grafie i skorzystaj z opcjonalnych pytań generowanych przez Gemini.",
+      tech_intro: "Połącz fiszki z adaptacyjnym harmonogramem FSRS, przejrzyj wspólne słowa na grafie i skorzystaj z pytań generowanych przez Claude 3.5.",
       tech_tag: "Silnik Kognitywny · Architektura AI",
       tech_feat1_h: "Ważne pojęcia, wyłuskane z kontekstu",
       tech_feat1_p: "Parser przekształca pary i proste definicje w fiszki. Z własnym kluczem możesz wygenerować pytania z surowych notatek.",
@@ -219,7 +219,7 @@ What is force majeure? | Unforeseeable circumstances that prevent someone from f
       pipe1_p: "Odczyt tekstu lub plików TXT i CSV z parami pytanie–odpowiedź.",
       pipe2_badge: "KROK 2 · Głębokie Rozumowanie",
       pipe2_h: "Analiza Semantyczna",
-      pipe2_p: "Zaawansowany model Gemini analizuje notatki i automatycznie generuje atomowe pytania oraz definicje.",
+      pipe2_p: "Zaawansowany model Claude 3.5 Sonnet analizuje notatki i automatycznie generuje atomowe pytania oraz definicje.",
       pipe3_badge: "KROK 3 · Pętla Sokratyczna",
       pipe3_h: "Pętla Sokratyczna",
       pipe3_p: "Interaktywny tutor sokratyczny prowadzi Cię przez tok myślenia i wyjaśnia błędy kognitywne.",
@@ -309,12 +309,12 @@ What is force majeure? | Unforeseeable circumstances that prevent someone from f
       socratic_send_btn: "Zapytaj 🚀",
       mgmt_heatmap_title: "AKTYWNOŚĆ POWTÓREK (OSTATNIE 14 DNI)",
       ai_modal_title: "⚙️ Konfiguracja Modeli Kognitywnych AI",
-      ai_modal_sub: "Wybierz model Gemini, własny klucz API i temperaturę generacji.",
+      ai_modal_sub: "Wybierz model Claude lub Gemini, własny klucz API i temperaturę generacji.",
       ai_status_label: "Aktywny silnik platformy:",
-      ai_status_desc: "Google Gemini 3.8 Flash (Google DeepMind / AI Studio) • Ekstrakcja w locie • Metoda sokratejska.",
+      ai_status_desc: "Anthropic Claude 3.5 Sonnet & Haiku • Hybrydowy potok Applied AI • Ekstrakcja w locie • Metoda sokratejska.",
       ai_provider_label: "Wybór silnika AI:",
-      ai_custom_key_label: "Własny klucz Gemini API (zapisany w tej przeglądarce):",
-      ai_key_hint: "Rozpocznij od parsowania fiszek i aktywnego przypominania. Dodaj własny klucz Gemini, aby włączyć wskazówki AI. Klucz jest zapisywany w tej przeglądarce; AI wysyła wybrany tekst do Google zgodnie z zasadami dostawcy.",
+      ai_custom_key_label: "Własny klucz API (Claude lub Gemini, zapisany w tej przeglądarce):",
+      ai_key_hint: "Wpisz swój klucz Anthropic Claude API (sk-ant-...) lub Google Gemini. Klucz jest zapisywany lokalnie w Twojej przeglądarce i nie trafia na nasze serwery.",
       ai_temp_label: "Temperatura wnioskowania:",
       ai_btn_test: "⚡ Przetestuj połączenie",
       ai_btn_save: "Zapisz ustawienia",
@@ -450,7 +450,7 @@ What is force majeure? | Unforeseeable circumstances that prevent someone from f
       quiz_finish: "View Results",
       tech_eyebrow: "COGNITIVE ENGINE · AI ARCHITECTURE",
       tech_title: "Advanced Semantic Pipeline.<br />From Messy Notes to Long-Term Memory.",
-      tech_intro: "Combine flashcards with adaptive FSRS schedules, explore shared words in the concept graph and optionally generate practice questions with Gemini.",
+      tech_intro: "Combine flashcards with adaptive FSRS schedules, explore shared words in the concept graph and generate practice questions with Claude 3.5.",
       tech_tag: "Cognitive Engine · AI Architecture",
       tech_feat1_h: "High-yield concepts, extracted in context",
       tech_feat1_p: "The parser turns pairs and simple definitions into flashcards. With your own key, generate questions from raw notes.",
@@ -465,7 +465,7 @@ What is force majeure? | Unforeseeable circumstances that prevent someone from f
       pipe1_p: "Read text or TXT and CSV files containing question–answer pairs.",
       pipe2_badge: "STEP 2 · Deep Reasoning",
       pipe2_h: "Semantic Reasoning",
-      pipe2_p: "Frontier Gemini models analyze notes to extract atomic question-and-answer pairs and high-yield concepts.",
+      pipe2_p: "Frontier Claude 3.5 Sonnet models analyze notes to extract atomic question-and-answer pairs and high-yield concepts.",
       pipe3_badge: "STEP 3 · Socratic Loop",
       pipe3_h: "Socratic Tutoring",
       pipe3_p: "Interactive Socratic tutoring guides you through complex concepts and clarifies reasoning gaps.",
@@ -555,12 +555,12 @@ What is force majeure? | Unforeseeable circumstances that prevent someone from f
       socratic_send_btn: "Ask 🚀",
       mgmt_heatmap_title: "STUDY ACTIVITY (LAST 14 DAYS)",
       ai_modal_title: "⚙️ Cognitive AI Models Configuration",
-      ai_modal_sub: "Choose a Gemini model, your API key and generation temperature.",
+      ai_modal_sub: "Choose a Claude or Gemini model, your API key and generation temperature.",
       ai_status_label: "Active Platform Engine:",
-      ai_status_desc: "Google Gemini 3.8 Flash (Google DeepMind / AI Studio) • Real-time extraction • Socratic tutoring.",
+      ai_status_desc: "Anthropic Claude 3.5 Sonnet & Haiku • Applied AI hybrid pipeline • Real-time extraction • Socratic tutoring.",
       ai_provider_label: "Select AI Provider:",
-      ai_custom_key_label: "Your Gemini API key (saved in this browser):",
-      ai_key_hint: "Parse flashcard pairs and practice active recall immediately. Add your Gemini key for AI guidance. Your key is saved in this browser; AI sends selected text to Google under its provider terms.",
+      ai_custom_key_label: "Your API key (Claude or Gemini, saved in this browser):",
+      ai_key_hint: "Enter your Anthropic Claude API key (sk-ant-...) or Google Gemini key. Your key is saved locally in this browser and never touches our servers.",
       ai_temp_label: "Inference Temperature:",
       ai_btn_test: "⚡ Test Connection",
       ai_btn_save: "Save Settings",
@@ -1193,13 +1193,12 @@ What is force majeure? | Unforeseeable circumstances that prevent someone from f
       const a = card.answer;
       let content = "";
 
-      // Attempt live Gemini 3.8 Flash generation
+      // Attempt live Claude or Gemini generation
       try {
         const customKey = aiKeys.get();
         const activeKey = customKey;
-        const activeModel = preferences.getItem("tulis_ai_model") || "gemini-3.8-flash";
-        if (!activeKey) throw new Error("Gemini key required");
-        const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${activeModel}:generateContent`;
+        const activeModel = preferences.getItem("tulis_ai_model") || "claude-3-5-sonnet-20241022";
+        if (!activeKey) throw new Error("API key required");
 
         let aiPrompt = "";
         if (customQuestion) {
@@ -1224,18 +1223,41 @@ What is force majeure? | Unforeseeable circumstances that prevent someone from f
             : `Podaj jeden konkretny, praktyczny przykład z przemysłu lub nauki obrazujący: "${q}" -> "${a}".`;
         }
 
-        const response = await fetch(endpoint, {
-          method: 'POST', headers: { 'Content-Type': 'application/json', 'x-goog-api-key': activeKey },
-          body: JSON.stringify({ contents: [{ parts: [{ text: aiPrompt }] }], generationConfig: { temperature: Number(preferences.getItem('tulis_ai_temperature') || 0.2) } }),
-          signal: AbortSignal.timeout(10000)
-        });
-
+        let response;
+        if (activeModel.startsWith("claude")) {
+          response = await fetch("https://api.anthropic.com/v1/messages", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "x-api-key": activeKey,
+              "anthropic-version": "2023-06-01",
+              "anthropic-dangerous-direct-browser-access": "true"
+            },
+            body: JSON.stringify({
+              model: activeModel,
+              max_tokens: 600,
+              temperature: Number(preferences.getItem("tulis_ai_temperature") || 0.2),
+              messages: [{ role: "user", content: aiPrompt }]
+            }),
+            signal: AbortSignal.timeout(10000)
+          });
+        } else {
+          const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${activeModel}:generateContent`;
+          response = await fetch(endpoint, {
+            method: "POST",
+            headers: { "Content-Type": "application/json", "x-goog-api-key": activeKey },
+            body: JSON.stringify({ contents: [{ parts: [{ text: aiPrompt }] }], generationConfig: { temperature: Number(preferences.getItem("tulis_ai_temperature") || 0.2) } }),
+            signal: AbortSignal.timeout(10000)
+          });
+        }
 
         if (response.ok) {
           const data = await response.json();
-          const generated = data.candidates?.[0]?.content?.parts?.[0]?.text;
+          const generated = activeModel.startsWith("claude")
+            ? data.content?.[0]?.text
+            : data.candidates?.[0]?.content?.parts?.[0]?.text;
           if (generated && generated.trim().length > 10) {
-            content = `💡 <strong>${customQuestion ? 'Odpowiedź Asystenta AI:' : 'Generacja AI (Gemini 3.8 Flash):'}</strong><br/>${escapeHtml(generated.trim()).replace(/\n/g, '<br/>')}`;
+            content = `💡 <strong>${customQuestion ? 'Odpowiedź Asystenta AI:' : ('Generacja AI (' + escapeHtml(activeModel) + '):')}</strong><br/>${escapeHtml(generated.trim()).replace(/\n/g, '<br/>')}`;
           }
         }
       } catch (e) {
@@ -1244,8 +1266,8 @@ What is force majeure? | Unforeseeable circumstances that prevent someone from f
 
       if (!content) {
         content = currentLang === 'en'
-          ? '<strong>Active recall exercise</strong><br/>Explain this concept in your own words: ' + escapeHtml(q) + '<br/>Give one example, then compare your explanation with the flashcard answer. Configure your own Gemini key for generated guidance.'
-          : '<strong>Ćwiczenie aktywnego przypominania</strong><br/>Wyjaśnij własnymi słowami: ' + escapeHtml(q) + '<br/>Podaj przykład i porównaj wyjaśnienie z odpowiedzią na fiszce. Skonfiguruj własny klucz Gemini, aby uzyskać wskazówki AI.';
+          ? '<strong>Active recall exercise</strong><br/>Explain this concept in your own words: ' + escapeHtml(q) + '<br/>Give one example, then compare your explanation with the flashcard answer. Configure your own API key (Claude or Gemini) for generated guidance.'
+          : '<strong>Ćwiczenie aktywnego przypominania</strong><br/>Wyjaśnij własnymi słowami: ' + escapeHtml(q) + '<br/>Podaj przykład i porównaj wyjaśnienie z odpowiedzią na fiszce. Skonfiguruj własny klucz API (Claude lub Gemini), aby uzyskać wskazówki AI.';
       }
 
 
@@ -2051,24 +2073,45 @@ What is force majeure? | Unforeseeable circumstances that prevent someone from f
 
       const activeKey = aiKeys.get();
       if (!activeKey) throw new Error('Local extraction');
-      const activeModel = preferences.getItem('tulis_ai_model') || 'gemini-3.8-flash';
-      const endpoint = 'https://generativelanguage.googleapis.com/v1beta/models/' + activeModel + ':generateContent';
-      const response = await fetch(endpoint, {
-        method: "POST",
-        signal: AbortSignal.timeout(12000),
-        headers: { "Content-Type": "application/json", "x-goog-api-key": activeKey },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: { temperature: 0.2 }
-        })
-      });
+      const activeModel = preferences.getItem('tulis_ai_model') || 'claude-3-5-sonnet-20241022';
+      let response;
+      if (activeModel.startsWith('claude')) {
+        response = await fetch("https://api.anthropic.com/v1/messages", {
+          method: "POST",
+          signal: AbortSignal.timeout(15000),
+          headers: {
+            "Content-Type": "application/json",
+            "x-api-key": activeKey,
+            "anthropic-version": "2023-06-01",
+            "anthropic-dangerous-direct-browser-access": "true"
+          },
+          body: JSON.stringify({
+            model: activeModel,
+            max_tokens: 1500,
+            messages: [{ role: "user", content: prompt }]
+          })
+        });
+      } else {
+        const endpoint = 'https://generativelanguage.googleapis.com/v1beta/models/' + activeModel + ':generateContent';
+        response = await fetch(endpoint, {
+          method: "POST",
+          signal: AbortSignal.timeout(12000),
+          headers: { "Content-Type": "application/json", "x-goog-api-key": activeKey },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: prompt }] }],
+            generationConfig: { temperature: 0.2 }
+          })
+        });
+      }
 
       if (!response.ok) {
         throw new Error(`API error HTTP ${response.status}`);
       }
 
       const data = await response.json();
-      const outputText = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
+      const outputText = activeModel.startsWith('claude')
+        ? (data.content?.[0]?.text || "")
+        : (data.candidates?.[0]?.content?.parts?.[0]?.text || "");
 
       if ($("notes").value !== submittedNotes) throw new Error("Notes changed during generation");
       // Parse and clean generated flashcards
@@ -3013,7 +3056,7 @@ What is force majeure? | Unforeseeable circumstances that prevent someone from f
       customKeyInput.value = aiKeys.get() || "";
     }
     if (providerSel) {
-      providerSel.value = preferences.getItem("tulis_ai_model") || "gemini-3.8-flash";
+      providerSel.value = preferences.getItem("tulis_ai_model") || "claude-3-5-sonnet-20241022";
     }
     if (tempRange && tempVal) {
       const savedTemp = preferences.getItem("tulis_ai_temperature") || "0.2";
@@ -3039,12 +3082,31 @@ What is force majeure? | Unforeseeable circumstances that prevent someone from f
         const startT = performance.now();
         const customKey = customKeyInput ? customKeyInput.value.trim() : "";
         const activeKey = customKey;
-        const selectedModel = providerSel ? providerSel.value : "gemini-3.8-flash";
+        const selectedModel = providerSel ? providerSel.value : "claude-3-5-sonnet-20241022";
 
         try {
-          if (!activeKey) throw new Error(currentLang === 'en' ? 'Enter your own Gemini API key' : 'Wpisz własny klucz Gemini API');
-          const endpoint = 'https://generativelanguage.googleapis.com/v1beta/models/' + selectedModel + ':generateContent';
-          const res = await fetch(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-goog-api-key': activeKey }, body: JSON.stringify({ contents: [{ parts: [{ text: 'Reply OK.' }] }] }), signal: AbortSignal.timeout(10000) });
+          if (!activeKey) throw new Error(currentLang === 'en' ? 'Enter your API key' : 'Wpisz własny klucz API');
+          let res;
+          if (selectedModel.startsWith("claude")) {
+            res = await fetch("https://api.anthropic.com/v1/messages", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "x-api-key": activeKey,
+                "anthropic-version": "2023-06-01",
+                "anthropic-dangerous-direct-browser-access": "true"
+              },
+              body: JSON.stringify({
+                model: selectedModel,
+                max_tokens: 10,
+                messages: [{ role: "user", content: "Reply OK." }]
+              }),
+              signal: AbortSignal.timeout(10000)
+            });
+          } else {
+            const endpoint = 'https://generativelanguage.googleapis.com/v1beta/models/' + selectedModel + ':generateContent';
+            res = await fetch(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-goog-api-key': activeKey }, body: JSON.stringify({ contents: [{ parts: [{ text: 'Reply OK.' }] }] }), signal: AbortSignal.timeout(10000) });
+          }
           const dur = Math.round(performance.now() - startT);
 
           if (res.ok) {
@@ -3053,8 +3115,8 @@ What is force majeure? | Unforeseeable circumstances that prevent someone from f
               feedback.style.border = "1px solid #86efac";
               feedback.style.color = "#15803d";
               feedback.textContent = currentLang === "en"
-                ? `✓ Connection Verified! Google AI Studio (${selectedModel}) responded in ${dur}ms.`
-                : `✓ Połączenie zweryfikowane! Google AI Studio (${selectedModel}) odpowiedziało w ${dur}ms.`;
+                ? `✓ Connection Verified! ${selectedModel.startsWith("claude") ? "Anthropic Claude" : "Google AI Studio"} (${selectedModel}) responded in ${dur}ms.`
+                : `✓ Połączenie zweryfikowane! Silnik ${selectedModel.startsWith("claude") ? "Anthropic Claude" : "Google AI Studio"} (${selectedModel}) odpowiedział w ${dur}ms.`;
             }
             playSound("correct");
           } else {
