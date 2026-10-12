@@ -37,7 +37,7 @@
     return TulisReviews.create(durableStorage, currentUser ? currentUser.id + ':' + apiMode : 'guest');
   }
 
-  const contact = 'kontakt@tulislearn.abrdns.com';
+  const contact = 'kontakt@tulislearn.tech';
 
   // Update contact links in footer
   const footerMailEl = $("footerEmail");
