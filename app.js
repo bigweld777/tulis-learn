@@ -17,12 +17,19 @@
     getItem(key) { return window.localStorage.getItem(key); },
     setItem(key, value) { window.localStorage.setItem(key, value); }
   };
-  // Keys are user supplied and retained for this tab session only.
   const aiKeys = {
-    get() { try { return window.sessionStorage.getItem('tulis_custom_ai_key') || ''; } catch { return ''; } },
-    set(value) { window.sessionStorage.setItem('tulis_custom_ai_key', value); }
+    get() {
+      try {
+        return window.localStorage.getItem('tulis_custom_ai_key') || window.sessionStorage.getItem('tulis_custom_ai_key') || '';
+      } catch {
+        return '';
+      }
+    },
+    set(value) {
+      try { window.localStorage.setItem('tulis_custom_ai_key', value); } catch {}
+      try { window.sessionStorage.setItem('tulis_custom_ai_key', value); } catch {}
+    }
   };
-  preferences.removeItem('tulis_custom_ai_key');
   let ratingPending = false;
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
   let currentMode = 'cards';
