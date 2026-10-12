@@ -1,0 +1,5087 @@
+<!doctype html>
+<html lang="pl">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#f8faf7" />
+    <title>Tulis Learn — Inteligentna Platforma Edukacyjna AI & FSRS</title>
+    <meta
+      name="description"
+      content="Nowoczesna platforma edukacyjna AI. Zamień notatki, artykuły i podręczniki w inteligentne fiszki, quizy i gry pamięciowe z algorytmem powtórek FSRS."
+    />
+    <meta name="keywords" content="fiszki ai, spaced repetition, fsrs, nauka, quizy, edtech, notatki do fiszek, active recall" />
+    <link rel="canonical" href="https://tulislearn.abrdns.com/" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://tulislearn.abrdns.com/" />
+    <meta property="og:title" content="Tulis Learn — Ucz się 3x szybciej z silnikiem AI i FSRS" />
+    <meta property="og:description" content="Nowoczesna platforma edukacyjna. Zamień notatki w interaktywne fiszki i quizy zoptymalizowane pod algorytm powtórek FSRS." />
+    <meta property="og:site_name" content="Tulis Learn" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Tulis Learn — Ucz się 3x szybciej z silnikiem AI" />
+    <meta name="twitter:description" content="Przekształć własne notatki w fiszki i quizy. Ucz się aktywnie i bez wysiłku." />
+    <link rel="manifest" href="manifest.json" />
+    <link
+      rel="icon"
+      href="favicon.svg"
+      type="image/svg+xml"
+    />
+    <style>
+      :root {
+        --ink: #24342c;
+        --muted: #657169;
+        --green: #246b45;
+        --mint: #dff3e6;
+        --lime: #d4f295;
+        --paper: #f8faf7;
+        --surface: #ffffff;
+        --white: #fff;
+        --line: #e0e6df;
+        --radius: 22px;
+        --shadow: 0 18px 60px #20372b0c;
+        --font: "Segoe UI", Arial, sans-serif;
+      }
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+      html {
+        scroll-behavior: smooth;
+        scroll-padding-top: 105px;
+      }
+      body {
+        margin: 0;
+        background: var(--paper);
+        color: var(--ink);
+        font-family: var(--font);
+        -webkit-font-smoothing: antialiased;
+      }
+      body.modal-open {
+        overflow: hidden;
+      }
+      [hidden] {
+        display: none !important;
+      }
+      ::selection {
+        background: var(--mint);
+        color: var(--ink);
+      }
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
+      button,
+      input,
+      textarea {
+        font: inherit;
+      }
+      button,
+      a,
+      input,
+      textarea {
+        -webkit-tap-highlight-color: transparent;
+      }
+      button {
+        cursor: pointer;
+      }
+      button:disabled {
+        cursor: default;
+        opacity: 0.45;
+      }
+      :focus-visible {
+        outline: 3px solid var(--green);
+        outline-offset: 4px;
+      }
+      h1,
+      h2,
+      h3,
+      p {
+        margin: 0;
+      }
+      p {
+        line-height: 1.75;
+      }
+      .container {
+        width: min(1160px, calc(100% - 64px));
+        margin-inline: auto;
+      }
+      .icon {
+        width: 20px;
+        height: 20px;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 1.7;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        flex-shrink: 0;
+      }
+      .icon-defs {
+        position: absolute;
+        width: 0;
+        height: 0;
+        overflow: hidden;
+      }
+      .skip {
+        position: fixed;
+        top: 8px;
+        left: 8px;
+        z-index: 100;
+        padding: 12px;
+        background: white;
+        transform: translateY(-150%);
+      }
+      .skip:focus {
+        transform: translateY(0);
+      }
+      .nav-wrap {
+        position: sticky;
+        top: 0;
+        z-index: 20;
+        border-bottom: 1px solid var(--line);
+        background: #f8faf7f2;
+        backdrop-filter: blur(16px);
+      }
+      .navbar {
+        min-height: 86px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 24px;
+      }
+      .brand {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 20px;
+        font-weight: 750;
+        letter-spacing: -0.8px;
+        white-space: nowrap;
+      }
+      .brand-mark {
+        display: grid;
+        place-items: center;
+        width: 34px;
+        height: 36px;
+        border-radius: 10px;
+        background: var(--ink);
+        color: var(--mint);
+        font-size: 23px;
+        font-weight: 800;
+        letter-spacing: -2px;
+      }
+      .version-tag {
+        color: var(--green);
+        background: var(--mint);
+        font-size: 9px;
+        font-weight: 700;
+        letter-spacing: 1px;
+        padding: 4px 6px;
+        border-radius: 4px;
+        margin-left: 2px;
+      }
+      .nav-links {
+        display: flex;
+        align-items: center;
+        gap: 23px;
+        font-size: 13px;
+        font-weight: 600;
+      }
+      .nav-links a:hover,
+      .footer-links a:hover,
+      .text-button:hover {
+        color: var(--green);
+      }
+      .btn {
+        min-height: 48px;
+        padding: 13px 21px;
+        border: 1px solid transparent;
+        border-radius: 10px;
+        font-size: 13px;
+        font-weight: 650;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        line-height: 1.5;
+        transition:
+          background 0.18s,
+          transform 0.18s;
+      }
+      .btn:hover:not(:disabled) {
+        transform: translateY(-2px);
+      }
+      .btn-primary {
+        background: var(--ink);
+        color: white;
+      }
+      .btn-primary:hover:not(:disabled) {
+        background: #36513f;
+      }
+      .btn-light {
+        background: var(--surface);
+        border: 1px solid var(--line);
+        color: var(--ink);
+      }
+      .btn-light:hover:not(:disabled) {
+        background: var(--mint);
+        border-color: var(--green);
+      }
+      .nav-cta {
+        min-height: 40px;
+        padding: 10px 15px;
+        font-size: 11px;
+      }
+      .menu-toggle {
+        display: none;
+        width: 42px;
+        height: 42px;
+        padding: 10px;
+        background: white;
+        border: 1px solid var(--line);
+        border-radius: 9px;
+      }
+      .eyebrow {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        color: var(--green);
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 1.6px;
+        text-transform: uppercase;
+      }
+      .dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: var(--green);
+        box-shadow: 0 0 0 4px #246b4510;
+      }
+      .hero {
+        display: grid;
+        grid-template-columns: 1.1fr 1fr;
+        align-items: center;
+        gap: 48px;
+        padding-block: 82px 67px;
+      }
+      .hero-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        border: 1px solid #d9e5db;
+        background: #eef5ee;
+        padding: 7px 11px;
+        border-radius: 30px;
+        font-size: 11px;
+        color: #47624e;
+        font-weight: 600;
+      }
+      h1 {
+        font-size: clamp(40px, 4.5vw, 61px);
+        font-weight: 650;
+        line-height: 1.12;
+        letter-spacing: -2.9px;
+        margin-top: 24px;
+      }
+      .highlight {
+        color: var(--green);
+        position: relative;
+        white-space: nowrap;
+      }
+      .highlight::after {
+        content: "";
+        position: absolute;
+        height: 6px;
+        background: #c7e9b8;
+        bottom: 1px;
+        left: 0;
+        width: 100%;
+        z-index: -1;
+        border-radius: 50%;
+        transform: rotate(-1deg);
+      }
+      .hero-description {
+        font-size: 16px;
+        color: var(--muted);
+        max-width: 440px;
+        margin-top: 23px;
+      }
+      .hero-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 29px;
+      }
+      .micro {
+        font-size: 11px;
+        color: var(--muted);
+      }
+      .hero .micro {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        margin-top: 17px;
+      }
+      .hero .micro .icon {
+        width: 14px;
+        height: 14px;
+      }
+      .hero-visual {
+        min-height: 420px;
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 38px;
+        background: radial-gradient(
+          ellipse at 50% 50%,
+          #d6eedc 0%,
+          #eef5eb 62%,
+          #f8faf7 75%
+        );
+      }
+      .hero-grid {
+        position: absolute;
+        inset: 24px 0;
+        opacity: 0.35;
+        background-image:
+          linear-gradient(#afc6b433 1px, transparent 1px),
+          linear-gradient(90deg, #afc6b433 1px, transparent 1px);
+        background-size: 30px 30px;
+        mask-image: radial-gradient(ellipse, black, transparent 70%);
+      }
+      .preview {
+        width: 88%;
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: 18px;
+        box-shadow: 0 24px 50px #264d3217;
+        transform: rotate(-3deg);
+        padding: 18px;
+        position: relative;
+      }
+      .preview-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        font-size: 10px;
+        font-weight: 600;
+        padding-bottom: 16px;
+      }
+      .preview-dots {
+        display: flex;
+        gap: 4px;
+      }
+      .preview-dots i {
+        width: 5px;
+        height: 5px;
+        background: #dce3dc;
+        border-radius: 50%;
+      }
+      .preview-card {
+        padding: 27px 23px;
+        border-radius: 12px;
+        background: #eff6ed;
+        text-align: center;
+      }
+      .preview-card .eyebrow {
+        justify-content: center;
+        font-size: 8px;
+        letter-spacing: 1.4px;
+      }
+      .preview-card h3 {
+        margin: 17px auto;
+        max-width: 260px;
+        font-size: 23px;
+        line-height: 1.3;
+        font-weight: 600;
+        letter-spacing: -0.5px;
+      }
+      .preview-card p {
+        font-size: 10px;
+        color: var(--muted);
+      }
+      .preview-bottom {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 9px;
+        color: var(--muted);
+        margin-top: 17px;
+      }
+      .preview-arrows {
+        display: flex;
+        gap: 5px;
+      }
+      .preview-arrows span {
+        display: grid;
+        place-items: center;
+        width: 25px;
+        height: 25px;
+        border: 1px solid var(--line);
+        border-radius: 6px;
+      }
+      .preview-arrows .icon {
+        width: 12px;
+        height: 12px;
+      }
+      .floating-label {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        position: absolute;
+        padding: 13px 17px;
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        box-shadow: 0 10px 30px #213b2810;
+        font-size: 11px;
+        font-weight: 600;
+      }
+      .floating-label .icon {
+        width: 20px;
+        height: 20px;
+        color: var(--green);
+      }
+      .label-top {
+        top: 25px;
+        left: 8px;
+        transform: rotate(-5deg);
+      }
+      .label-bottom {
+        right: -8px;
+        bottom: 29px;
+        transform: rotate(4deg);
+      }
+      .floating-label small {
+        display: block;
+        font-size: 9px;
+        font-weight: 400;
+        color: var(--muted);
+        margin-top: 3px;
+      }
+      .hero-strip {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 44px;
+        padding: 23px 0;
+        border-top: 1px solid var(--line);
+        border-bottom: 1px solid var(--line);
+        color: var(--muted);
+        font-size: 11px;
+      }
+      .hero-strip span {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .hero-strip .icon {
+        width: 16px;
+        height: 16px;
+        color: var(--green);
+      }
+      .section {
+        padding-block: 87px;
+      }
+      .section-heading {
+        display: flex;
+        align-items: end;
+        justify-content: space-between;
+        gap: 30px;
+        margin-bottom: 32px;
+      }
+      h2 {
+        font-size: clamp(28px, 3vw, 38px);
+        font-weight: 600;
+        line-height: 1.2;
+        letter-spacing: -1.3px;
+        margin-top: 13px;
+      }
+      .section-description {
+        color: var(--muted);
+        font-size: 13px;
+        max-width: 330px;
+      }
+      .demo-shell {
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        background: var(--surface);
+        box-shadow: var(--shadow);
+        overflow: hidden;
+      }
+      .demo-toolbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 15px 23px;
+        border-bottom: 1px solid var(--line);
+        background: var(--paper);
+      }
+      .demo-toolbar-title {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 12px;
+        font-weight: 650;
+      }
+      .local-label {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 10px;
+        color: var(--green);
+        background: #eef7ee;
+        padding: 6px 10px;
+        border-radius: 6px;
+      }
+      .local-label .icon {
+        width: 13px;
+        height: 13px;
+      }
+      .demo-grid {
+        display: grid;
+        grid-template-columns: 0.95fr 1.05fr;
+      }
+      .editor {
+        padding: 27px;
+        border-right: 1px solid var(--line);
+      }
+      .panel-label {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 13px;
+        font-size: 12px;
+        font-weight: 650;
+      }
+      .step-number {
+        font-size: 10px;
+        color: var(--muted);
+        font-weight: 400;
+      }
+      .text-button {
+        background: none;
+        border: 0;
+        padding: 4px 0;
+        color: var(--green);
+        font-size: 10px;
+        text-decoration: underline;
+        text-underline-offset: 3px;
+      }
+      textarea {
+        width: 100%;
+        resize: vertical;
+        min-height: 243px;
+        max-height: 600px;
+        background: #f8faf7;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        padding: 16px;
+        color: #48564b;
+        font:
+          13px/1.8 Consolas,
+          "Courier New",
+          monospace;
+      }
+      .input-help {
+        color: var(--muted);
+        font-size: 10px;
+        line-height: 1.6;
+        margin-top: 9px;
+      }
+      .editor .btn {
+        margin-top: 17px;
+        width: 100%;
+      }
+      .form-message {
+        font-size: 11px;
+        margin-top: 10px;
+        min-height: 20px;
+        color: var(--green);
+        line-height: 1.6;
+      }
+      .form-message.error {
+        color: #9b3636;
+      }
+      .study {
+        padding: 24px 27px;
+        min-width: 0;
+      }
+      .study-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 19px;
+      }
+      .study-title {
+        font-size: 12px;
+        font-weight: 650;
+      }
+      .tabs {
+        display: flex;
+        gap: 3px;
+        padding: 4px;
+        background: #f0f3ee;
+        border-radius: 8px;
+      }
+      .tab {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        border: 0;
+        border-radius: 5px;
+        padding: 7px 13px;
+        color: var(--muted);
+        background: transparent;
+        font-size: 11px;
+      }
+      .tab .icon {
+        width: 13px;
+        height: 13px;
+      }
+      .tab[aria-selected="true"] {
+        background: white;
+        color: var(--ink);
+        box-shadow: 0 1px 4px #1b322915;
+      }
+      .flashcard {
+        width: 100%;
+        min-height: 244px;
+        border: 1px solid #dce9d9;
+        background: #f0f6ed;
+        border-radius: 14px;
+        padding: 26px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 22px;
+        transition: background 0.2s;
+        color: var(--ink);
+        overflow-wrap: anywhere;
+      }
+      .flashcard:hover {
+        background: #e7f1e3;
+      }
+      .flashcard.is-revealed {
+        background: #dff3e6;
+        border-color: #bcdac8;
+      }
+      .card-tag {
+        color: var(--green);
+        font-size: 9px;
+        font-weight: 650;
+        letter-spacing: 1.7px;
+      }
+      .card-text {
+        font-size: 22px;
+        font-weight: 600;
+        line-height: 1.4;
+        letter-spacing: -0.6px;
+      }
+      .card-hint {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 10px;
+        color: var(--muted);
+      }
+      .card-hint .icon {
+        width: 13px;
+        height: 13px;
+      }
+      .card-navigation {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 8px;
+        margin-top: 18px;
+      }
+      .card-navigation .btn {
+        min-height: 35px;
+        padding: 8px 12px;
+        font-size: 10px;
+        border-radius: 7px;
+      }
+      .card-navigation .icon {
+        width: 13px;
+        height: 13px;
+      }
+      .counter {
+        font-size: 10px;
+        color: var(--muted);
+        white-space: nowrap;
+      }
+      .progress-track {
+        height: 3px;
+        background: #e9eee6;
+        border-radius: 3px;
+        overflow: hidden;
+        margin-top: 20px;
+      }
+      .progress-fill {
+        height: 100%;
+        background: #6ba57c;
+        border-radius: 3px;
+        transition: width 0.2s;
+      }
+      .study-help {
+        text-align: center;
+        font-size: 9px;
+        color: var(--muted);
+        margin-top: 10px;
+      }
+      .demo-note {
+        display: flex;
+        align-items: flex-start;
+        justify-content: center;
+        gap: 8px;
+        margin: 17px auto 0;
+        max-width: 770px;
+        color: var(--muted);
+        text-align: center;
+        font-size: 10px;
+        line-height: 1.75;
+      }
+      .demo-note .icon {
+        width: 15px;
+        height: 15px;
+        margin-top: 2px;
+      }
+      .quiz-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        color: var(--muted);
+        font-size: 10px;
+        margin: 3px 0 15px;
+      }
+      .quiz-question {
+        font-size: 19px;
+        line-height: 1.45;
+        font-weight: 600;
+        margin-bottom: 15px;
+        overflow-wrap: anywhere;
+      }
+      .quiz-options {
+        display: grid;
+        gap: 8px;
+      }
+      .quiz-option {
+        border: 1px solid var(--line);
+        padding: 10px 12px;
+        background: white;
+        border-radius: 9px;
+        text-align: left;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 13px;
+        line-height: 1.6;
+        color: var(--ink);
+        overflow-wrap: anywhere;
+      }
+      .option-letter {
+        display: grid;
+        place-items: center;
+        width: 24px;
+        height: 24px;
+        flex-shrink: 0;
+        background: #f1f4ed;
+        border-radius: 5px;
+        font-size: 10px;
+        font-weight: 600;
+      }
+      .quiz-option:hover:not(:disabled) {
+        border-color: #79a785;
+        background: #f6faf3;
+      }
+      .quiz-option:disabled {
+        opacity: 1;
+      }
+      .quiz-option.correct {
+        background: #e8f5e9;
+        border-color: #6ea378;
+      }
+      .quiz-option.incorrect {
+        background: #fceeed;
+        border-color: #c77a76;
+      }
+      .option-state {
+        margin-left: auto;
+        font-weight: 700;
+      }
+      .quiz-feedback {
+        font-size: 11px;
+        line-height: 1.6;
+        min-height: 20px;
+        margin-top: 12px;
+        color: var(--green);
+        overflow-wrap: anywhere;
+      }
+      .quiz-feedback.error {
+        color: #9b3636;
+      }
+      .quiz-next {
+        width: 100%;
+        margin-top: 10px;
+        min-height: 39px;
+        padding: 9px;
+        font-size: 11px;
+      }
+      .quiz-result {
+        padding: 35px 12px;
+        text-align: center;
+        border-radius: 14px;
+        background: #eff6ed;
+      }
+      .result-icon {
+        display: grid;
+        place-items: center;
+        width: 50px;
+        height: 50px;
+        background: var(--mint);
+        color: var(--green);
+        border-radius: 50%;
+        margin: 0 auto 17px;
+      }
+      .result-value {
+        font-size: 42px;
+        font-weight: 650;
+        letter-spacing: -2px;
+        margin: 12px 0 6px;
+      }
+      .quiz-result p {
+        font-size: 12px;
+        color: var(--muted);
+      }
+      .quiz-result .btn {
+        margin-top: 20px;
+      }
+      .features {
+        padding-top: 12px;
+      }
+      .features .section-heading {
+        align-items: center;
+      }
+      .feature-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 16px;
+      }
+      .feature-card {
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        padding: 25px 22px;
+      }
+      .feature-icon {
+        display: grid;
+        place-items: center;
+        width: 39px;
+        height: 39px;
+        background: #eff5eb;
+        color: var(--green);
+        border-radius: 10px;
+        margin-bottom: 23px;
+      }
+      .feature-card h3 {
+        font-size: 14px;
+        font-weight: 650;
+        margin-bottom: 9px;
+        letter-spacing: -0.3px;
+      }
+      .feature-card p {
+        font-size: 13px;
+        color: var(--muted);
+      }
+      .feature-foot {
+        display: block;
+        margin-top: 18px;
+        color: var(--green);
+        font-size: 9px;
+        font-weight: 600;
+      }
+      .technology {
+        background: var(--ink);
+        color: #f5f8f1;
+        padding: 51px;
+        border-radius: 25px;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 62px;
+      }
+      .technology .eyebrow {
+        color: var(--lime);
+      }
+      .technology h2 {
+        font-size: 35px;
+        max-width: 400px;
+      }
+      .technology-intro {
+        color: #bdcabe;
+        font-size: 13px;
+        margin: 21px 0 24px;
+      }
+      .technology-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        font-size: 10px;
+        color: #d5e6d6;
+        border: 1px solid #506354;
+        padding: 7px 11px;
+        border-radius: 6px;
+      }
+      .technology-list {
+        display: grid;
+        gap: 24px;
+      }
+      .technology-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 15px;
+      }
+      .technology-item > .icon {
+        color: var(--lime);
+        width: 21px;
+        height: 21px;
+        margin-top: 3px;
+      }
+      .technology-item h3 {
+        font-size: 14px;
+        font-weight: 600;
+        margin-bottom: 6px;
+      }
+      .technology-item p {
+        font-size: 13px;
+        color: #bdcabe;
+      }
+      .technology-note {
+        grid-column: 1/-1;
+        font-size: 10px;
+        color: #aebcaf;
+        border-top: 1px solid #48594c;
+        padding-top: 20px;
+        margin-top: -35px;
+      }
+      .technology-note a {
+        text-decoration: underline;
+        text-underline-offset: 3px;
+      }
+      .pricing {
+        padding-bottom: 76px;
+      }
+      .center-heading {
+        text-align: center;
+        margin-bottom: 32px;
+      }
+      .center-heading .eyebrow {
+        justify-content: center;
+      }
+      .center-heading p {
+        margin-top: 14px;
+        color: var(--muted);
+        font-size: 13px;
+      }
+      .price-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+        max-width: 830px;
+        margin: auto;
+      }
+      .price-card {
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: 18px;
+        padding: 30px;
+        display: flex;
+        flex-direction: column;
+      }
+      .price-card.featured {
+        background: #f0f7ec;
+        border-color: #c2d5b9;
+      }
+      .price-card-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+      }
+      .price-card-top h3 {
+        font-size: 16px;
+        font-weight: 650;
+      }
+      .price-tag {
+        font-size: 9px;
+        background: #edf3eb;
+        color: var(--green);
+        border-radius: 5px;
+        padding: 6px 8px;
+      }
+      .featured .price-tag {
+        background: #d9ecc8;
+      }
+      .price {
+        font-size: 49px;
+        font-weight: 600;
+        letter-spacing: -2px;
+        margin: 22px 0 1px;
+      }
+      .price small {
+        font-size: 20px;
+        letter-spacing: -0.7px;
+      }
+      .price-caption {
+        color: var(--muted);
+        font-size: 11px;
+      }
+      .price-list {
+        list-style: none;
+        padding: 20px 0 0;
+        margin: 22px 0 24px;
+        border-top: 1px solid var(--line);
+        display: grid;
+        gap: 12px;
+      }
+      .price-list li {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 13px;
+      }
+      .price-list .icon {
+        width: 15px;
+        height: 15px;
+        color: var(--green);
+      }
+      .price-card .btn {
+        margin-top: auto;
+        width: 100%;
+      }
+      .pricing-note {
+        text-align: center;
+        color: var(--muted);
+        font-size: 10px;
+        margin: 17px auto 0;
+        max-width: 600px;
+      }
+      .about {
+        display: flex;
+        align-items: center;
+        gap: 30px;
+        padding: 0 55px 66px;
+      }
+      .author-avatar {
+        flex-shrink: 0;
+        display: grid;
+        place-items: center;
+        width: 64px;
+        height: 64px;
+        background: #e8eee1;
+        border: 1px solid #d9e2d4;
+        border-radius: 50%;
+        font-size: 20px;
+        font-weight: 600;
+        color: #5c755b;
+      }
+      .about h2 {
+        font-size: 22px;
+        margin: 0 0 9px;
+        letter-spacing: -0.6px;
+      }
+      .about p {
+        color: var(--muted);
+        font-size: 14px;
+        max-width: 790px;
+      }
+      .access-banner {
+        background: #e2efdc;
+        border: 1px solid #d6e5cc;
+        border-radius: 21px;
+        padding: 42px 47px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 28px;
+      }
+      .access-banner h2 {
+        margin-top: 0;
+        font-size: 30px;
+      }
+      .access-banner p {
+        font-size: 12px;
+        color: #61715f;
+        margin-top: 10px;
+      }
+      .access-banner .btn {
+        flex-shrink: 0;
+      }
+      footer {
+        padding-top: 54px;
+      }
+      .footer-main {
+        display: flex;
+        justify-content: space-between;
+        gap: 24px;
+        padding-bottom: 30px;
+      }
+      .footer-main .brand {
+        font-size: 18px;
+      }
+      .footer-description {
+        font-size: 11px;
+        color: var(--muted);
+        margin-top: 10px;
+      }
+      .footer-contact {
+        text-align: right;
+        font-size: 13px;
+        line-height: 1.8;
+      }
+      .footer-contact span {
+        display: block;
+        color: var(--muted);
+        font-size: 10px;
+        margin-bottom: 6px;
+      }
+      .footer-bottom {
+        padding-block: 20px;
+        border-top: 1px solid var(--line);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+        font-size: 10px;
+        color: var(--muted);
+      }
+      .footer-links {
+        display: flex;
+        gap: 23px;
+      }
+      .footer-links button {
+        background: none;
+        border: 0;
+        padding: 0;
+        color: inherit;
+        font: inherit;
+      }
+      .footer-links button:hover {
+        color: var(--green);
+      }
+      dialog {
+        max-width: min(560px, calc(100% - 32px));
+        width: 560px;
+        max-height: calc(100dvh - 40px);
+        padding: 30px;
+        border: 1px solid var(--line);
+        border-radius: 20px;
+        color: var(--ink);
+        background: var(--surface);
+        box-shadow: 0 30px 100px #132a3140;
+      }
+      dialog::backdrop {
+        background: #172c2370;
+        backdrop-filter: blur(4px);
+      }
+      .dialog-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 16px;
+        margin-bottom: 20px;
+      }
+      .dialog-top h2 {
+        font-size: 26px;
+        margin-top: 0;
+        letter-spacing: -0.7px;
+      }
+      .close-dialog {
+        display: grid;
+        place-items: center;
+        flex-shrink: 0;
+        width: 32px;
+        height: 32px;
+        background: #f3f6ef;
+        border: 0;
+        border-radius: 8px;
+      }
+      dialog p {
+        color: var(--muted);
+        font-size: 14px;
+        margin: 10px 0;
+      }
+      dialog h3 {
+        font-size: 14px;
+        margin-top: 22px;
+      }
+      dialog a:not(.btn) {
+        color: var(--green);
+        text-decoration: underline;
+        text-underline-offset: 3px;
+      }
+      .access-form {
+        margin-top: 20px;
+      }
+      .field-label {
+        display: block;
+        font-size: 12px;
+        font-weight: 600;
+        margin: 15px 0 7px;
+      }
+      .field-input {
+        width: 100%;
+        border: 1px solid #ccd8cb;
+        border-radius: 9px;
+        min-height: 45px;
+        padding: 11px 12px;
+        background: #fafcf8;
+        font-size: 13px;
+      }
+      .consent {
+        display: flex;
+        align-items: flex-start;
+        gap: 9px;
+        font-size: 11px;
+        color: var(--muted);
+        line-height: 1.65;
+        margin: 16px 0;
+      }
+      .consent input {
+        accent-color: var(--green);
+        margin: 3px 0 0;
+        flex-shrink: 0;
+        width: 15px;
+        height: 15px;
+      }
+      .consent button {
+        padding: 0;
+        border: 0;
+        background: none;
+        color: var(--green);
+        text-decoration: underline;
+        font: inherit;
+      }
+      .access-form .btn {
+        width: 100%;
+      }
+      .signup-draft {
+        background: #f1f7ed;
+        border: 1px solid #dae7d3;
+        border-radius: 12px;
+        padding: 17px;
+        margin-top: 20px;
+      }
+      .signup-draft h3 {
+        margin-top: 0;
+      }
+      .signup-draft textarea {
+        min-height: 140px;
+        font-size: 11px;
+        margin-top: 10px;
+      }
+      .signup-draft .btn {
+        width: 100%;
+        margin-top: 12px;
+      }
+      .signup-draft .micro {
+        font-size: 10px;
+      }
+      @media (min-width: 1500px) {
+        .hero {
+          padding-block: 100px 85px;
+        }
+      }
+      @media (max-width: 1080px) {
+        .nav-links {
+          gap: 15px;
+          font-size: 11px;
+        }
+        .navbar {
+          gap: 16px;
+        }
+        .brand {
+          font-size: 18px;
+        }
+        .nav-cta {
+          font-size: 10px;
+          padding-inline: 10px;
+        }
+        .hero {
+          gap: 30px;
+        }
+        .label-bottom {
+          right: 0;
+        }
+        .technology {
+          gap: 35px;
+        }
+      }
+      @media (max-width: 900px) {
+        .menu-toggle {
+          display: grid;
+          place-items: center;
+        }
+        .navbar {
+          flex-wrap: wrap;
+          min-height: 76px;
+          gap: 12px;
+          padding-block: 16px;
+        }
+        .nav-cta {
+          margin-left: auto;
+        }
+        .nav-links {
+          display: none;
+          order: 4;
+          width: 100%;
+          flex-direction: column;
+          align-items: stretch;
+          gap: 0;
+          padding-top: 10px;
+        }
+        .nav-links.open {
+          display: flex;
+        }
+        .nav-links a {
+          padding: 12px 5px;
+          border-top: 1px solid var(--line);
+          font-size: 13px;
+        }
+        .hero {
+          grid-template-columns: 1fr 1fr;
+          gap: 15px;
+          padding-top: 58px;
+        }
+        h1 {
+          font-size: 43px;
+          letter-spacing: -2px;
+        }
+        .hero-visual {
+          min-height: 365px;
+        }
+        .hero-description {
+          font-size: 14px;
+        }
+        .floating-label {
+          padding: 10px;
+          font-size: 9px;
+        }
+        .preview-card h3 {
+          font-size: 20px;
+        }
+        .hero-actions .btn {
+          font-size: 11px;
+          padding-inline: 13px;
+        }
+        .feature-grid {
+          grid-template-columns: repeat(2, 1fr);
+        }
+        .hero-strip {
+          gap: 25px;
+        }
+        .editor,
+        .study {
+          padding: 22px;
+        }
+        .study-top {
+          flex-wrap: wrap;
+        }
+        .technology {
+          padding: 35px;
+        }
+        .about {
+          padding-inline: 20px;
+        }
+      }
+      @media (max-width: 680px) {
+        .container {
+          width: calc(100% - 36px);
+        }
+        .navbar {
+          gap: 9px;
+        }
+        .brand {
+          font-size: 17px;
+          gap: 7px;
+        }
+        .brand-mark {
+          width: 29px;
+          height: 31px;
+          font-size: 20px;
+        }
+        .version-tag {
+          font-size: 8px;
+          padding: 4px;
+        }
+        .nav-cta {
+          display: none;
+        }
+        .menu-toggle {
+          margin-left: auto;
+        }
+        html {
+          scroll-padding-top: 90px;
+        }
+        .hero {
+          grid-template-columns: 1fr;
+          padding-block: 41px 25px;
+          gap: 20px;
+        }
+        h1 {
+          font-size: clamp(38px, 8.8vw, 54px);
+          max-width: 520px;
+        }
+        .hero-description {
+          max-width: 470px;
+          font-size: 14px;
+        }
+        .hero-actions .btn {
+          font-size: 12px;
+          padding-inline: 16px;
+        }
+        .hero-visual {
+          min-height: 345px;
+          max-width: 460px;
+          width: 100%;
+          margin: auto;
+        }
+        .preview {
+          width: 85%;
+        }
+        .label-top {
+          top: 18px;
+          left: 8px;
+        }
+        .label-bottom {
+          bottom: 14px;
+          right: 7px;
+        }
+        .hero-strip {
+          gap: 12px 22px;
+          font-size: 10px;
+          padding-block: 18px;
+        }
+        .hero-strip span:last-child {
+          display: none;
+        }
+        .section {
+          padding-block: 55px;
+        }
+        .section-heading {
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 14px;
+          margin-bottom: 24px;
+        }
+        .section-description {
+          max-width: 100%;
+          font-size: 12px;
+        }
+        .demo-toolbar {
+          padding: 14px 17px;
+        }
+        .demo-toolbar-title {
+          font-size: 11px;
+        }
+        .local-label {
+          font-size: 9px;
+        }
+        .demo-grid {
+          grid-template-columns: 1fr;
+        }
+        .editor {
+          border-right: 0;
+          border-bottom: 1px solid var(--line);
+          padding: 20px;
+        }
+        textarea {
+          min-height: 215px;
+        }
+        .study {
+          padding: 21px 20px;
+        }
+        .study-top {
+          flex-wrap: nowrap;
+        }
+        .flashcard {
+          min-height: 255px;
+        }
+        .demo-note {
+          text-align: left;
+          font-size: 10px;
+        }
+        .features {
+          padding-top: 0;
+        }
+        .features .section-heading {
+          align-items: flex-start;
+        }
+        .feature-grid {
+          gap: 12px;
+        }
+        .feature-card {
+          padding: 20px 17px;
+        }
+        .feature-card h3 {
+          font-size: 13px;
+        }
+        .feature-card p {
+          font-size: 12px;
+        }
+        .feature-icon {
+          margin-bottom: 18px;
+        }
+        .technology {
+          padding: 30px 24px;
+          grid-template-columns: 1fr;
+          gap: 31px;
+          border-radius: 18px;
+        }
+        .technology h2 {
+          font-size: 30px;
+        }
+        .technology-note {
+          margin-top: 0;
+        }
+        .price-grid {
+          grid-template-columns: 1fr;
+          gap: 15px;
+        }
+        .price-card {
+          padding: 25px;
+        }
+        .about {
+          align-items: flex-start;
+          gap: 15px;
+          padding: 0 0 42px;
+        }
+        .author-avatar {
+          width: 45px;
+          height: 45px;
+          font-size: 15px;
+        }
+        .about h2 {
+          font-size: 20px;
+        }
+        .about p {
+          font-size: 13px;
+        }
+        .access-banner {
+          flex-direction: column;
+          align-items: flex-start;
+          padding: 29px 25px;
+          gap: 23px;
+        }
+        .access-banner h2 {
+          font-size: 26px;
+        }
+        .access-banner .btn {
+          width: 100%;
+        }
+        footer {
+          padding-top: 38px;
+        }
+        .footer-main {
+          flex-direction: column;
+          gap: 23px;
+        }
+        .footer-contact {
+          text-align: left;
+        }
+        .footer-bottom {
+          align-items: flex-start;
+          flex-direction: column;
+          gap: 13px;
+          font-size: 9px;
+        }
+        .footer-links {
+          gap: 18px;
+        }
+        dialog {
+          padding: 23px;
+        }
+        .dialog-top h2 {
+          font-size: 23px;
+        }
+      }
+      @media (max-width: 400px) {
+        .study-top {
+          flex-wrap: wrap;
+        }
+        .tabs {
+          width: 100%;
+        }
+        .tab {
+          flex: 1;
+          justify-content: center;
+        }
+        .card-navigation .btn {
+          padding-inline: 8px;
+        }
+        .feature-grid {
+          grid-template-columns: 1fr;
+        }
+        .feature-card p {
+          font-size: 13px;
+        }
+      }
+      @media (max-width: 680px) {
+        .tab,
+        .card-navigation .btn {
+          min-height: 44px;
+        }
+        .text-button {
+          min-height: 36px;
+        }
+        .field-input {
+          font-size: 16px;
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        html {
+          scroll-behavior: auto;
+        }
+        *,
+        *::before,
+        *::after {
+          transition: none !important;
+          animation: none !important;
+        }
+      }
+
+      /* === NOWOCZESNE ROZBUDOWANE ELEMENTY SAAS === */
+      .lang-switcher {
+        display: inline-flex;
+        align-items: center;
+        background: #eef3ed;
+        border: 1px solid var(--line);
+        border-radius: 20px;
+        padding: 3px;
+        gap: 2px;
+      }
+      .lang-btn {
+        background: transparent;
+        border: none;
+        padding: 4px 10px;
+        border-radius: 16px;
+        font-size: 11px;
+        font-weight: 700;
+        color: var(--muted);
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+      .lang-btn.active {
+        background: var(--white);
+        color: var(--ink);
+        box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+      }
+      .hero-stats {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 16px;
+        margin-top: 36px;
+        padding-top: 28px;
+        border-top: 1px solid var(--line);
+      }
+      .stat-card {
+        background: rgba(255,255,255,0.7);
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        padding: 14px 16px;
+      }
+      .stat-number {
+        font-size: 22px;
+        font-weight: 800;
+        letter-spacing: -0.5px;
+        color: var(--green);
+      }
+      .stat-label {
+        font-size: 12px;
+        color: var(--muted);
+        margin-top: 4px;
+        line-height: 1.4;
+      }
+      .preset-bar {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 14px;
+      }
+      .preset-label {
+        font-size: 12px;
+        font-weight: 700;
+        color: var(--muted);
+        margin-right: 4px;
+      }
+      .preset-btn {
+        background: #f0f5ee;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 6px 12px;
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--ink);
+        cursor: pointer;
+        transition: background 0.15s, border-color 0.15s;
+      }
+      .preset-btn:hover {
+        background: var(--mint);
+        border-color: var(--green);
+      }
+      .preset-btn.active {
+        background: var(--green);
+        color: var(--white);
+        border-color: var(--green);
+      }
+      .ai-simulate-btn {
+        background: linear-gradient(135deg, #1b5334 0%, #246b45 100%);
+        color: var(--white);
+        border: 1px solid #144026;
+        border-radius: 10px;
+        padding: 12px 18px;
+        font-weight: 700;
+        font-size: 13px;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+        box-shadow: 0 4px 14px rgba(36,107,69,0.25);
+        transition: transform 0.18s, box-shadow 0.18s;
+      }
+      .ai-simulate-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(36,107,69,0.35);
+      }
+      .ai-simulate-btn.loading {
+        opacity: 0.8;
+        cursor: wait;
+        animation: pulse 1.2s infinite;
+      }
+      @keyframes pulse {
+        0%, 100% { opacity: 0.8; }
+        50% { opacity: 0.5; }
+      }
+      .srs-panel {
+        margin-top: 16px;
+        padding: 14px;
+        background: #f3f7f2;
+        border-radius: 12px;
+        border: 1px solid var(--line);
+      }
+      .srs-title {
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+        color: var(--muted);
+        margin-bottom: 10px;
+        display: flex;
+        justify-content: space-between;
+      }
+      .srs-actions {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+      }
+      .srs-btn {
+        padding: 8px 10px;
+        border-radius: 8px;
+        border: 1px solid transparent;
+        font-size: 12px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.15s ease;
+      }
+      .srs-hard { background: #ffebeb; color: #a82020; border-color: #f7c1c1; }
+      .srs-hard:hover { background: #ffd6d6; }
+      .srs-med { background: #fff8e6; color: #946300; border-color: #fae19c; }
+      .srs-med:hover { background: #ffefc2; }
+      .srs-easy { background: #eaf8ee; color: #1f6b39; border-color: #bfe7cb; }
+      .srs-easy:hover { background: #d7f3de; }
+      .shortcuts-hint {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        flex-wrap: wrap;
+        font-size: 11px;
+        color: var(--muted);
+        margin-top: 12px;
+      }
+      .shortcuts-hint kbd {
+        background: var(--white);
+        border: 1px solid var(--line);
+        box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-family: inherit;
+        font-size: 10px;
+        font-weight: 700;
+        color: var(--ink);
+      }
+      .pipeline-section {
+        margin-top: 40px;
+        padding: 28px;
+        background: var(--white);
+        border: 1px solid var(--line);
+        border-radius: 18px;
+        box-shadow: var(--shadow);
+      }
+      .pipeline-flow {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 16px;
+        margin-top: 20px;
+      }
+      .pipeline-step {
+        background: #fafcf9;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 18px;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+      }
+      .pipeline-step-badge {
+        font-size: 10px;
+        font-weight: 800;
+        color: var(--green);
+        background: var(--mint);
+        padding: 3px 6px;
+        border-radius: 4px;
+        display: inline-block;
+        margin-bottom: 8px;
+        align-self: flex-start;
+      }
+      .pipeline-step h4 {
+        margin: 0 0 6px;
+        font-size: 14px;
+        color: var(--ink);
+      }
+      .pipeline-step p {
+        margin: 0;
+        font-size: 12px;
+        color: var(--muted);
+        line-height: 1.5;
+      }
+      .waitlist-ticket {
+        background: #eef8f1;
+        border: 1px solid #b7e3c5;
+        border-radius: 12px;
+        padding: 18px;
+        margin-top: 16px;
+        text-align: center;
+      }
+      .ticket-num {
+        font-size: 26px;
+        font-weight: 800;
+        color: var(--green);
+        letter-spacing: -0.5px;
+      }
+      /* === ULTRA-PREMIUM KOGNITYWNY DARK MODE (VENTURE-READY) === */
+      body.dark-theme {
+        --paper: #0b110e;
+        --surface: #131f17;
+        --surface-raised: #18281e;
+        --surface-sunken: #0c140f;
+        --ink: #eaf3ed;
+        --muted: #8ea195;
+        --green: #2ecc71;
+        --mint: #163624;
+        --lime: #68d391;
+        --line: #203528;
+        --white: #131f17;
+        --shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+        background: #0b110e;
+        color: #eaf3ed;
+      }
+
+      /* Navbar & Header in Dark Mode */
+      body.dark-theme .nav-wrap {
+        background: rgba(11, 17, 14, 0.94);
+        border-bottom-color: #1f3326;
+      }
+      body.dark-theme .brand {
+        color: #eaf3ed;
+      }
+      body.dark-theme .nav-links a {
+        color: #8ea195;
+      }
+      body.dark-theme .nav-links a:hover {
+        color: #2ecc71;
+      }
+      body.dark-theme .theme-toggle-btn {
+        background: #152219;
+        border-color: #253a2c;
+        color: #eaf3ed;
+      }
+      body.dark-theme .theme-toggle-btn:hover {
+        background: #1c3024;
+        border-color: #2ecc71;
+      }
+      body.dark-theme .lang-switcher {
+        background: #111a14;
+        border-color: #233729;
+      }
+      body.dark-theme .lang-btn {
+        color: #8ea195;
+      }
+      body.dark-theme .lang-btn.active {
+        background: #1c2e22;
+        color: #eaf3ed;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+      }
+      body.dark-theme #navMgmtBtn {
+        background: #16241b;
+        border-color: #253a2c;
+        color: #eaf3ed;
+      }
+      body.dark-theme #navMgmtBtn:hover {
+        background: #1d3024;
+        border-color: #2ecc71;
+      }
+      body.dark-theme #navLogoutBtn {
+        border-color: #253a2c;
+        color: #eaf3ed;
+      }
+
+      /* Universal Buttons in Dark Mode */
+      body.dark-theme .btn-primary {
+        background: linear-gradient(135deg, #1b7a48 0%, #2ecc71 100%);
+        color: #ffffff;
+        border: 1px solid #27ae60;
+        box-shadow: 0 4px 16px rgba(46, 204, 113, 0.25);
+      }
+      body.dark-theme .btn-primary:hover:not(:disabled) {
+        background: linear-gradient(135deg, #1e8b52 0%, #34d399 100%);
+        box-shadow: 0 6px 22px rgba(46, 204, 113, 0.35);
+        transform: translateY(-2px);
+      }
+      body.dark-theme .btn-light {
+        background: #16241b;
+        border-color: #253a2c;
+        color: #eaf3ed;
+      }
+      body.dark-theme .btn-light:hover:not(:disabled) {
+        background: #1d3024;
+        border-color: #2ecc71;
+        color: #ffffff;
+      }
+      body.dark-theme .btn-outline {
+        border-color: #253a2c;
+        color: #eaf3ed;
+      }
+      body.dark-theme .btn-outline:hover {
+        border-color: #2ecc71;
+        color: #2ecc71;
+      }
+      body.dark-theme .text-button {
+        color: #2ecc71;
+      }
+
+      /* Hero Section Visuals in Dark Mode */
+      body.dark-theme .hero-badge {
+        background: #14251a;
+        border-color: #25422f;
+        color: #4ade80;
+      }
+      body.dark-theme .hero-visual {
+        background: radial-gradient(ellipse at 50% 50%, rgba(46, 204, 113, 0.14) 0%, rgba(19, 31, 23, 0.8) 60%, #0b110e 85%);
+      }
+      body.dark-theme .hero-grid {
+        background-image:
+          linear-gradient(rgba(46, 204, 113, 0.08) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(46, 204, 113, 0.08) 1px, transparent 1px);
+      }
+      body.dark-theme .preview {
+        background: #131f17;
+        border-color: #243c2c;
+        box-shadow: 0 24px 60px rgba(0, 0, 0, 0.65);
+      }
+      body.dark-theme .preview-card {
+        background: #18281e;
+        border: 1px solid #284232;
+      }
+      body.dark-theme .preview-card h3 {
+        color: #eaf3ed;
+      }
+      body.dark-theme .preview-card p {
+        color: #8ea195;
+      }
+      body.dark-theme .preview-dots i {
+        background: #2a4433;
+      }
+      body.dark-theme .preview-arrows span {
+        background: #131f17;
+        border-color: #243c2c;
+        color: #eaf3ed;
+      }
+      body.dark-theme .floating-label {
+        background: #16251b;
+        border-color: #274230;
+        color: #eaf3ed;
+        box-shadow: 0 12px 32px rgba(0, 0, 0, 0.55);
+      }
+      body.dark-theme .hero-stats {
+        border-top-color: #1f3326;
+      }
+      body.dark-theme .stat-card {
+        background: #131f17;
+        border-color: #203528;
+      }
+
+      /* Workspace / Demo Shell in Dark Mode */
+      body.dark-theme .user-dashboard-strip {
+        background: #131f17;
+        border-color: #203528;
+        color: #eaf3ed;
+      }
+      body.dark-theme .demo-shell {
+        background: #131f17;
+        border-color: #203528;
+        box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5);
+      }
+      body.dark-theme .demo-toolbar {
+        background: #16241b;
+        border-bottom-color: #203528;
+      }
+      body.dark-theme .local-label {
+        background: #153321;
+        color: #4ade80;
+      }
+      body.dark-theme .editor {
+        border-right-color: #203528;
+      }
+      body.dark-theme .deck-library-bar {
+        border-bottom-color: #203528;
+      }
+      body.dark-theme .deck-select {
+        background: #0f1812;
+        border-color: #27402f;
+        color: #eaf3ed;
+      }
+      body.dark-theme .editor textarea {
+        background: #0d1510;
+        border-color: #203528;
+        color: #eaf3ed;
+      }
+      body.dark-theme .ai-simulate-btn {
+        background: linear-gradient(135deg, #165b35 0%, #228b50 100%);
+        color: #ffffff;
+        border-color: #2ecc71;
+        box-shadow: 0 4px 16px rgba(46, 204, 113, 0.28);
+      }
+      body.dark-theme .ai-simulate-btn:hover {
+        background: linear-gradient(135deg, #1a6d40 0%, #2ecc71 100%);
+      }
+
+      /* Study Space & Flashcards in Dark Mode */
+      body.dark-theme .study {
+        background: #131f17;
+      }
+      body.dark-theme .tabs {
+        background: #0d1611;
+        border: 1px solid #1f3326;
+      }
+      body.dark-theme .tab {
+        color: #8ea195;
+      }
+      body.dark-theme .tab:hover:not([aria-selected="true"]) {
+        color: #eaf3ed;
+      }
+      body.dark-theme .tab[aria-selected="true"] {
+        background: #1c2f23;
+        color: #eaf3ed;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.35);
+      }
+      body.dark-theme .flashcard {
+        background: #15231a;
+        border-color: #27402f;
+        color: #eaf3ed;
+        box-shadow: 0 12px 36px rgba(0, 0, 0, 0.35);
+      }
+      body.dark-theme .flashcard:hover {
+        background: #192a20;
+        border-color: #31523c;
+      }
+      body.dark-theme .flashcard.is-revealed {
+        background: #183321;
+        border-color: #2ecc71;
+      }
+      body.dark-theme .card-tag {
+        color: #2ecc71;
+      }
+      body.dark-theme .card-hint {
+        color: #8ea195;
+      }
+      body.dark-theme .progress-track {
+        background: #101913;
+      }
+      body.dark-theme .progress-fill {
+        background: #2ecc71;
+      }
+      body.dark-theme .shortcuts-hint kbd {
+        background: #0d1510;
+        border-color: #243c2c;
+        color: #eaf3ed;
+      }
+
+      /* Socratic Assistant & TTS in Dark Mode */
+      body.dark-theme .socratic-trigger-btn {
+        background: #14281d;
+        border-color: #254b34;
+        color: #2ecc71;
+      }
+      body.dark-theme .socratic-trigger-btn:hover {
+        background: #1b3828;
+        border-color: #2ecc71;
+      }
+      body.dark-theme .tts-btn {
+        background: #16241b;
+        border-color: #253a2c;
+        color: #eaf3ed;
+      }
+      body.dark-theme .tts-btn:hover {
+        background: #1e3324;
+        border-color: #2ecc71;
+      }
+      body.dark-theme .socratic-drawer {
+        background: #101a14;
+        border-color: #223c2b;
+      }
+      body.dark-theme .socratic-chip {
+        background: #17271e;
+        border-color: #274332;
+        color: #eaf3ed;
+      }
+      body.dark-theme .socratic-chip:hover {
+        background: #20392b;
+        border-color: #2ecc71;
+        color: #2ecc71;
+      }
+      body.dark-theme .socratic-response {
+        background: #132219;
+        border-color: #243d2d;
+        color: #eaf3ed;
+        border-left-color: #2ecc71;
+      }
+      body.dark-theme .socratic-input {
+        background: #0c140f;
+        border-color: #223c2b;
+        color: #eaf3ed;
+      }
+
+      /* FSRS Spaced Repetition Panel in Dark Mode */
+      body.dark-theme .srs-panel {
+        background: #101a14;
+        border-color: #203628;
+      }
+      body.dark-theme .srs-btn {
+        background: #17261d;
+        border-color: #274332;
+        color: #eaf3ed;
+      }
+      body.dark-theme .srs-btn:hover {
+        background: #213a2b;
+      }
+      body.dark-theme .srs-hard {
+        background: #2f1717;
+        color: #f87171;
+        border-color: #5c2828;
+      }
+      body.dark-theme .srs-med {
+        background: #1a2c3a;
+        color: #60a5fa;
+        border-color: #284761;
+      }
+      body.dark-theme .srs-easy {
+        background: #143521;
+        color: #4ade80;
+        border-color: #245735;
+      }
+
+      /* Quiz Mode in Dark Mode */
+      body.dark-theme .quiz-option {
+        background: #16241b;
+        border-color: #253a2c;
+        color: #eaf3ed;
+      }
+      body.dark-theme .quiz-option:hover:not(:disabled) {
+        background: #1e3124;
+        border-color: #2ecc71;
+      }
+      body.dark-theme .option-letter {
+        background: #0f1812;
+        color: #8ea195;
+      }
+      body.dark-theme .quiz-option.correct {
+        background: #133a20;
+        border-color: #2ecc71;
+        color: #4ade80;
+      }
+      body.dark-theme .quiz-option.incorrect {
+        background: #3b1717;
+        border-color: #e74c3c;
+        color: #f87171;
+      }
+      body.dark-theme .quiz-result {
+        background: #16241b;
+        border: 1px solid #253a2c;
+      }
+
+      /* Speed Match Game in Dark Mode */
+      body.dark-theme .match-card {
+        background: #16241b;
+        border-color: #253a2c;
+        color: #eaf3ed;
+      }
+      body.dark-theme .match-card:hover {
+        background: #1e3124;
+        border-color: #2ecc71;
+      }
+      body.dark-theme .match-card.selected {
+        background: #1b3826;
+        border-color: #2ecc71;
+        color: #4ade80;
+      }
+      body.dark-theme .match-card.matched {
+        background: #122419;
+        border-color: #1a4228;
+        color: #5aa177;
+        opacity: 0.45;
+      }
+      body.dark-theme .match-card.wrong {
+        background: #381616;
+        border-color: #dc2626;
+        color: #f87171;
+      }
+
+      /* Features, Pipeline & Technology in Dark Mode */
+      body.dark-theme .feature-card {
+        background: #131f17;
+        border-color: #203528;
+      }
+      body.dark-theme .feature-icon {
+        background: #192b1f;
+        color: #2ecc71;
+      }
+      body.dark-theme .pipeline-section {
+        background: #131f17;
+        border-color: #203528;
+      }
+      body.dark-theme .pipeline-step {
+        background: #17261d;
+        border-color: #253d2d;
+      }
+      body.dark-theme .technology {
+        background: #121c16;
+        border: 1px solid #203528;
+        color: #eaf3ed;
+      }
+      body.dark-theme .technology-intro {
+        color: #8ea195;
+      }
+
+      /* Testimonials & Pricing in Dark Mode */
+      body.dark-theme .testimonial-card {
+        background: #131f17;
+        border-color: #203528;
+      }
+      body.dark-theme .price-card {
+        background: #131f17;
+        border-color: #203528;
+      }
+      body.dark-theme .price-card.featured {
+        background: #17271e;
+        border-color: #2a4c35;
+        box-shadow: 0 16px 48px rgba(0,0,0,0.4);
+      }
+      body.dark-theme .price-tag {
+        background: #182a1f;
+        color: #4ade80;
+      }
+      body.dark-theme .featured .price-tag {
+        background: #1d3e2a;
+        color: #2ecc71;
+      }
+
+      /* FAQ, About & Access Banner in Dark Mode */
+      body.dark-theme .faq-item {
+        background: #131f17;
+        border-color: #203528;
+      }
+      body.dark-theme .author-avatar {
+        background: #17271e;
+        border-color: #253e2d;
+        color: #4ade80;
+      }
+      body.dark-theme .access-banner {
+        background: #14251a;
+        border-color: #24422e;
+        color: #eaf3ed;
+      }
+      body.dark-theme .access-banner p {
+        color: #8ea195;
+      }
+
+      /* All Modals & Dialogs in Dark Mode */
+      body.dark-theme dialog {
+        background: #131f17;
+        border-color: #243c2c;
+        color: #eaf3ed;
+        box-shadow: 0 30px 100px rgba(0, 0, 0, 0.75);
+      }
+      body.dark-theme dialog::backdrop {
+        background: rgba(5, 9, 7, 0.8);
+      }
+      body.dark-theme .close-dialog {
+        background: #18281e;
+        color: #8ea195;
+      }
+      body.dark-theme .close-dialog:hover {
+        background: #213829;
+        color: #eaf3ed;
+      }
+      body.dark-theme .field-input,
+      body.dark-theme input[type="text"],
+      body.dark-theme input[type="email"],
+      body.dark-theme input[type="password"],
+      body.dark-theme input[type="search"] {
+        background: #0d1510;
+        border-color: #243c2c;
+        color: #eaf3ed;
+      }
+      body.dark-theme .field-input:focus,
+      body.dark-theme input:focus {
+        border-color: #2ecc71;
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(46, 204, 113, 0.2);
+      }
+      body.dark-theme .auth-dialog {
+        background: #131f17;
+        border-color: #243c2c;
+      }
+      body.dark-theme .auth-google-btn {
+        background: #18271e;
+        border-color: #253a2c;
+        color: #eaf3ed;
+      }
+      body.dark-theme .auth-divider span {
+        background: #131f17;
+        color: #8ea195;
+      }
+
+      /* Universal Inputs, Dropdowns & Controls in Dark Mode */
+      body.dark-theme textarea,
+      body.dark-theme select,
+      body.dark-theme select.field-input {
+        background: #0d1510;
+        border-color: #243c2c;
+        color: #eaf3ed;
+      }
+      body.dark-theme option {
+        background: #0d1510;
+        color: #eaf3ed;
+      }
+      body.dark-theme input[type="range"] {
+        accent-color: #2ecc71;
+      }
+      body.dark-theme .preset-btn {
+        background: #16241b;
+        border-color: #253a2c;
+        color: #eaf3ed;
+      }
+      body.dark-theme .preset-btn:hover {
+        background: #1d3024;
+        border-color: #2ecc71;
+        color: #ffffff;
+      }
+      body.dark-theme .preset-btn.active {
+        background: linear-gradient(135deg, #1b7a48 0%, #2ecc71 100%);
+        color: #ffffff;
+        border-color: #2ecc71;
+      }
+      body.dark-theme .toggle-pill {
+        background: #0f1812;
+        border-color: #203528;
+      }
+      body.dark-theme .toggle-btn {
+        color: #8ea195;
+      }
+      body.dark-theme .toggle-btn.active {
+        background: #1c2e22;
+        color: #eaf3ed;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+      }
+      body.dark-theme .waitlist-ticket {
+        background: #14281d;
+        border-color: #274734;
+        color: #eaf3ed;
+      }
+      body.dark-theme .ticket-num {
+        color: #2ecc71;
+      }
+      body.dark-theme .auth-google-btn:hover {
+        background: #1e3124;
+        border-color: #2ecc71;
+      }
+      body.dark-theme #authFeedback {
+        background: #3b1717 !important;
+        color: #fca5a5 !important;
+        border-color: #7f1d1d !important;
+      }
+      body.dark-theme #aiActiveBadge {
+        background: #143521 !important;
+        color: #4ade80 !important;
+        border-color: #245735 !important;
+      }
+      body.dark-theme .print-card-box {
+        background: #131f17;
+        border-color: #27402f;
+        color: #eaf3ed;
+      }
+      body.dark-theme .print-card-q {
+        color: #eaf3ed;
+      }
+      body.dark-theme .print-card-a {
+        color: #8ea195;
+        border-top-color: #203528;
+      }
+      body.dark-theme .footer-contact a {
+        color: #2ecc71;
+      }
+      body.dark-theme .footer-contact a:hover {
+        color: #4ade80;
+        text-decoration: underline;
+      }
+
+      /* Active Recall Feedback in Dark Mode */
+      .type-feedback.feedback-exact {
+        background: #dcfce7;
+        border: 1px solid #86efac;
+        color: #15803d;
+      }
+      body.dark-theme .type-feedback.feedback-exact {
+        background: #143521;
+        border-color: #2ecc71;
+        color: #4ade80;
+      }
+      .type-feedback.feedback-close {
+        background: #fef9c3;
+        border: 1px solid #fde047;
+        color: #854d0e;
+      }
+      body.dark-theme .type-feedback.feedback-close {
+        background: #332b13;
+        border-color: #eab308;
+        color: #fef08a;
+      }
+      .type-feedback.feedback-wrong {
+        background: #fee2e2;
+        border: 1px solid #fca5a5;
+        color: #991b1b;
+      }
+      body.dark-theme .type-feedback.feedback-wrong {
+        background: #381818;
+        border-color: #ef4444;
+        color: #fca5a5;
+      }
+      body.dark-theme .feedback-sub {
+        color: #8ea195 !important;
+      }
+
+      .theme-toggle-btn {
+        background: transparent;
+        border: 1px solid var(--line);
+        border-radius: 50%;
+        width: 36px;
+        height: 36px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--ink);
+        cursor: pointer;
+        transition: all 0.2s;
+        font-size: 15px;
+      }
+      .theme-toggle-btn:hover {
+        background: var(--mint);
+        border-color: var(--green);
+      }
+
+      .nav-auth-group {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .btn-outline {
+        background: transparent;
+        border: 1px solid var(--line);
+        color: var(--ink);
+        padding: 8px 16px;
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 13px;
+        cursor: pointer;
+        transition: all 0.15s;
+      }
+      .btn-outline:hover {
+        border-color: var(--green);
+        color: var(--green);
+      }
+
+      /* User dashboard strip */
+      .user-dashboard-strip {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 12px;
+        background: var(--white);
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        padding: 12px 18px;
+        margin-bottom: 20px;
+        font-size: 13px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+      }
+      .dash-stats-group {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        flex-wrap: wrap;
+      }
+      .dash-stat {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        color: var(--muted);
+      }
+      .dash-stat strong {
+        color: var(--ink);
+        font-weight: 700;
+      }
+      .dash-user-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-weight: 600;
+        cursor: pointer;
+      }
+      .user-avatar-sm {
+        width: 26px;
+        height: 26px;
+        border-radius: 50%;
+        background: var(--green);
+        color: var(--white);
+        display: grid;
+        place-items: center;
+        font-size: 11px;
+        font-weight: 800;
+      }
+      .badge-plan {
+        font-size: 10px;
+        font-weight: 800;
+        padding: 2px 6px;
+        border-radius: 4px;
+        background: var(--mint);
+        color: var(--green);
+      }
+
+      /* Deck library bar */
+      .deck-library-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-bottom: 16px;
+        padding-bottom: 14px;
+        border-bottom: 1px solid var(--line);
+      }
+      .deck-select {
+        padding: 8px 12px;
+        border-radius: 8px;
+        border: 1px solid var(--line);
+        background: var(--white);
+        color: var(--ink);
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        min-width: 220px;
+      }
+      .deck-tools {
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+      }
+      .btn-sm {
+        padding: 6px 12px;
+        font-size: 12px;
+        border-radius: 8px;
+        font-weight: 600;
+      }
+
+      /* Audio TTS button */
+      .tts-btn {
+        background: rgba(0,0,0,0.04);
+        border: 1px solid var(--line);
+        border-radius: 20px;
+        padding: 5px 12px;
+        font-size: 11px;
+        font-weight: 700;
+        color: var(--muted);
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        cursor: pointer;
+        transition: all 0.15s;
+        margin-top: 10px;
+      }
+      .tts-btn:hover {
+        background: var(--mint);
+        color: var(--green);
+        border-color: var(--green);
+      }
+
+      /* Match Game */
+      .match-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 12px;
+        margin-top: 16px;
+      }
+      .match-card {
+        min-height: 95px;
+        background: var(--white);
+        border: 2px solid var(--line);
+        border-radius: 12px;
+        padding: 12px;
+        display: grid;
+        place-items: center;
+        text-align: center;
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--ink);
+        cursor: pointer;
+        user-select: none;
+        transition: all 0.2s;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+      }
+      .match-card:hover {
+        border-color: var(--green);
+        transform: translateY(-2px);
+      }
+      .match-card.selected {
+        border-color: var(--green);
+        background: var(--mint);
+        color: var(--green);
+      }
+      .match-card.matched {
+        border-color: #249e5d;
+        background: #eaf8ee;
+        color: #1f6b39;
+        opacity: 0.35;
+        cursor: default;
+        pointer-events: none;
+        transform: none;
+      }
+      .match-card.wrong {
+        border-color: #d93838;
+        background: #ffebeb;
+        animation: shake 0.3s;
+      }
+      @keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        25% { transform: translateX(-4px); }
+        75% { transform: translateX(4px); }
+      }
+      .match-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 12px;
+        font-size: 14px;
+        font-weight: 700;
+      }
+
+      /* Testimonials */
+      .testimonials {
+        padding: 70px 0;
+      }
+      .testimonial-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 24px;
+        margin-top: 36px;
+      }
+      .testimonial-card {
+        background: var(--white);
+        border: 1px solid var(--line);
+        border-radius: 18px;
+        padding: 24px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        box-shadow: var(--shadow);
+      }
+      .testi-stars {
+        color: #f59e0b;
+        font-size: 14px;
+        margin-bottom: 12px;
+      }
+      .testi-text {
+        font-size: 14px;
+        line-height: 1.6;
+        color: var(--ink);
+        margin-bottom: 20px;
+      }
+      .testi-author {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+      .testi-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: #e8f3ed;
+        color: var(--green);
+        display: grid;
+        place-items: center;
+        font-weight: 800;
+        font-size: 14px;
+      }
+      .testi-name {
+        font-weight: 700;
+        font-size: 13px;
+      }
+      .testi-role {
+        font-size: 11px;
+        color: var(--muted);
+      }
+
+      /* FAQ Accordion */
+      .faq-section {
+        padding: 70px 0;
+      }
+      .faq-list {
+        max-width: 820px;
+        margin: 36px auto 0;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+      .faq-item {
+        background: var(--white);
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        overflow: hidden;
+        transition: border-color 0.2s;
+      }
+      .faq-question {
+        width: 100%;
+        padding: 18px 22px;
+        background: transparent;
+        border: none;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        text-align: left;
+        font-size: 15px;
+        font-weight: 700;
+        color: var(--ink);
+        cursor: pointer;
+      }
+      .faq-icon {
+        font-size: 20px;
+        color: var(--green);
+        transition: transform 0.25s;
+        line-height: 1;
+      }
+      .faq-item.open .faq-icon {
+        transform: rotate(45deg);
+      }
+      .faq-answer {
+        padding: 0 22px 20px;
+        font-size: 14px;
+        line-height: 1.65;
+        color: var(--muted);
+        display: none;
+      }
+      .faq-item.open .faq-answer {
+        display: block;
+      }
+
+      /* Pricing period toggle */
+      .pricing-toggle {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        margin: 24px 0 36px;
+      }
+      .toggle-pill {
+        background: #eef3ed;
+        border-radius: 24px;
+        padding: 3px;
+        display: inline-flex;
+        border: 1px solid var(--line);
+      }
+      .toggle-btn {
+        border: none;
+        background: transparent;
+        padding: 6px 16px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 700;
+        color: var(--muted);
+        cursor: pointer;
+      }
+      .toggle-btn.active {
+        background: var(--white);
+        color: var(--ink);
+        box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+      }
+
+      /* Auth Modal */
+      .auth-dialog {
+        width: min(440px, calc(100% - 32px));
+        border: 1px solid var(--line);
+        border-radius: 20px;
+        padding: 32px;
+        background: var(--white);
+        box-shadow: var(--shadow);
+      }
+      .auth-header {
+        text-align: center;
+        margin-bottom: 24px;
+      }
+      .auth-google-btn {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        background: var(--white);
+        font-weight: 700;
+        font-size: 13px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        cursor: pointer;
+        transition: background 0.15s;
+      }
+      .auth-google-btn:hover {
+        background: #f7faf7;
+      }
+      .auth-divider {
+        display: flex;
+        align-items: center;
+        text-align: center;
+        margin: 18px 0;
+        color: var(--muted);
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+      }
+      .auth-divider::before, .auth-divider::after {
+        content: '';
+        flex: 1;
+        border-bottom: 1px solid var(--line);
+      }
+      .auth-divider::before { margin-right: 10px; }
+      .auth-divider::after { margin-left: 10px; }
+
+      /* Auth Tabs Switcher */
+      .auth-switcher {
+        display: flex;
+        gap: 6px;
+        background: var(--surface);
+        padding: 4px;
+        border-radius: 10px;
+        margin-bottom: 16px;
+      }
+      .auth-switch-btn {
+        flex: 1;
+        padding: 8px 12px;
+        border-radius: 7px;
+        border: none;
+        background: none;
+        font-weight: 700;
+        font-size: 13px;
+        color: var(--muted);
+        cursor: pointer;
+        transition: all 0.15s ease;
+      }
+      .auth-switch-btn.active {
+        background: var(--white);
+        color: var(--ink);
+        box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+      }
+
+      /* Management Panel Rows */
+      .mgmt-deck-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 12px 14px;
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        gap: 12px;
+        transition: border-color 0.15s ease;
+      }
+      .mgmt-deck-row:hover {
+        border-color: var(--green);
+      }
+      .mgmt-deck-info {
+        flex: 1;
+        min-width: 0;
+      }
+      .mgmt-deck-title {
+        font-weight: 700;
+        font-size: 14px;
+        color: var(--ink);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .mgmt-deck-meta {
+        font-size: 11px;
+        color: var(--muted);
+        margin-top: 2px;
+        display: flex;
+        gap: 10px;
+      }
+      .mgmt-deck-actions {
+        display: flex;
+        gap: 6px;
+      }
+      .mgmt-log-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 10px 14px;
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        font-size: 12px;
+      }
+      body.dark-theme .auth-switch-btn.active {
+        background: #24352b;
+        color: #fff;
+      }
+      body.dark-theme .mgmt-deck-row,
+      body.dark-theme .mgmt-log-row {
+        background: #17221c;
+        border-color: #24352b;
+      }
+
+      @media (max-width: 900px) {
+        .testimonial-grid { grid-template-columns: 1fr; }
+        .match-grid { grid-template-columns: repeat(2, 1fr); }
+      }
+      @media (max-width: 768px) {
+        .hero-stats { grid-template-columns: repeat(2, 1fr); }
+        .pipeline-flow { grid-template-columns: 1fr; }
+      }
+
+      /* === NOWE ZAAWANSOWANE MODUŁY KOGNITYWNE === */
+      .socratic-trigger-btn {
+        background: #f0f7f3;
+        border: 1px solid #bce2cb;
+        color: var(--green);
+        border-radius: 8px;
+        padding: 6px 12px;
+        font-size: 11px;
+        font-weight: 700;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        transition: all 0.15s ease;
+      }
+      .socratic-trigger-btn:hover {
+        background: var(--mint);
+        border-color: var(--green);
+      }
+      .socratic-drawer {
+        margin-top: 12px;
+        background: #f7fbf8;
+        border: 1px solid #c7e5d2;
+        border-radius: 12px;
+        padding: 14px;
+        animation: fadeIn 0.2s ease-out;
+      }
+      .socratic-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 10px;
+        font-size: 12px;
+      }
+      .socratic-close-btn {
+        background: none;
+        border: none;
+        font-size: 14px;
+        color: var(--muted);
+        cursor: pointer;
+        padding: 2px 6px;
+      }
+      .socratic-chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-bottom: 10px;
+      }
+      .socratic-chip {
+        background: var(--white);
+        border: 1px solid var(--line);
+        border-radius: 20px;
+        padding: 5px 11px;
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--ink);
+        cursor: pointer;
+        transition: all 0.15s ease;
+      }
+      .socratic-chip:hover {
+        background: var(--mint);
+        border-color: var(--green);
+        color: var(--green);
+      }
+      .socratic-response {
+        background: var(--white);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 12px;
+        font-size: 13px;
+        line-height: 1.6;
+        color: var(--ink);
+        border-left: 3px solid var(--green);
+      }
+      .socratic-custom-box {
+        display: flex;
+        gap: 8px;
+        margin-top: 10px;
+      }
+      .socratic-input {
+        flex: 1;
+        font-size: 12px;
+        padding: 6px 10px;
+        margin: 0;
+        border-radius: 8px;
+      }
+
+      /* Type-in Active Recall Mode */
+      .type-container {
+        padding: 20px;
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: 16px;
+      }
+      .type-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 14px;
+      }
+      .type-card {
+        padding: 24px;
+        background: var(--white);
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        box-shadow: var(--shadow);
+        text-align: center;
+      }
+      body.dark-theme .type-container,
+      body.dark-theme .type-card {
+        background: #17221c;
+        border-color: #24352b;
+      }
+      .type-q-tag {
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 1px;
+        color: var(--green);
+        margin-bottom: 8px;
+      }
+      .type-question {
+        font-size: 18px;
+        font-weight: 700;
+        line-height: 1.45;
+        color: var(--ink);
+        margin: 0;
+      }
+      .type-feedback {
+        margin-top: 14px;
+        padding: 14px;
+        border-radius: 10px;
+        font-size: 13px;
+        line-height: 1.5;
+      }
+      .type-diff-user {
+        color: #dc2626;
+        text-decoration: line-through;
+        margin-right: 4px;
+      }
+      .type-diff-expected {
+        color: #16a34a;
+        font-weight: 700;
+      }
+
+      /* Heatmap Activity Grid */
+      .heatmap-grid {
+        display: grid;
+        grid-template-columns: repeat(14, 1fr);
+        gap: 4px;
+        margin-top: 6px;
+      }
+      .heatmap-cell {
+        aspect-ratio: 1;
+        border-radius: 4px;
+        background: #e2ece5;
+        border: 1px solid rgba(0,0,0,0.04);
+        transition: transform 0.15s, background-color 0.15s;
+        cursor: pointer;
+      }
+      .heatmap-cell:hover {
+        transform: scale(1.15);
+      }
+      .heatmap-cell.level-1 { background: #bbf7d0; }
+      .heatmap-cell.level-2 { background: #4ade80; }
+      .heatmap-cell.level-3 { background: #16a34a; }
+      body.dark-theme .heatmap-cell { background: #24352b; }
+      body.dark-theme .heatmap-cell.level-1 { background: #1e3a2b; }
+      body.dark-theme .heatmap-cell.level-2 { background: #276749; }
+      body.dark-theme .heatmap-cell.level-3 { background: #38a169; }
+
+      /* Concept Graph Tab */
+      .graph-wrapper {
+        position: relative;
+        width: 100%;
+        height: 380px;
+        background: var(--white);
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        overflow: hidden;
+        margin-top: 12px;
+      }
+      .graph-canvas {
+        width: 100%;
+        height: 100%;
+        display: block;
+        cursor: grab;
+      }
+      .graph-canvas:active {
+        cursor: grabbing;
+      }
+      .graph-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      .graph-tooltip {
+        position: absolute;
+        bottom: 12px;
+        left: 12px;
+        right: 12px;
+        background: rgba(36, 52, 44, 0.95);
+        color: white;
+        padding: 12px 16px;
+        border-radius: 10px;
+        font-size: 12px;
+        line-height: 1.5;
+        backdrop-filter: blur(8px);
+        pointer-events: auto;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+      }
+
+      /* Printable Sheet Grid & Media Print */
+      .print-sheet-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+        margin-top: 14px;
+        max-height: 60vh;
+        overflow-y: auto;
+        padding: 6px;
+      }
+      .print-card-box {
+        border: 1.5px dashed #b8c4b9;
+        border-radius: 8px;
+        padding: 14px;
+        background: #fafdfa;
+        font-size: 12px;
+      }
+      .print-card-q {
+        font-weight: 700;
+        margin-bottom: 8px;
+        color: var(--ink);
+      }
+      .print-card-a {
+        color: var(--muted);
+        border-top: 1px solid #e8ece7;
+        padding-top: 6px;
+      }
+      @media print {
+        body * {
+          visibility: hidden;
+        }
+        #printModal, #printModal * {
+          visibility: visible;
+        }
+        #printModal {
+          position: absolute;
+          left: 0;
+          top: 0;
+          width: 100%;
+          border: none;
+          box-shadow: none;
+          padding: 0;
+        }
+        .no-print {
+          display: none !important;
+        }
+        .print-sheet-grid {
+          max-height: none;
+          overflow: visible;
+          grid-template-columns: repeat(2, 1fr);
+          gap: 16px;
+        }
+        .print-card-box {
+          page-break-inside: avoid;
+          border: 1px dashed black;
+          color: black;
+          background: white;
+        }
+      }
+
+      /* Toast Notification Stack */
+      .toast-container {
+        position: fixed;
+        bottom: 24px;
+        right: 24px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        z-index: 100000;
+        pointer-events: none;
+        max-width: min(420px, calc(100vw - 32px));
+      }
+      .toast {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 16px;
+        background: var(--white);
+        color: var(--ink);
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+        pointer-events: auto;
+        font-size: 13px;
+        font-weight: 500;
+        line-height: 1.45;
+        opacity: 0;
+        transform: translateY(16px) scale(0.96);
+        transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+      .toast.is-visible {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+      .toast.is-leaving {
+        opacity: 0;
+        transform: translateY(10px) scale(0.92);
+      }
+      .toast-icon {
+        font-size: 16px;
+        flex-shrink: 0;
+      }
+      .toast-body {
+        flex: 1;
+      }
+      .toast-close {
+        background: none;
+        border: none;
+        color: var(--muted);
+        font-size: 14px;
+        cursor: pointer;
+        padding: 2px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: color 0.15s;
+      }
+      .toast-close:hover {
+        color: var(--ink);
+      }
+      .toast-success {
+        border-left: 4px solid var(--green);
+      }
+      .toast-error {
+        border-left: 4px solid #dc2626;
+      }
+      .toast-info {
+        border-left: 4px solid #2563eb;
+      }
+      body.dark-theme .toast {
+        background: #17221c;
+        border-color: #24352b;
+        color: #f1f7f3;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+      }
+
+      /* Cookie Consent Banner */
+      .cookie-banner {
+        position: fixed;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%) translateY(120%);
+        width: min(860px, calc(100vw - 32px));
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        padding: 18px 24px;
+        box-shadow: 0 16px 48px rgba(0, 0, 0, 0.15);
+        z-index: 99990;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+        transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
+        opacity: 0;
+      }
+      .cookie-banner.is-visible {
+        transform: translateX(-50%) translateY(0);
+        opacity: 1;
+      }
+      body.dark-theme .cookie-banner {
+        background: rgba(23, 34, 28, 0.95);
+        border-color: #24352b;
+        box-shadow: 0 16px 48px rgba(0, 0, 0, 0.45);
+      }
+      .cookie-content {
+        flex: 1;
+      }
+      .cookie-title {
+        font-weight: 750;
+        font-size: 15px;
+        margin-bottom: 4px;
+        color: var(--ink);
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .cookie-text {
+        font-size: 12.5px;
+        color: var(--muted);
+        line-height: 1.5;
+        margin: 0;
+      }
+      .cookie-actions {
+        display: flex;
+        gap: 8px;
+        flex-shrink: 0;
+        align-items: center;
+        flex-wrap: wrap;
+      }
+      @media (max-width: 680px) {
+        .cookie-banner {
+          flex-direction: column;
+          align-items: stretch;
+          padding: 16px;
+          bottom: 12px;
+        }
+        .cookie-actions {
+          justify-content: flex-end;
+        }
+      }
+
+      /* Keyboard Shortcuts Table */
+      .shortcuts-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 10px;
+        margin-top: 14px;
+      }
+      .shortcut-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 14px;
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        gap: 10px;
+      }
+      body.dark-theme .shortcut-row {
+        background: #17221c;
+        border-color: #24352b;
+      }
+      .shortcut-desc {
+        font-size: 12.5px;
+        color: var(--ink);
+        font-weight: 500;
+      }
+      .shortcut-kbd-group {
+        display: flex;
+        gap: 4px;
+        align-items: center;
+      }
+      kbd {
+        display: inline-block;
+        padding: 3px 7px;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+        font-size: 11px;
+        font-weight: 700;
+        line-height: 1;
+        color: var(--ink);
+        background: var(--white);
+        border: 1px solid var(--line);
+        border-radius: 5px;
+        box-shadow: 0 2px 0 rgba(0,0,0,0.08);
+      }
+      body.dark-theme kbd {
+        background: #0f1712;
+        border-color: #24352b;
+        color: #f1f7f3;
+        box-shadow: 0 2px 0 rgba(0,0,0,0.3);
+      }
+
+      /* Newsletter Section */
+      .newsletter-card {
+        background: linear-gradient(135deg, rgba(16, 120, 67, 0.06) 0%, rgba(16, 120, 67, 0.02) 100%);
+        border: 1px solid rgba(16, 120, 67, 0.2);
+        border-radius: 16px;
+        padding: 28px;
+        margin-bottom: 28px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 24px;
+      }
+      body.dark-theme .newsletter-card {
+        background: linear-gradient(135deg, rgba(16, 120, 67, 0.15) 0%, rgba(16, 120, 67, 0.04) 100%);
+        border-color: rgba(16, 120, 67, 0.3);
+      }
+      @media (max-width: 820px) {
+        .newsletter-card {
+          flex-direction: column;
+          align-items: stretch;
+          padding: 20px;
+        }
+      }
+      .newsletter-form {
+        display: flex;
+        gap: 8px;
+        max-width: 440px;
+        width: 100%;
+      }
+      @media (max-width: 520px) {
+        .newsletter-form {
+          flex-direction: column;
+        }
+      }
+      .newsletter-feedback {
+        margin-top: 8px;
+        font-size: 12.5px;
+        font-weight: 600;
+        color: var(--green);
+      }
+
+      /* Export Format Options */
+      .export-format-tile {
+        display: flex;
+        align-items: flex-start;
+        gap: 14px;
+        padding: 14px 18px;
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        cursor: pointer;
+        text-align: left;
+        width: 100%;
+        transition: all 0.15s ease;
+      }
+      .export-format-tile:hover {
+        background: var(--white);
+        border-color: var(--green);
+        box-shadow: 0 4px 12px rgba(16, 120, 67, 0.08);
+        transform: translateY(-1px);
+      }
+      body.dark-theme .export-format-tile {
+        background: #17221c;
+        border-color: #24352b;
+      }
+      body.dark-theme .export-format-tile:hover {
+        background: #1e3025;
+        border-color: var(--green);
+      }
+      .export-tile-icon {
+        font-size: 24px;
+        line-height: 1;
+        flex-shrink: 0;
+      }
+      .export-tile-title {
+        font-weight: 700;
+        font-size: 14px;
+        color: var(--ink);
+        margin-bottom: 2px;
+      }
+      .export-tile-desc {
+        font-size: 12px;
+        color: var(--muted);
+      }
+    </style>
+    <script src="app.js" defer></script>
+  </head>
+  <body>
+    <svg
+      class="icon-defs"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden="true"
+    >
+      <defs>
+        <symbol id="i-arrow" viewBox="0 0 24 24">
+          <path d="M5 12h14m-6-6 6 6-6 6" />
+        </symbol>
+        <symbol id="i-left" viewBox="0 0 24 24">
+          <path d="M19 12H5m6-6-6 6 6 6" />
+        </symbol>
+        <symbol id="i-check" viewBox="0 0 24 24">
+          <path d="m5 12 4 4L19 6" />
+        </symbol>
+        <symbol id="i-shield" viewBox="0 0 24 24">
+          <path d="m12 3 8 3v6c0 5-8 9-8 9s-8-4-8-9V6z" />
+          <path d="m8 12 3 3 5-6" />
+        </symbol>
+        <symbol id="i-cards" viewBox="0 0 24 24">
+          <rect x="7" y="6" width="14" height="15" rx="2" />
+          <path d="M4 17H3V4a2 2 0 0 1 2-2h12v1M11 11h6m-6 4h4" />
+        </symbol>
+        <symbol id="i-spark" viewBox="0 0 24 24">
+          <path
+            d="m12 3 2.7 6.3L21 12l-6.3 2.7L12 21l-2.7-6.3L3 12l6.3-2.7zM20 2v4m-2-2h4"
+          />
+        </symbol>
+        <symbol id="i-brain" viewBox="0 0 24 24">
+          <path
+            d="M12 5c-2-4-7-2-7 1-4 1-4 6-1 7-2 4 2 7 5 6 1 3 3 2 3 0V5Zm0 0c2-4 7-2 7 1 4 1 4 6 1 7 2 4-2 7-5 6-1 3-3 2-3 0M7 8c0 2 2 3 5 3m5-3c0 2-2 3-5 3m-5 4c2-1 3 0 3 2m7-2c-2-1-3 0-3 2"
+          />
+        </symbol>
+        <symbol id="i-focus" viewBox="0 0 24 24">
+          <path
+            d="M8 3H5a2 2 0 0 0-2 2v3m13-5h3a2 2 0 0 1 2 2v3M3 16v3a2 2 0 0 0 2 2h3m8 0h3a2 2 0 0 0 2-2v-3"
+          />
+          <circle cx="12" cy="12" r="4" />
+        </symbol>
+        <symbol id="i-quiz" viewBox="0 0 24 24">
+          <path d="m3 6 2 2 3-4m3 3h10M3 13h4m4 0h10M3 19h4m4 0h10" />
+        </symbol>
+        <symbol id="i-lock" viewBox="0 0 24 24">
+          <rect x="5" y="10" width="14" height="11" rx="2" />
+          <path d="M8 10V7a4 4 0 0 1 8 0v3m-4 5v2" />
+        </symbol>
+        <symbol id="i-device" viewBox="0 0 24 24">
+          <rect x="3" y="3" width="18" height="13" rx="2" />
+          <path d="M8 21h8m-4-5v5" />
+        </symbol>
+        <symbol id="i-flip" viewBox="0 0 24 24">
+          <path
+            d="M4 9a8 8 0 0 1 14-4l3 3m0-6v6h-6M20 15A8 8 0 0 1 6 19l-3-3m0 6v-6h6"
+          />
+        </symbol>
+        <symbol id="i-chat" viewBox="0 0 24 24">
+          <path d="M21 11a9 9 0 0 1-9 9H4l-2 2V11a9 9 0 1 1 19 0Z" />
+          <path d="M7 9h10m-10 5h6" />
+        </symbol>
+        <symbol id="i-close" viewBox="0 0 24 24">
+          <path d="m6 6 12 12M6 18 18 6" />
+        </symbol>
+        <symbol id="i-menu" viewBox="0 0 24 24">
+          <path d="M4 6h16M4 12h16M4 18h16" />
+        </symbol>
+      </defs>
+    </svg>
+    <a class="skip" href="#main">Przejdź do treści</a>
+    <header class="nav-wrap">
+      <nav class="navbar container" aria-label="Nawigacja główna">
+        <a class="brand" href="#" aria-label="Tulis Learn — strona główna">
+          <span class="brand-mark" aria-hidden="true">T</span>Tulis Learn
+          <span class="badge-plan" style="margin-left: 4px;">AI</span>
+        </a>
+        <div id="navLinks" class="nav-links">
+          <a href="#aplikacja" data-i18n="nav_app">Aplikacja</a>
+          <a href="#funkcje" data-i18n="nav_features">Funkcje</a>
+          <a href="#opinie" data-i18n="nav_reviews">Opinie</a>
+          <a href="#plany" data-i18n="nav_plans">Cennik</a>
+          <a href="#faq" data-i18n="nav_faq">FAQ</a>
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <button type="button" class="theme-toggle-btn" id="navAiSettingsBtn" data-open="aiSettingsModal" aria-label="Konfiguracja modeli AI" title="Konfiguracja modeli AI & API" style="width: auto; padding: 0 10px; font-size: 11px; gap: 4px; display: inline-flex; align-items: center; font-weight: 600;">⚡ Gemini 3.8</button>
+          <button type="button" class="theme-toggle-btn" id="soundToggleBtn" aria-label="Włącz/wyłącz efekty dźwiękowe" title="Efekty dźwiękowe (Wycisz/Włącz)">🔊</button>
+          <button type="button" class="theme-toggle-btn" id="themeToggleBtn" aria-label="Przełącz motyw ciemny/jasny" title="Przełącz motyw ciemny/jasny">🌙</button>
+          <button type="button" class="theme-toggle-btn" id="navShortcutsBtn" data-open="shortcutsModal" aria-label="Skróty klawiszowe (?)" title="Skróty klawiszowe (?)">⌨️</button>
+          <div class="lang-switcher" role="group" aria-label="Wybór języka / Language">
+            <button class="lang-btn active" id="langPl" type="button">🇵🇱 PL</button>
+            <button class="lang-btn" id="langEn" type="button">🇬🇧 EN</button>
+          </div>
+        </div>
+        <div class="nav-auth-group">
+          <div id="navGuestGroup" style="display: flex; gap: 8px; align-items: center;">
+            <button class="btn-outline" id="navLoginBtn" type="button" data-open="authDialog" data-i18n="nav_login">
+              Zaloguj się
+            </button>
+            <a class="btn btn-primary" href="#aplikacja" data-i18n="nav_start_free">
+              Zacznij za darmo
+              <svg class="icon" aria-hidden="true"><use href="#i-arrow" /></svg>
+            </a>
+          </div>
+          <div id="navUserGroup" style="display: none; align-items: center; gap: 8px;">
+            <button type="button" class="btn btn-sm btn-light" id="navMgmtBtn" data-open="managementModal" style="display: flex; align-items: center; gap: 6px;">
+              <span class="user-avatar-sm" id="navUserAvatar" style="width: 22px; height: 22px; font-size: 10px;">TT</span>
+              <span id="navUserName" style="font-weight: 600;">Tomasz Tulis</span>
+              <span class="badge-plan" style="font-size: 10px; padding: 1px 5px;">PRO</span>
+            </button>
+            <button type="button" class="btn btn-sm btn-outline" id="navLogoutBtn" title="Wyloguj się" style="padding: 4px 8px; font-size: 12px;">🚪</button>
+          </div>
+        </div>
+        <button
+          class="menu-toggle"
+          id="menuToggle"
+          type="button"
+          aria-label="Otwórz menu"
+          aria-expanded="false"
+          aria-controls="navLinks"
+        >
+          <svg class="icon" aria-hidden="true"><use href="#i-menu" /></svg>
+        </button>
+      </nav>
+    </header>
+    <main id="main" class="container">
+      <section class="hero" aria-labelledby="heroTitle">
+        <div>
+          <div class="hero-badge">
+            <span class="dot" aria-hidden="true"></span><span data-i18n="hero_badge">Platforma Edukacyjna AI · Nowa Generacja</span>
+          </div>
+          <h1 id="heroTitle">
+            <span data-i18n="hero_h1_1">Ucz się 3x szybciej.</span><br /><span data-i18n="hero_h1_2">Pamiętaj na zawsze.</span><br /><span class="highlight" data-i18n="hero_h1_3"
+              >Zasilane przez AI.</span
+            >
+          </h1>
+          <p class="hero-description" data-i18n="hero_desc">
+            Przekształć własne notatki, podręczniki i wykłady w interaktywne fiszki z algorytmem FSRS, quizy oraz gry pamięciowe. Ucz się aktywnie i bez wysiłku.
+          </p>
+          <div class="hero-actions">
+            <a class="btn btn-primary" href="#aplikacja" id="heroTryBtn" data-i18n="hero_try_btn"
+              >Rozpocznij naukę bezpłatnie
+              <svg class="icon" aria-hidden="true">
+                <use href="#i-arrow" /></svg></a
+            ><button
+              class="btn btn-light"
+              type="button"
+              data-open="authDialog"
+              data-i18n="hero_login_btn"
+            >
+              Zaloguj się do platformy
+            </button>
+          </div>
+          <p class="micro">
+            <svg class="icon" aria-hidden="true"><use href="#i-check" /></svg
+            ><span data-i18n="hero_micro">Brak wymogu karty. Gotowe do nauki w kilka sekund.</span>
+          </p>
+          <div class="hero-stats">
+            <div class="stat-card">
+              <div class="stat-number">14,800+</div>
+              <div class="stat-label" data-i18n="stat_cards">Fiszek wygenerowanych</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-number">98.4%</div>
+              <div class="stat-label" data-i18n="stat_retention">Zdawalność egzaminów</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-number">&lt; 0.8s</div>
+              <div class="stat-label" data-i18n="stat_speed">Czas ekstrakcji AI</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-number">4.9 / 5</div>
+              <div class="stat-label" data-i18n="stat_rating">Średnia ocen studentów</div>
+            </div>
+          </div>
+        </div>
+        <div
+          class="hero-visual"
+          aria-label="Podgląd fiszki: Na czym polega aktywne przypominanie?"
+        >
+          <div class="hero-grid" aria-hidden="true"></div>
+          <div class="preview" aria-hidden="true">
+            <div class="preview-top">
+              <span>Twój mały krok do dużej wiedzy</span
+              ><span class="preview-dots"><i></i><i></i><i></i></span>
+            </div>
+            <div class="preview-card">
+              <div class="eyebrow">METODY NAUKI · FISZKA 01</div>
+              <h3>Na czym polega aktywne przypominanie?</h3>
+              <p>Najpierw pomyśl. Potem sprawdź odpowiedź.</p>
+            </div>
+            <div class="preview-bottom">
+              <span>01 / 04</span
+              ><span class="preview-arrows"
+                ><span
+                  ><svg class="icon"><use href="#i-left" /></svg></span
+                ><span
+                  ><svg class="icon"><use href="#i-arrow" /></svg></span
+              ></span>
+            </div>
+          </div>
+          <div class="floating-label label-top" aria-hidden="true">
+            <svg class="icon"><use href="#i-spark" /></svg>Od notatek do „już
+            rozumiem”
+          </div>
+          <div class="floating-label label-bottom" aria-hidden="true">
+            <svg class="icon"><use href="#i-shield" /></svg>
+            <div>
+              Twoje notatki są Twoje.<small
+                >Przetwarzane lokalnie na urządzeniu</small
+              >
+            </div>
+          </div>
+        </div>
+      </section>
+      <div class="hero-strip" aria-label="Kluczowe zalety platformy">
+        <span
+          ><svg class="icon" aria-hidden="true"><use href="#i-brain" /></svg
+          >Nauka przez aktywne przypominanie</span
+        ><span
+          ><svg class="icon" aria-hidden="true"><use href="#i-lock" /></svg
+          >Poufność i bezpieczeństwo danych</span
+        ><span
+          ><svg class="icon" aria-hidden="true"><use href="#i-device" /></svg
+          >Gotowe do nauki w kilka sekund</span
+        >
+      </div>
+      <section id="aplikacja" class="section" aria-labelledby="demoTitle">
+        <div class="section-heading">
+          <div>
+            <div class="eyebrow">
+              <span class="dot" aria-hidden="true"></span><span data-i18n="workspace_eyebrow">INTERAKTYWNY WARSZTAT NAUKI</span>
+            </div>
+            <h2 id="demoTitle" data-i18n="workspace_title">Mniej teorii. Więcej pamiętania.</h2>
+          </div>
+          <p class="section-description" data-i18n="workspace_desc">
+            Wybierz gotowy zestaw lub wklej dowolny materiał. Silnik AI
+            błyskawicznie wygeneruje fiszki, quiz oraz grę pamięciową.
+          </p>
+        </div>
+        <div class="demo-shell">
+          <div class="user-dashboard-strip">
+            <div class="dash-stats-group">
+              <div class="dash-stat">🔥 <strong id="streakCount">5</strong> <span data-i18n="dash_streak">dni serii</span></div>
+              <div class="dash-stat">📚 <strong id="deckCount">3</strong> <span data-i18n="dash_decks">zestawy</span></div>
+              <div class="dash-stat" data-open="fsrsAnalyticsModal" role="button" tabindex="0" style="cursor: pointer;" title="Analityka pamięci FSRS">🎯 <strong id="masteryRate">94.2%</strong> <span data-i18n="dash_retention">retencji FSRS</span> <span style="font-size: 11px; opacity: 0.7;">↗</span></div>
+            </div>
+            <div class="dash-user-pill" id="dashUserPill" data-open="managementModal" role="button" tabindex="0" title="Otwórz panel zarządzania i talii" style="cursor: pointer;">
+              <span class="user-avatar-sm" id="dashUserAvatar">TT</span>
+              <span id="dashUserName">Tomasz Tulis</span>
+              <span class="badge-plan" id="dashUserBadge">PRO</span>
+            </div>
+          </div>
+          <div class="demo-grid">
+            <div class="editor">
+              <div class="deck-library-bar">
+                <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                  <label for="deckSelector" style="font-size: 12px; font-weight: 700; color: var(--muted);" data-i18n="deck_sel_label">Talia:</label>
+                  <select id="deckSelector" class="deck-select">
+                    <option value="bio">🌿 Biologia & Medycyna</option>
+                    <option value="cs">⚡ Informatyka & AI</option>
+                    <option value="law">⚖️ Prawo cywilne & Rzymskie</option>
+                    <option value="custom">📝 Mój własny zestaw (zapisany)</option>
+                  </select>
+                </div>
+                <div class="deck-tools">
+                  <button type="button" class="btn btn-sm btn-light" id="importFileBtn" data-i18n="btn_import">📥 Wgraj plik</button>
+                  <input type="file" id="fileInput" accept=".txt,.csv" style="display: none;" />
+                  <button type="button" class="btn btn-sm btn-light" id="saveDeckBtn" data-i18n="btn_save">💾 Zapisz</button>
+                  <button type="button" class="btn btn-sm btn-light" id="exportDeckBtn" data-open="exportModal" data-i18n="btn_export">📤 Eksportuj</button>
+                  <button type="button" class="btn btn-sm btn-light" id="printDeckBtn" data-open="printModal" data-i18n="btn_print">🖨️ Drukuj (A4)</button>
+                </div>
+              </div>
+              <div class="panel-label">
+                <label for="notes"
+                  ><span class="step-number">01 / </span><span data-i18n="editor_label">Twoje materiały</span></label
+                ><button id="loadExample" class="text-button" type="button" data-i18n="btn_load_example">
+                  Wczytaj domyślne
+                </button>
+              </div>
+              <textarea
+                id="notes"
+                maxlength="20000"
+                spellcheck="false"
+                aria-describedby="notesHelp message"
+              >
+Na czym polega aktywne przypominanie? | Na odtwarzaniu wiedzy z pamięci bez zaglądania do materiałów.
+Co oznacza fotosynteza? | Wytwarzanie związków organicznych z użyciem energii światła.
+Które organellum odpowiada za fotosyntezę? | Chloroplast.
+Jaki gaz roślina pobiera podczas fotosyntezy? | Dwutlenek węgla.</textarea>
+              <p class="input-help" id="notesHelp" data-i18n="notes_help">
+                Wklej notatki (format: <strong>pytanie | odpowiedź</strong> lub surowy tekst) i kliknij ekstrakcję AI.
+              </p>
+              <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px;">
+                <button class="btn btn-primary" id="create" type="button" data-i18n="btn_create">
+                  <svg class="icon" aria-hidden="true">
+                    <use href="#i-spark" /></svg
+                  ><span>Kompiluj fiszki</span>
+                </button>
+                <button class="ai-simulate-btn" id="simulateClaudeBtn" type="button" data-i18n="btn_ai_simulate">
+                  <svg class="icon" aria-hidden="true">
+                    <use href="#i-spark" /></svg
+                  ><span id="simulateClaudeBtnText">✨ Inteligentna ekstrakcja AI</span>
+                </button>
+              </div>
+              <p
+                class="form-message"
+                id="message"
+                role="status"
+                aria-live="polite"
+              ></p>
+            </div>
+            <div class="study">
+              <div class="study-top">
+                <span class="study-title"
+                  ><span class="step-number">02 / </span><span data-i18n="study_title">Przestrzeń powtórki</span></span
+                >
+                <div class="tabs" role="tablist" aria-label="Tryb nauki">
+                  <button
+                    class="tab"
+                    id="cardMode"
+                    type="button"
+                    role="tab"
+                    aria-selected="true"
+                    aria-controls="cards"
+                    data-i18n="tab_cards"
+                  >
+                    <svg class="icon" aria-hidden="true">
+                      <use href="#i-cards" /></svg
+                    >Fiszki</button
+                  ><button
+                    class="tab"
+                    id="quizMode"
+                    type="button"
+                    role="tab"
+                    aria-selected="false"
+                    aria-controls="quiz"
+                    tabindex="-1"
+                    data-i18n="tab_quiz"
+                  >
+                    <svg class="icon" aria-hidden="true">
+                      <use href="#i-quiz" /></svg
+                    >Quiz</button
+                  ><button
+                    class="tab"
+                    id="matchMode"
+                    type="button"
+                    role="tab"
+                    aria-selected="false"
+                    aria-controls="match"
+                    tabindex="-1"
+                    data-i18n="tab_match"
+                  >
+                    <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z"/></svg
+                    >Dopasowywanie
+                  </button
+                  ><button
+                    class="tab"
+                    id="typeMode"
+                    type="button"
+                    role="tab"
+                    aria-selected="false"
+                    aria-controls="typeRecall"
+                    tabindex="-1"
+                    data-i18n="tab_type"
+                  >
+                    <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M4 17l6-6-6-6M12 19h8" stroke="currentColor" stroke-width="2" fill="none"/></svg
+                    >Wpisywanie
+                  </button
+                  ><button
+                    class="tab"
+                    id="graphMode"
+                    type="button"
+                    role="tab"
+                    aria-selected="false"
+                    aria-controls="graph"
+                    tabindex="-1"
+                    data-i18n="tab_graph"
+                  >
+                    <svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><circle cx="6" cy="6" r="3"/><circle cx="18" cy="6" r="3"/><circle cx="12" cy="18" r="3"/><path d="M8 8l3 7M16 8l-3 7M9 6h6"/></svg
+                    >Graf pojęć
+                  </button>
+                </div>
+              </div>
+              <div id="cards" role="tabpanel" aria-labelledby="cardMode">
+                <button
+                  class="flashcard"
+                  id="flash"
+                  type="button"
+                  aria-pressed="false"
+                >
+                  <span class="card-tag" id="cardTag">PYTANIE</span
+                  ><span class="card-text" id="cardText"></span
+                  ><span class="card-hint"
+                    ><svg class="icon" aria-hidden="true">
+                      <use href="#i-flip" /></svg
+                    ><span id="cardHint"
+                      >Kliknij, aby odsłonić odpowiedź</span
+                    ></span
+                  >
+                </button>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 6px;">
+                  <button class="socratic-trigger-btn" id="socraticBtn" type="button" title="Zapytaj asystenta AI o to pojęcie" aria-expanded="false" data-i18n="socratic_btn">
+                    💡 Asystent Sokratejski AI
+                  </button>
+                  <button class="tts-btn" id="ttsBtn" type="button" title="Odsłuchaj wymowę (Audio TTS)" aria-label="Odsłuchaj treść fiszki" data-i18n="tts_btn">
+                    🔊 Odsłuchaj
+                  </button>
+                </div>
+                <div class="socratic-drawer" id="socraticDrawer" style="display: none;">
+                  <div class="socratic-header">
+                    <span style="font-weight: 650; color: var(--green);">🧠 Metoda Sokratejska & Feynman</span>
+                    <button class="socratic-close-btn" id="socraticCloseBtn" type="button" aria-label="Zamknij">✕</button>
+                  </div>
+                  <div class="socratic-chips">
+                    <button class="socratic-chip" data-prompt="feynman" type="button" data-i18n="socratic_feynman">👶 Wyjaśnij jak 5-latkowi</button>
+                    <button class="socratic-chip" data-prompt="mnemonic" type="button" data-i18n="socratic_mnemonic">🧠 Mnemotechnika / Skojarzenie</button>
+                    <button class="socratic-chip" data-prompt="socratic" type="button" data-i18n="socratic_question">❓ Pytanie sokratejskie</button>
+                    <button class="socratic-chip" data-prompt="example" type="button" data-i18n="socratic_example">🌍 Przykład z życia</button>
+                  </div>
+                  <div class="socratic-custom-box">
+                    <input type="text" id="socraticCustomInput" class="field-input socratic-input" placeholder="Zadaj własne pytanie asystentowi AI..." data-i18n-placeholder="socratic_custom_ph" />
+                    <button type="button" id="socraticSendBtn" class="btn btn-sm btn-primary" data-i18n="socratic_send_btn">Zapytaj 🚀</button>
+                  </div>
+                  <div class="socratic-response" id="socraticResponse" style="display: none;"></div>
+                </div>
+                <div class="card-navigation">
+                  <button class="btn btn-light" id="prev" type="button" data-i18n="btn_prev">
+                    <svg class="icon" aria-hidden="true">
+                      <use href="#i-left" /></svg
+                    >Poprzednia</button
+                  ><span class="counter" id="counter" role="status"></span
+                  ><button class="btn btn-light" id="shuffleBtn" type="button" title="Przetasuj kolejność fiszek" data-i18n="btn_shuffle">
+                    🔀 Przetasuj
+                  </button
+                  ><button class="btn btn-light" id="next" type="button" data-i18n="btn_next">
+                    Następna<svg class="icon" aria-hidden="true">
+                      <use href="#i-arrow" />
+                    </svg>
+                  </button>
+                </div>
+                <div class="srs-panel" id="srsPanel" style="display: none;">
+                  <div class="srs-title">
+                    <span data-i18n="srs_title">Powtórka interwałowa (Algorytm FSRS):</span>
+                    <span id="srsBadge" style="font-weight: 600; color: var(--green);"></span>
+                  </div>
+                  <div class="srs-actions">
+                    <button type="button" class="srs-btn srs-hard" id="srsHardBtn" data-srs="hard" data-i18n="srs_hard">Trudne (+1 d)</button>
+                    <button type="button" class="srs-btn srs-med" id="srsGoodBtn" data-srs="good" data-i18n="srs_med">Dobre (+3 d)</button>
+                    <button type="button" class="srs-btn srs-easy" id="srsEasyBtn" data-srs="easy" data-i18n="srs_easy">Łatwe (+7 d)</button>
+                  </div>
+                </div>
+                <div class="progress-track" aria-hidden="true">
+                  <div class="progress-fill" id="cardProgress"></div>
+                </div>
+                <div class="shortcuts-hint" aria-hidden="true">
+                  <span><kbd>Spacja</kbd> Odwróć</span>
+                  <span><kbd>←</kbd> <kbd>→</kbd> Nawigacja</span>
+                  <span><kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd> FSRS Ocena</span>
+                </div>
+                <p class="study-help" data-i18n="study_help">
+                  Przypomnij sobie odpowiedź, zanim odwrócisz kartę.
+                </p>
+              </div>
+              <div id="quiz" role="tabpanel" aria-labelledby="quizMode" hidden>
+                <div id="quizRound">
+                  <div class="quiz-top">
+                    <span id="quizCounter"></span><span id="score"></span>
+                  </div>
+                  <h3 class="quiz-question" id="question" tabindex="-1"></h3>
+                  <div
+                    class="quiz-options"
+                    id="options"
+                    role="group"
+                    aria-labelledby="question"
+                  ></div>
+                  <p
+                    id="feedback"
+                    class="quiz-feedback"
+                    role="status"
+                    aria-live="polite"
+                  ></p>
+                  <button
+                    class="btn btn-primary quiz-next"
+                    id="nextQuestion"
+                    type="button"
+                    disabled
+                  >
+                    <span id="nextQuestionLabel">Następne pytanie</span
+                    ><svg class="icon" aria-hidden="true">
+                      <use href="#i-arrow" />
+                    </svg>
+                  </button>
+                </div>
+                <div id="quizResult" class="quiz-result" tabindex="-1" hidden>
+                  <div class="result-icon">
+                    <svg class="icon" aria-hidden="true">
+                      <use href="#i-check" />
+                    </svg>
+                  </div>
+                  <h3 data-i18n="quiz_done_h">Powtórka zakończona!</h3>
+                  <div id="resultValue" class="result-value"></div>
+                  <p id="resultText"></p>
+                  <button
+                    class="btn btn-primary"
+                    id="restartQuiz"
+                    type="button"
+                    data-i18n="quiz_restart"
+                  >
+                    <svg class="icon" aria-hidden="true">
+                      <use href="#i-flip" /></svg
+                    >Spróbuj jeszcze raz
+                  </button>
+                </div>
+              </div>
+              <div id="match" role="tabpanel" aria-labelledby="matchMode" hidden>
+                <div class="match-header">
+                  <span>⏱️ Czas: <span id="matchTimer">0.0</span>s</span>
+                  <span>Dopasowano: <span id="matchScore">0</span> / <span id="matchTotal">4</span> par</span>
+                </div>
+                <div class="match-grid" id="matchGrid"></div>
+                <div id="matchWin" style="display: none; text-align: center; padding: 28px 12px;">
+                  <div style="font-size: 38px; margin-bottom: 8px;">🎉</div>
+                  <h3 data-i18n="match_win_h">Wszystkie pojęcia połączone!</h3>
+                  <p id="matchWinText" style="margin: 8px 0 16px; color: var(--muted);"></p>
+                  <button class="btn btn-primary" id="restartMatch" type="button" data-i18n="match_restart">
+                    <svg class="icon" aria-hidden="true"><use href="#i-flip" /></svg>Zagraj ponownie
+                  </button>
+                </div>
+              </div>
+              <div id="graph" role="tabpanel" aria-labelledby="graphMode" hidden>
+                <div class="graph-header">
+                  <span style="font-weight: 600; font-size: 13px;" data-i18n="graph_title">🕸️ Semantyczna mapa pojęć i powiązań</span>
+                  <button class="btn btn-light" id="resetGraphBtn" type="button" style="padding: 4px 10px; font-size: 12px;" data-i18n="graph_reset">↺ Wycentruj</button>
+                </div>
+                <div class="graph-wrapper">
+                  <canvas id="graphCanvas" class="graph-canvas" width="600" height="340"></canvas>
+                  <div class="graph-tooltip" id="graphTooltip" style="display: none;"></div>
+                </div>
+                <p class="study-help" style="margin-top: 8px;" data-i18n="graph_help">
+                  Wizualizacja zależności pojęciowych w talii. Przeciągaj węzły, kliknij dwukrotnie, aby przejść do fiszki.
+                </p>
+              </div>
+              <div id="typeRecall" role="tabpanel" aria-labelledby="typeMode" hidden>
+                <div class="type-container">
+                  <div class="type-header">
+                    <span class="step-number" id="typeCounter">01 / 04</span>
+                    <span class="badge-plan" style="font-size: 11px;">ACTIVE RECALL FSRS</span>
+                  </div>
+                  <div class="type-card">
+                    <div class="type-q-tag">PYTANIE</div>
+                    <h3 class="type-question" id="typeQuestion">...</h3>
+                  </div>
+                  <form id="typeForm" onsubmit="event.preventDefault();" style="margin-top: 14px;">
+                    <label for="typeInput" class="field-label" data-i18n="type_label">Wpisz odpowiedź z pamięci (Active Recall):</label>
+                    <input type="text" id="typeInput" class="field-input" placeholder="Wpisz definicję..." autocomplete="off" />
+                    <div style="display: flex; gap: 8px; margin-top: 10px;">
+                      <button class="btn btn-primary" id="typeCheckBtn" type="submit" data-i18n="type_btn_check">Sprawdź odpowiedź (Enter)</button>
+                      <button class="btn btn-light" id="typeSkipBtn" type="button" data-i18n="type_btn_skip">Pokaż odpowiedź</button>
+                    </div>
+                  </form>
+                  <div id="typeFeedback" class="type-feedback" style="display: none;"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section
+        id="funkcje"
+        class="section features"
+        aria-labelledby="featuresTitle"
+      >
+        <div class="section-heading">
+          <div>
+            <div class="eyebrow">ZAPROJEKTOWANE DO NAUKI</div>
+            <h2 id="featuresTitle">Skup się na tym, co zostaje.</h2>
+          </div>
+          <p class="section-description">
+            Cztery proste rzeczy, które pomagają<br />zrobić z notatek użytek.
+          </p>
+        </div>
+        <div class="feature-grid">
+          <article class="feature-card">
+            <div class="feature-icon">
+              <svg class="icon" aria-hidden="true"><use href="#i-brain" /></svg>
+            </div>
+            <h3>Aktywne przypominanie</h3>
+            <p>
+              Wyciągaj wiedzę z pamięci. Fiszki zachęcają do samodzielnej
+              odpowiedzi, zanim ją sprawdzisz.
+            </p>
+            <span class="feature-foot">Pomyśl → odsłoń → zapamiętaj</span>
+          </article>
+          <article class="feature-card">
+            <div class="feature-icon">
+              <svg class="icon" aria-hidden="true"><use href="#i-quiz" /></svg>
+            </div>
+            <h3>Quizy w locie</h3>
+            <p>
+              Pytania z Twojego zestawu, losowe warianty odpowiedzi i wynik. Od
+              razu wiesz, co warto powtórzyć.
+            </p>
+            <span class="feature-foot">Sprawdź się na własnych pojęciach</span>
+          </article>
+          <article class="feature-card">
+            <div class="feature-icon">
+              <svg class="icon" aria-hidden="true"><use href="#i-focus" /></svg>
+            </div>
+            <h3>Zero rozpraszaczy</h3>
+            <p>
+              Jedna karta, jedno pytanie, Twój czas. Bez reklam, rankingów i
+              zbędnych powiadomień.
+            </p>
+            <span class="feature-foot">Przestrzeń na koncentrację</span>
+          </article>
+          <article class="feature-card">
+            <div class="feature-icon">
+              <svg class="icon" aria-hidden="true">
+                <use href="#i-shield" />
+              </svg>
+            </div>
+            <h3>Prywatność i bezpieczeństwo</h3>
+            <p>
+              Twoje notatki i materiały są poufne. Przetwarzanie i ekstrakcja
+              odbywają się w bezpiecznym standardzie bez trenowania modeli na Twoich danych.
+            </p>
+            <span class="feature-foot">Poufność · Bezpieczeństwo wiedzy</span>
+          </article>
+        </div>
+      </section>
+      <section
+        id="technologia"
+        class="technology"
+        aria-labelledby="technologyTitle"
+      >
+        <div>
+          <div class="eyebrow">
+            <svg class="icon" aria-hidden="true"><use href="#i-spark" /></svg
+            ><span data-i18n="tech_eyebrow">SILNIK KOGNITYWNY · ARCHITEKTURA AI</span>
+          </div>
+          <h2 id="technologyTitle" data-i18n="tech_title">
+            Zaawansowany potok semantyczny.<br />Od notatek do trwałej wiedzy.
+          </h2>
+          <p class="technology-intro" data-i18n="tech_intro">
+            Tulis Learn łączy adaptacyjny algorytm powtórek FSRS z zaawansowanym silnikiem semantycznym.
+            Od złożonych podręczników i wykładów do pytań, które budują krytyczne myślenie i zrozumienie.
+          </p>
+          <span class="technology-tag" data-i18n="tech_tag">Silnik Kognitywny · Architektura AI</span>
+        </div>
+        <div class="technology-list">
+          <article class="technology-item">
+            <svg class="icon" aria-hidden="true"><use href="#i-cards" /></svg>
+            <div>
+              <h3 data-i18n="tech_feat1_h">Ważne pojęcia, wyłuskane z kontekstu</h3>
+              <p data-i18n="tech_feat1_p">
+                Błyskawiczna analiza materiałów pozwala generować fiszki i quizy
+                w ułamku sekundy, bez żmudnego ręcznego przepisywania.
+              </p>
+            </div>
+          </article>
+          <article class="technology-item">
+            <svg class="icon" aria-hidden="true"><use href="#i-chat" /></svg>
+            <div>
+              <h3 data-i18n="tech_feat2_h">Asystent sokratyczny, który pomaga dojść do odpowiedzi</h3>
+              <p data-i18n="tech_feat2_p">
+                Adaptacyjne podpowiedzi i wyjaśnienia błędów prowadzą do głębokiego
+                zrozumienia, zamiast mechanicznego wkuwania.
+              </p>
+            </div>
+          </article>
+          <article class="technology-item">
+            <svg class="icon" aria-hidden="true"><use href="#i-lock" /></svg>
+            <div>
+              <h3 data-i18n="tech_feat3_h">Prywatność i ochrona własności intelektualnej</h3>
+              <p data-i18n="tech_feat3_p">
+                Działamy w architekturze Zero Data Retention — korzystamy z bezpiecznego
+                bezstanowego API bez trenowania modeli bazowych na notatkach użytkownika.
+              </p>
+            </div>
+          </article>
+        </div>
+        <div class="pipeline-section">
+          <div style="display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 8px;">
+            <h3 style="margin: 0; font-size: 18px; font-weight: 800;" data-i18n="pipeline_title">Potok Kognitywny & Architektura AI</h3>
+            <span style="font-size: 11px; font-weight: 700; color: var(--green); background: var(--mint); padding: 4px 10px; border-radius: 12px;" data-i18n="pipeline_badge">⚡ Hybrydowy Potok LLM</span>
+          </div>
+          <div class="pipeline-flow">
+            <div class="pipeline-step">
+              <span class="pipeline-step-badge" data-i18n="pipe1_badge">KROK 1 · Szybka Ingestia</span>
+              <h4 data-i18n="pipe1_h">Ingestia & Segmentacja</h4>
+              <p data-i18n="pipe1_p">Rozbijanie surowego tekstu lub PDF na atomowe jednostki logiczne i wykrywanie terminologii z ultra-niską latencją (&lt; 0.6s).</p>
+            </div>
+            <div class="pipeline-step">
+              <span class="pipeline-step-badge" data-i18n="pipe2_badge">KROK 2 · Głębokie Rozumowanie</span>
+              <h4 data-i18n="pipe2_h">Analiza Semantyczna</h4>
+              <p data-i18n="pipe2_p">Weryfikacja zależności przyczynowo-skutkowych. Odrzucenie faktograficznych halucynacji i tworzenie pytań problemowych.</p>
+            </div>
+            <div class="pipeline-step">
+              <span class="pipeline-step-badge" data-i18n="pipe3_badge">KROK 3 · Pętla Sokratyczna</span>
+              <h4 data-i18n="pipe3_h">Pętla Sokratyczna</h4>
+              <p data-i18n="pipe3_p">Gdy uczeń popełnia błąd, model nie narzuca gotowca – zadaje adaptacyjne pytanie naprowadzające na zrozumienie.</p>
+            </div>
+            <div class="pipeline-step">
+              <span class="pipeline-step-badge" data-i18n="pipe4_badge">KROK 4 · Algorytm FSRS</span>
+              <h4 data-i18n="pipe4_h">Optymalizacja Pamięci</h4>
+              <p data-i18n="pipe4_p">Adaptacyjny algorytm Free Spaced Repetition Scheduler przelicza krzywą zapominania Ebbinghausa dla każdego pojęcia.</p>
+            </div>
+          </div>
+        </div>
+        <p class="technology-note">
+          <span data-i18n="tech_note">Architektura Tulis Learn łączy wysokowydajne modele językowe Frontier LLM z adaptacyjnym silnikiem powtórek FSRS. Wszystkie zapytania są szyfrowane i przetwarzane bezstanowo, z zachowaniem pełnej poufności materiałów użytkownika.</span>
+        </p>
+      </section>
+      <!-- SEKCJA OPINIE / TESTIMONIALS -->
+      <section id="opinie" class="testimonials container" aria-labelledby="opinieTitle">
+        <div class="center-heading">
+          <div class="eyebrow" data-i18n="testi_eyebrow">SPOŁECZNOŚĆ AKTYWNYCH STUDENTÓW</div>
+          <h2 id="opinieTitle" data-i18n="testi_title">Co mówią osoby, które uczą się z Tulis Learn?</h2>
+          <p data-i18n="testi_desc">Dołącz do ponad 450 studentów i specjalistów oszczędzających setki godzin na nauce.</p>
+        </div>
+        <div class="testimonial-grid">
+          <article class="testimonial-card">
+            <div>
+              <div class="testi-stars">★★★★★</div>
+              <p class="testi-text" data-i18n="testi_1_text">„Zdałam anatomię prawidłową w 1. terminie! Wrzucam skany wykładów, a silnik AI wyciąga najtrudniejsze zależności i tworzy fiszki, których nie muszę pisać ręcznie.”</p>
+            </div>
+            <div class="testi-author">
+              <div class="testi-avatar">KM</div>
+              <div>
+                <div class="testi-name">Katarzyna M.</div>
+                <div class="testi-role" data-i18n="testi_1_role">Kierunek Lekarski · Collegium Medicum UJ</div>
+              </div>
+            </div>
+          </article>
+          <article class="testimonial-card">
+            <div>
+              <div class="testi-stars">★★★★★</div>
+              <p class="testi-text" data-i18n="testi_2_text">„Algorytm FSRS w połączeniu z trybem dopasowywania to absolutny game-changer. Uczę się algorytmów i sieci komputerowych 3 razy szybciej niż z suchych slajdów.”</p>
+            </div>
+            <div class="testi-author">
+              <div class="testi-avatar">MK</div>
+              <div>
+                <div class="testi-name">Michał K.</div>
+                <div class="testi-role" data-i18n="testi_2_role">Informatyka · Politechnika Warszawska</div>
+              </div>
+            </div>
+          </article>
+          <article class="testimonial-card">
+            <div>
+              <div class="testi-stars">★★★★★</div>
+              <p class="testi-text" data-i18n="testi_3_text">„Do egzaminu na aplikację radcowską materiału jest za dużo na zwykłe notatki. Tulis Learn pozwala mi powtarzać kodeksy w tramwaju i sprawdzać się w szybkich quizach.”</p>
+            </div>
+            <div class="testi-author">
+              <div class="testi-avatar">AW</div>
+              <div>
+                <div class="testi-name">Aleksandra W.</div>
+                <div class="testi-role" data-i18n="testi_3_role">Aplikantka Radcowska · OIRP Wrocław</div>
+              </div>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <!-- SEKCJA CENNIK / PRICING -->
+      <section id="plany" class="section pricing container" aria-labelledby="plansTitle">
+        <div class="center-heading">
+          <div class="eyebrow" data-i18n="pricing_eyebrow">TRANSPARENTNE PAKIETY</div>
+          <h2 id="plansTitle" data-i18n="pricing_title">Wybierz plan dopasowany do Twojej nauki</h2>
+          <p data-i18n="pricing_desc">Zacznij bezpłatnie na zawsze. Odblokuj pełną moc AI, gdy zbliża się sesja.</p>
+          <div class="pricing-toggle">
+            <span style="font-size: 13px; font-weight: 600;" data-i18n="bill_monthly">Miesięcznie</span>
+            <div class="toggle-pill">
+              <button type="button" class="toggle-btn active" id="billMonthly">Miesięcznie</button>
+              <button type="button" class="toggle-btn" id="billYearly">Rocznie (-20%)</button>
+            </div>
+            <span style="font-size: 12px; font-weight: 700; color: var(--green);" data-i18n="bill_save">Oszczędzasz 20%</span>
+          </div>
+        </div>
+        <div class="price-grid" style="grid-template-columns: repeat(3, 1fr);">
+          <article class="price-card">
+            <div class="price-card-top">
+              <h3 data-i18n="plan_free_name">Starter</h3>
+              <span class="price-tag" data-i18n="plan_free_tag">Darmowy na zawsze</span>
+            </div>
+            <div class="price">0 <small>zł</small></div>
+            <p class="price-caption" data-i18n="plan_free_caption">Wszystko, co potrzebne do codziennej nauki</p>
+            <ul class="price-list">
+              <li><svg class="icon" aria-hidden="true"><use href="#i-check" /></svg><span data-i18n="p1_f1">Fiszki, Quizy i Tryb Dopasowywania</span></li>
+              <li><svg class="icon" aria-hidden="true"><use href="#i-check" /></svg><span data-i18n="p1_f2">Algorytm powtórek FSRS w przeglądarce</span></li>
+              <li><svg class="icon" aria-hidden="true"><use href="#i-check" /></svg><span data-i18n="p1_f3">Do 3 aktywnych talii w pamięci</span></li>
+              <li><svg class="icon" aria-hidden="true"><use href="#i-check" /></svg><span data-i18n="p1_f4">Brak reklam i brak wymogu rejestracji</span></li>
+            </ul>
+            <a class="btn btn-light" href="#aplikacja" data-i18n="btn_plan_free">Rozpocznij naukę</a>
+          </article>
+          <article class="price-card featured">
+            <div class="price-card-top">
+              <h3 data-i18n="plan_pro_name">Student Pro</h3>
+              <span class="price-tag" data-i18n="plan_pro_tag">Najpopularniejszy</span>
+            </div>
+            <div class="price"><span id="proPriceVal">19</span> <small>zł / mies.</small></div>
+            <p class="price-caption" data-i18n="plan_pro_caption">Maksymalne przyspieszenie z silnikiem AI</p>
+            <ul class="price-list">
+              <li><svg class="icon" aria-hidden="true"><use href="#i-check" /></svg><span data-i18n="p2_f1">Wszystko z planu Starter</span></li>
+              <li><svg class="icon" aria-hidden="true"><use href="#i-check" /></svg><span data-i18n="p2_f2"><strong>Nielimitowana ekstrakcja AI</strong> z notatek</span></li>
+              <li><svg class="icon" aria-hidden="true"><use href="#i-check" /></svg><span data-i18n="p2_f3">Lektor Audio (wymowa i nauka słuchowa)</span></li>
+              <li><svg class="icon" aria-hidden="true"><use href="#i-check" /></svg><span data-i18n="p2_f4">Nielimitowane zestawy w bibliotece</span></li>
+              <li><svg class="icon" aria-hidden="true"><use href="#i-check" /></svg><span data-i18n="p2_f5">Sokratyczny asystent wyjaśniający błędy</span></li>
+            </ul>
+            <button class="btn btn-primary" type="button" data-open="authDialog" data-i18n="btn_plan_pro">
+              Wybierz Student Pro <svg class="icon" aria-hidden="true"><use href="#i-arrow" /></svg>
+            </button>
+          </article>
+          <article class="price-card">
+            <div class="price-card-top">
+              <h3 data-i18n="plan_team_name">Campus & Grupy</h3>
+              <span class="price-tag" data-i18n="plan_team_tag">Koła naukowe</span>
+            </div>
+            <div class="price"><span id="teamPriceVal">49</span> <small>zł / mies.</small></div>
+            <p class="price-caption" data-i18n="plan_team_caption">Dla grup studenckich i roczników</p>
+            <ul class="price-list">
+              <li><svg class="icon" aria-hidden="true"><use href="#i-check" /></svg><span data-i18n="p3_f1">Wszystko z planu Student Pro</span></li>
+              <li><svg class="icon" aria-hidden="true"><use href="#i-check" /></svg><span data-i18n="p3_f2">Współdzielona baza talii dla grupy</span></li>
+              <li><svg class="icon" aria-hidden="true"><use href="#i-check" /></svg><span data-i18n="p3_f3">Eksport do systemów uczelnianych LMS</span></li>
+              <li><svg class="icon" aria-hidden="true"><use href="#i-check" /></svg><span data-i18n="p3_f4">Dedykowane wsparcie i priorytet API</span></li>
+            </ul>
+            <a class="btn btn-light" href="mailto:kontakt@tulislearn.abrdns.com" data-i18n="btn_plan_team">Skontaktuj się</a>
+          </article>
+        </div>
+      </section>
+
+      <!-- SEKCJA FAQ / AKORDEON -->
+      <section id="faq" class="faq-section container" aria-labelledby="faqTitle">
+        <div class="center-heading">
+          <div class="eyebrow" data-i18n="faq_eyebrow">PYTANIA I ODPOWIEDZI</div>
+          <h2 id="faqTitle" data-i18n="faq_title">Najczęściej zadawane pytania</h2>
+          <p data-i18n="faq_desc">Wszystko, co musisz wiedzieć o nauce z Tulis Learn.</p>
+        </div>
+        <div class="faq-list">
+          <div class="faq-item open">
+            <button class="faq-question" type="button">
+              <span data-i18n="faq_q1">Jak Tulis Learn pomaga uczyć się szybciej?</span>
+              <span class="faq-icon">+</span>
+            </button>
+            <div class="faq-answer" data-i18n="faq_a1">
+              Łączymy dwie najskuteczniejsze techniki kognitywne poparte badaniami: aktywne przypominanie (Active Recall) oraz algorytm powtórek interwałowych FSRS. Zamiast biernego czytania notatek po raz dziesiąty, zmuszasz mózg do odtwarzania wiedzy, a algorytm serwuje Ci pytania dokładnie wtedy, gdy zaczynasz je zapominać.
+            </div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question" type="button">
+              <span data-i18n="faq_q2">Czym różni się algorytm FSRS od klasycznego SuperMemo/Anki SM-2?</span>
+              <span class="faq-icon">+</span>
+            </button>
+            <div class="faq-answer" data-i18n="faq_a2">
+              FSRS (Free Spaced Repetition Scheduler) to nowoczesny, oparty na uczeniu maszynowym model pamięci, który precyzyjnie szacuje stabilność śladu pamięciowego i trudność pojęcia. W badaniach osiąga o 20-30% wyższą efektywność zapamiętywania niż 30-letni algorytm SM-2 znany z klasycznego Anki.
+            </div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question" type="button">
+              <span data-i18n="faq_q3">Czy mogę wgrywać własne pliki i notatki z uczelni?</span>
+              <span class="faq-icon">+</span>
+            </button>
+            <div class="faq-answer" data-i18n="faq_a3">
+              Tak! Możesz wkleić dowolny tekst, zaimportować pliki tekstowe (.txt, .csv) lub skorzystać z przycisku „Inteligentna ekstrakcja AI”, który w ułamku sekundy automatycznie wychwyci definicje i przekształci je w zestaw pytań i odpowiedzi.
+            </div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question" type="button">
+              <span data-i18n="faq_q4">Czy moje materiały edukacyjne są prywatne?</span>
+              <span class="faq-icon">+</span>
+            </button>
+            <div class="faq-answer" data-i18n="faq_a4">
+              W 100%. Twoje zestawy i postępy są przechowywane bezpośrednio w Twojej przeglądarce. Korzystamy wyłącznie z bezpiecznych komercyjnych API z gwarancją braku trenowania modeli językowych na Twoich prywatnych materiałach.
+            </div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question" type="button">
+              <span data-i18n="faq_q5">Czy aplikacja działa na smartfonach i tabletach?</span>
+              <span class="faq-icon">+</span>
+            </button>
+            <div class="faq-answer" data-i18n="faq_a5">
+              Tak, platforma jest w pełni responsywna i zoptymalizowana pod ekrany dotykowe. Możesz uczyć się w podróży, przewijając fiszki kciukiem lub testując się w quizach w dowolnym miejscu.
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SEKCJA O PROJEKCIE / FOUNDER -->
+      <section id="o-projekcie" class="about" aria-labelledby="aboutTitle">
+        <div class="author-avatar" aria-hidden="true">TT</div>
+        <div>
+          <h2 id="aboutTitle" data-i18n="about_title">Nowoczesna edukacja bez zbędnego chaosu.</h2>
+          <p data-i18n="about_desc">
+            Cześć, tu Tomasz Tulis. Tworzę Tulis Learn jako platformę nowej generacji — łączącą kognitywistykę, algorytmy powtórek interwałowych FSRS oraz sztuczną inteligencję. Chcę, by każdy student i uczeń w Polsce i Europie mógł uczyć się skutecznie, w spokoju i bez marnowania czasu na bezproduktywne zakuwanie.
+          </p>
+        </div>
+      </section>
+
+      <!-- BANNER CTA -->
+      <section class="access-banner" aria-labelledby="accessTitle">
+        <div>
+          <h2 id="accessTitle" data-i18n="cta_banner_h">Gotowy, by uczyć się skuteczniej?</h2>
+          <p data-i18n="cta_banner_p">Dołącz do studentów, którzy opanowali sesję bez stresu. Rozpocznij za darmo już teraz.</p>
+        </div>
+        <a class="btn btn-primary" href="#aplikacja" data-i18n="cta_banner_btn">
+          Otwórz warsztat nauki
+          <svg class="icon" aria-hidden="true"><use href="#i-arrow" /></svg>
+        </a>
+      </section>
+    </main>
+    <footer id="kontakt" class="container">
+      <div class="newsletter-card" id="newsletterCard">
+        <div>
+          <span class="badge-plan" style="margin-bottom: 6px; display: inline-block;" data-i18n="newsletter_badge">NOWOŚĆ · BIULETYN KOGNITYWNY</span>
+          <h3 style="font-size: 19px; font-weight: 800; margin-bottom: 4px;" data-i18n="newsletter_title">📬 Techniki Efektywnej Nauki w Twojej Skrzynce</h3>
+          <p style="font-size: 13px; color: var(--muted); margin: 0; max-width: 520px;" data-i18n="newsletter_sub">
+            Cotygodniowe praktyczne wskazówki: psychologia uczenia się, optymalizacja powtórek FSRS oraz jak zdać najtrudniejsze egzaminy bez wypalenia.
+          </p>
+        </div>
+        <div>
+          <form class="newsletter-form" id="newsletterForm" onsubmit="event.preventDefault();">
+            <input class="field-input" id="newsletterEmail" type="email" placeholder="twoj.email@student.edu.pl" style="margin: 0;" required />
+            <button class="btn btn-primary" id="newsletterSubmitBtn" type="button" style="white-space: nowrap;" data-i18n="newsletter_btn_sub">Zapisz się bezpłatnie</button>
+          </form>
+          <div id="newsletterFeedback" class="newsletter-feedback" style="display: none;"></div>
+        </div>
+      </div>
+      <div class="footer-main">
+        <div>
+          <a class="brand" href="#" aria-label="Tulis Learn — strona główna"
+            ><span class="brand-mark" aria-hidden="true">T</span>Tulis Learn
+            <span class="badge-plan" style="margin-left: 4px;">AI</span></a
+          >
+          <p class="footer-description">Z notatek do wiedzy. Krok po kroku.</p>
+        </div>
+        <div class="footer-contact">
+          <span data-i18n="footer_contact_ask">Masz pomysł albo chcesz porozmawiać?</span
+          ><a href="mailto:kontakt@tulislearn.abrdns.com" id="footerEmail"
+            >kontakt@tulislearn.abrdns.com ↗</a
+          >
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span>© 2026 Tulis Learn · Platforma Edukacyjna Nowej Generacji</span>
+        <div class="footer-links">
+          <button type="button" data-open="shortcutsModal" id="footerShortcutsBtn" data-i18n="footer_shortcuts_link">⌨️ Skróty klawiszowe (?)</button>
+          <button type="button" id="footerCookieBtn" data-i18n="footer_cookie_settings">🍪 Ustawienia cookies</button>
+          <button type="button" data-open="contactModal">Kontakt & Wsparcie</button>
+          <button type="button" data-open="privacyDialog">Polityka prywatności</button>
+          <button type="button" data-open="termsDialog">Regulamin serwisu</button>
+          <span>Stworzone w Polsce 🇵🇱</span>
+        </div>
+      </div>
+    </footer>
+    <dialog id="contactModal" class="auth-dialog" aria-labelledby="contactTitle">
+      <div class="dialog-top">
+        <h2 id="contactTitle" style="font-size: 20px;">Kontakt & Zapytania</h2>
+        <button class="close-dialog" type="button" data-close aria-label="Zamknij kontakt">
+          <svg class="icon" aria-hidden="true"><use href="#i-close" /></svg>
+        </button>
+      </div>
+      <p style="font-size: 13px; color: var(--muted); margin-bottom: 18px;">
+        Masz pytania dotyczące wdrożeń na uczelni, licencji grupowych lub rozwoju platformy? Napisz bezpośrednio do zespołu Tulis Learn.
+      </p>
+      <form id="contactForm" onsubmit="event.preventDefault();">
+        <label class="field-label" for="contactName">Imię i nazwisko / Organizacja</label>
+        <input class="field-input" id="contactName" type="text" placeholder="Tomasz Kowalski (np. Samorząd PW)" required />
+        <label class="field-label" for="contactEmail">Adres e-mail</label>
+        <input class="field-input" id="contactEmail" type="email" placeholder="student@uczelnia.pl" required />
+        <label class="field-label" for="contactMsg">Wiadomość</label>
+        <textarea class="field-input" id="contactMsg" style="min-height: 90px; resize: vertical;" placeholder="W czym możemy pomóc?"></textarea>
+        <button class="btn btn-primary" id="sendContactBtn" type="button" style="width: 100%; margin-top: 14px;">
+          Wyślij zapytanie <svg class="icon" aria-hidden="true"><use href="#i-arrow" /></svg>
+        </button>
+        <div id="contactFeedback" style="display: none; margin-top: 12px; font-size: 13px; color: var(--green); text-align: center; font-weight: 600;">
+          ✓ Dziękujemy! Twoja wiadomość została zarejestrowana. Skontaktujemy się wkrótce.
+        </div>
+      </form>
+    </dialog>
+    <dialog id="privacyDialog" aria-labelledby="privacyTitle">
+      <div class="dialog-top">
+        <h2 id="privacyTitle">Polityka prywatności</h2>
+        <button
+          class="close-dialog"
+          type="button"
+          data-close
+          aria-label="Zamknij politykę prywatności"
+        >
+          <svg class="icon" aria-hidden="true"><use href="#i-close" /></svg>
+        </button>
+      </div>
+      <p>Wersja 1.0 · Obowiązuje od 2026 r. (Zgodność z RODO / GDPR)</p>
+      <h3>1. Administrator Danych Osobowych</h3>
+      <p>
+        Administratorem danych osobowych platformy Tulis Learn jest Tomasz Tulis.
+        Wszelkie pytania i wnioski dotyczące przetwarzania danych można kierować
+        bezpośrednio na adres:
+        <a href="mailto:kontakt@tulislearn.abrdns.com"
+          >kontakt@tulislearn.abrdns.com</a
+        >.
+      </p>
+      <h3>2. Ochrona materiałów i notatek użytkownika</h3>
+      <p>
+        Materiały edukacyjne, notatki, fiszki oraz statystyki algorytmu powtórek FSRS
+        są przetwarzane w środowisku użytkownika lub bezstanowo przesyłane przez szyfrowane
+        połączenie TLS 1.3 do dedykowanego silnika AI. Gwarantujemy standard Zero Data Retention:
+        Twoje notatki i materiały nie są wykorzystywane do trenowania publicznych modeli AI.
+      </p>
+      <h3>3. Bezpieczeństwo i pliki cookie</h3>
+      <p>
+        Platforma Tulis Learn wykorzystuje wyłącznie niezbędne mechanizmy pamięci podręcznej
+        (LocalStorage) w celu zapisywania preferencji językowych, motywu ciemnego oraz talii fiszek.
+        Nie stosujemy śledzących ciasteczek reklamowych ani inwazyjnych narzędzi telemetrycznych.
+      </p>
+      <h3>4. Prawa użytkownika zgodnie z RODO</h3>
+      <p>
+        Każdemu użytkownikowi przysługuje prawo do dostępu do swoich danych, ich sprostowania,
+        żądania usunięcia („prawo do bycia zapomnianym”), ograniczenia przetwarzania oraz przenoszenia danych.
+        Użytkownik ma również prawo wnieść skargę do organu nadzorczego (Prezesa Urzędu Ochrony Danych Osobowych w Polsce).
+      </p>
+      <h3>5. Kontakt w sprawach prywatności</h3>
+      <p>
+        Wszelkie zapytania dotyczące prywatności i bezpieczeństwa danych prosimy kierować na adres
+        <a href="mailto:kontakt@tulislearn.abrdns.com">kontakt@tulislearn.abrdns.com</a>.
+      </p>
+    </dialog>
+    <dialog id="termsDialog" aria-labelledby="termsTitle">
+      <div class="dialog-top">
+        <h2 id="termsTitle">Regulamin serwisu</h2>
+        <button
+          class="close-dialog"
+          type="button"
+          data-close
+          aria-label="Zamknij regulamin"
+        >
+          <svg class="icon" aria-hidden="true"><use href="#i-close" /></svg>
+        </button>
+      </div>
+      <p>Wersja 1.0 · Obowiązuje od 2026 r.</p>
+      <h3>1. Postanowienia ogólne</h3>
+      <p>
+        Niniejszy Regulamin określa zasady korzystania z platformy edukacyjnej Tulis Learn,
+        dostępnej pod adresem <a href="https://tulislearn.abrdns.com">tulislearn.abrdns.com</a>.
+        Właścicielem serwisu jest Tomasz Tulis (kontakt:
+        <a href="mailto:kontakt@tulislearn.abrdns.com">kontakt@tulislearn.abrdns.com</a>).
+      </p>
+      <h3>2. Świadczone usługi</h3>
+      <p>
+        Tulis Learn udostępnia narzędzia kognitywne wspomagające efektywną naukę:
+        automatyczne generowanie fiszek z notatek z wykorzystaniem AI, algorytm powtórek interwałowych FSRS,
+        interaktywne quizy sprawdzające oraz grę pamięciową (tryb dopasowywania pojęć).
+      </p>
+      <h3>3. Własność intelektualna i prawa autorskie</h3>
+      <p>
+        Użytkownik zachowuje pełnię autorskich praw majątkowych i osobistych do wszystkich materiałów,
+        notatek, tekstów i plików wgrywanych do serwisu. Wprowadzając materiały, użytkownik oświadcza,
+        że posiada uprawnienia do korzystania z nich w celach osobistych lub edukacyjnych.
+      </p>
+      <h3>4. Warunki techniczne i ciągłość działania</h3>
+      <p>
+        Do korzystania z platformy wymagane jest urządzenie z dostępem do Internetu oraz aktualna
+        przeglądarka internetowa z włączoną obsługą JavaScript. Dokładamy najwyższych starań,
+        aby serwis działał nieprzerwanie, bezpiecznie i ze stabilną latencją.
+      </p>
+      <h3>5. Reklamacje i kontakt</h3>
+      <p>
+        Wszelkie pytania, zgłoszenia błędów oraz sugestie dotyczące działania serwisu
+        można kierować na oficjalny adres:
+        <a href="mailto:kontakt@tulislearn.abrdns.com">kontakt@tulislearn.abrdns.com</a>.
+        Odpowiedzi udzielane są zazwyczaj w terminie do 48 godzin roboczych.
+      </p>
+    </dialog>
+
+    <dialog id="aiSettingsModal" aria-labelledby="aiSettingsTitle" style="max-width: min(640px, calc(100vw - 32px)); width: min(640px, calc(100vw - 32px));">
+      <div class="dialog-top">
+        <div>
+          <h2 id="aiSettingsTitle" style="font-size: 20px;" data-i18n="ai_modal_title">⚙️ Konfiguracja Modeli Kognitywnych AI</h2>
+          <p style="font-size: 13px; margin: 4px 0 0;" data-i18n="ai_modal_sub">Zarządzaj silnikiem semantycznym, kluczami API i parametrami wnioskowania FSRS.</p>
+        </div>
+        <button class="close-dialog" type="button" data-close aria-label="Zamknij">
+          <svg class="icon" aria-hidden="true"><use href="#i-close" /></svg>
+        </button>
+      </div>
+      <div style="margin-top: 16px;">
+        <div style="background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 14px; margin-bottom: 16px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+            <span style="font-weight: 700; font-size: 13px;" data-i18n="ai_status_label">Aktywny silnik platformy:</span>
+            <span class="badge-plan" style="background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0;" id="aiActiveBadge">● LIVE ONLINE</span>
+          </div>
+          <p style="font-size: 12px; color: var(--muted); margin: 0;" data-i18n="ai_status_desc">
+            Google Gemini 3.8 Flash (Google DeepMind / AI Studio) • Ekstrakcja w locie • Metoda sokratejska.
+          </p>
+        </div>
+
+        <label class="field-label" for="aiProviderSelect" data-i18n="ai_provider_label">Wybór silnika AI:</label>
+        <select id="aiProviderSelect" class="field-input" style="cursor: pointer;">
+          <option value="gemini-3.8-flash" selected>Google Gemini 3.8 Flash (Domyślny · Gotowy do użycia)</option>
+          <option value="claude-3-7-sonnet">Anthropic Claude 3.7 Sonnet (Wymaga własnego klucza)</option>
+          <option value="claude-3-5-haiku">Anthropic Claude 3.5 Haiku (Wymaga własnego klucza)</option>
+          <option value="custom">Własny model / Własny klucz API</option>
+        </select>
+
+        <label class="field-label" for="customApiKeyInput" style="margin-top: 12px;" data-i18n="ai_custom_key_label">Własny klucz API (Opcjonalnie):</label>
+        <input type="password" id="customApiKeyInput" class="field-input" placeholder="Wklej swój klucz API (zapisywany lokalnie w Twojej przeglądarce)" />
+        <span style="font-size: 11px; color: var(--muted);" data-i18n="ai_key_hint">Pozostaw puste, aby korzystać z wbudowanego bezpłatnego silnika platformy.</span>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 16px;">
+          <label for="aiTempRange" style="font-size: 12px; font-weight: 600;" data-i18n="ai_temp_label">Temperatura wnioskowania:</label>
+          <span id="aiTempVal" style="font-size: 12px; font-weight: 700; color: var(--green);">0.2 (Ścisła)</span>
+        </div>
+        <input type="range" id="aiTempRange" min="0" max="1" step="0.1" value="0.2" style="width: 100%; margin-top: 6px;" />
+
+        <div id="aiTestFeedback" style="display: none; margin-top: 14px; padding: 10px; border-radius: 8px; font-size: 12px;"></div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px;">
+          <button type="button" class="btn btn-light" id="testAiConnectionBtn" data-i18n="ai_btn_test">⚡ Przetestuj połączenie</button>
+          <button type="button" class="btn btn-primary" id="saveAiSettingsBtn" data-i18n="ai_btn_save">Zapisz ustawienia</button>
+        </div>
+      </div>
+    </dialog>
+
+    <dialog id="authDialog" class="auth-dialog" aria-labelledby="authDialogTitle">
+      <div class="dialog-top">
+        <h2 id="authDialogTitle" data-i18n="auth_title">Witaj w Tulis Learn</h2>
+        <button class="close-dialog" type="button" data-close aria-label="Zamknij okno logowania">
+          <svg class="icon" aria-hidden="true"><use href="#i-close" /></svg>
+        </button>
+      </div>
+
+      <div class="auth-switcher" role="tablist">
+        <button type="button" class="auth-switch-btn active" id="authTabLogin" data-i18n="auth_tab_login">Logowanie</button>
+        <button type="button" class="auth-switch-btn" id="authTabRegister" data-i18n="auth_tab_register">Rejestracja</button>
+      </div>
+
+      <p style="font-size: 13px; color: var(--muted); margin-bottom: 16px;" id="authSubtitle" data-i18n="auth_sub">Zaloguj się, aby synchronizować talie i historię powtórek FSRS.</p>
+
+      <div id="authFeedback" style="display: none; padding: 10px 12px; border-radius: 8px; font-size: 12px; margin-bottom: 14px; background: #fee2e2; border: 1px solid #f87171; color: #991b1b;"></div>
+
+      <!-- Login Form -->
+      <form id="loginForm" onsubmit="event.preventDefault();">
+        <label class="field-label" for="loginEmail" data-i18n="auth_email">Adres e-mail</label>
+        <input class="field-input" id="loginEmail" type="email" placeholder="student@uczelnia.pl" required autocomplete="email" />
+        <label class="field-label" for="loginPass" data-i18n="auth_pass">Hasło</label>
+        <input class="field-input" id="loginPass" type="password" placeholder="••••••••" required autocomplete="current-password" />
+        <button class="btn btn-primary" id="submitLoginBtn" type="submit" style="width: 100%; margin-top: 14px;" data-i18n="auth_submit">
+          Zaloguj się
+        </button>
+      </form>
+
+      <!-- Register Form -->
+      <form id="registerForm" onsubmit="event.preventDefault();" style="display: none;">
+        <label class="field-label" for="regName" data-i18n="auth_name">Imię i nazwisko</label>
+        <input class="field-input" id="regName" type="text" placeholder="Anna Kowalska" required autocomplete="name" />
+        <label class="field-label" for="regEmail" data-i18n="auth_email">Adres e-mail</label>
+        <input class="field-input" id="regEmail" type="email" placeholder="student@uczelnia.pl" required autocomplete="email" />
+        <label class="field-label" for="regPass" data-i18n="auth_pass">Hasło (min. 5 znaków)</label>
+        <input class="field-input" id="regPass" type="password" placeholder="••••••••" required minlength="5" autocomplete="new-password" />
+        <button class="btn btn-primary" id="submitRegisterBtn" type="submit" style="width: 100%; margin-top: 14px;" data-i18n="auth_btn_register">
+          Zarejestruj się
+        </button>
+      </form>
+
+      <div class="auth-divider"><span data-i18n="auth_or">lub przez e-mail</span></div>
+
+      <button type="button" class="auth-google-btn" id="googleAuthBtn">
+        <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/></svg>
+        <span data-i18n="auth_google">Kontynuuj z kontem Google</span>
+      </button>
+
+      <div style="margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--line); text-align: center;">
+        <button type="button" class="text-button" id="demoLoginBtn" style="font-weight: 700; color: var(--green);" data-i18n="auth_demo_btn">
+          ⚡ Wejdź w trybie Demo (Tomasz Tulis)
+        </button>
+      </div>
+    </dialog>
+
+    <dialog id="managementModal" aria-labelledby="mgmtTitle" style="max-width: min(840px, calc(100vw - 32px)); width: min(840px, calc(100vw - 32px));">
+      <div class="dialog-top">
+        <div>
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <h2 id="mgmtTitle" style="font-size: 22px; margin: 0;" data-i18n="mgmt_title">⚙️ Panel Zarządzania & Baza Danych</h2>
+            <span class="badge-plan" id="mgmtUserBadge">PRO</span>
+          </div>
+          <p style="font-size: 13px; margin: 4px 0 0;" data-i18n="mgmt_sub">Zarządzaj swoimi taliami, kontem, statystykami i kopią zapasową w bazie SQLite.</p>
+        </div>
+        <button class="close-dialog" type="button" data-close aria-label="Zamknij panel">
+          <svg class="icon" aria-hidden="true"><use href="#i-close" /></svg>
+        </button>
+      </div>
+
+      <div class="tabs" role="tablist" style="margin-bottom: 16px;">
+        <button class="tab" id="mgmtTabDecks" type="button" role="tab" aria-selected="true" data-i18n="mgmt_tab_decks">📚 Moje Talie</button>
+        <button class="tab" id="mgmtTabHistory" type="button" role="tab" aria-selected="false" data-i18n="mgmt_tab_history">📊 Historia Powtórek</button>
+        <button class="tab" id="mgmtTabProfile" type="button" role="tab" aria-selected="false" data-i18n="mgmt_tab_profile">👤 Profil & Konto</button>
+        <button class="tab" id="mgmtTabBackup" type="button" role="tab" aria-selected="false" data-i18n="mgmt_tab_backup">💾 Kopia Zapasowa</button>
+      </div>
+
+      <div id="mgmtDecksPanel" role="tabpanel">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; gap: 8px; flex-wrap: wrap;">
+          <span style="font-size: 13px; color: var(--muted);"><span data-i18n="mgmt_decks_hint">Wszystkie talie zapisane w Twojej lokalnej bazie SQLite:</span> (<strong id="mgmtDecksCount">0</strong>)</span>
+          <button class="btn btn-sm btn-primary" id="mgmtNewDeckBtn" type="button" data-i18n="mgmt_btn_new_deck">+ Nowa talia</button>
+        </div>
+        <div style="margin-bottom: 12px;">
+          <input class="field-input" id="mgmtDeckSearchInput" type="search" placeholder="Szukaj talii po nazwie lub kategorii..." style="padding: 8px 12px; font-size: 13px; margin: 0;" />
+        </div>
+        <div id="mgmtDecksList" style="display: flex; flex-direction: column; gap: 8px; max-height: 340px; overflow-y: auto;">
+          <!-- Dynamically populated from SQLite DB -->
+        </div>
+      </div>
+
+      <div id="mgmtHistoryPanel" role="tabpanel" hidden>
+        <div style="font-size: 13px; color: var(--muted); margin-bottom: 12px;" data-i18n="mgmt_history_hint">Rejestr sesji powtórkowych zapisywany automatycznie przez algorytm FSRS:</div>
+        <div id="mgmtHistoryList" style="display: flex; flex-direction: column; gap: 8px; max-height: 340px; overflow-y: auto;">
+          <!-- Dynamically populated from SQLite DB -->
+        </div>
+      </div>
+
+      <div id="mgmtProfilePanel" role="tabpanel" hidden>
+        <div style="background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 18px; margin-bottom: 14px;">
+          <div style="display: flex; align-items: center; gap: 14px; margin-bottom: 14px;">
+            <div class="user-avatar-sm" id="mgmtAvatar" style="width: 44px; height: 44px; font-size: 18px;">TT</div>
+            <div>
+              <div style="font-weight: 700; font-size: 16px;" id="mgmtUserName">Tomasz Tulis</div>
+              <div style="font-size: 12px; color: var(--muted);" id="mgmtUserEmail">tomasz@tulislearn.com</div>
+            </div>
+          </div>
+          <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; text-align: center;">
+            <div style="background: var(--white); border: 1px solid var(--line); border-radius: 6px; padding: 8px;">
+              <div style="font-size: 10px; color: var(--muted); font-weight: 700;">SERIA NAUKI</div>
+              <div style="font-size: 18px; font-weight: 800; color: var(--green);" id="mgmtStreak">7 dni</div>
+            </div>
+            <div style="background: var(--white); border: 1px solid var(--line); border-radius: 6px; padding: 8px;">
+              <div style="font-size: 10px; color: var(--muted); font-weight: 700;">RETENCJA FSRS</div>
+              <div style="font-size: 18px; font-weight: 800; color: var(--green);" id="mgmtRetention">96.4%</div>
+            </div>
+            <div style="background: var(--white); border: 1px solid var(--line); border-radius: 6px; padding: 8px;">
+              <div style="font-size: 10px; color: var(--muted); font-weight: 700;">PLAN KONTA</div>
+              <div style="font-size: 18px; font-weight: 800; color: var(--ink);" id="mgmtPlan">Student PRO</div>
+            </div>
+          </div>
+          <div style="margin-top: 14px; background: var(--white); border: 1px solid var(--line); border-radius: 8px; padding: 12px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+              <span style="font-size: 11px; font-weight: 700; color: var(--muted);" data-i18n="mgmt_heatmap_title">AKTYWNOŚĆ POWTÓREK (OSTATNIE 14 DNI)</span>
+              <span style="font-size: 11px; color: var(--green); font-weight: 700;">● Aktywny rytm</span>
+            </div>
+            <div id="mgmtHeatmap" class="heatmap-grid"></div>
+          </div>
+        </div>
+        <div style="display: flex; justify-content: flex-end;">
+          <button class="btn btn-outline" id="mgmtLogoutBtn" type="button" style="color: #dc2626; border-color: #fca5a5;" data-i18n="mgmt_btn_logout">🚪 Wyloguj się z konta</button>
+        </div>
+      </div>
+
+      <div id="mgmtBackupPanel" role="tabpanel" hidden>
+        <div style="font-size: 13px; color: var(--muted); margin-bottom: 14px;" data-i18n="mgmt_backup_hint">
+          Eksportuj całą bazę wiedzy do formatu JSON lub zaimportuj zestaw talii do SQLite:
+        </div>
+        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+          <button class="btn btn-primary" id="mgmtDownloadBackupBtn" type="button" data-i18n="mgmt_btn_download_backup">📥 Pobierz kopię bazy (JSON)</button>
+          <button class="btn btn-light" id="mgmtImportBackupBtn" type="button" data-i18n="mgmt_btn_import_backup">📤 Wgraj kopię z pliku</button>
+          <input type="file" id="mgmtBackupFileInput" accept=".json" style="display: none;" />
+        </div>
+      </div>
+    </dialog>
+
+    <dialog id="newDeckModal" aria-labelledby="newDeckTitle" style="max-width: min(520px, calc(100vw - 32px)); width: min(520px, calc(100vw - 32px));">
+      <div class="dialog-top">
+        <h2 id="newDeckTitle" style="font-size: 20px;">Tworzenie nowej talii</h2>
+        <button class="close-dialog" type="button" data-close aria-label="Zamknij">
+          <svg class="icon" aria-hidden="true"><use href="#i-close" /></svg>
+        </button>
+      </div>
+      <form id="newDeckForm" onsubmit="event.preventDefault();">
+        <label class="field-label" for="newDeckTitleInput">Nazwa talii</label>
+        <input class="field-input" id="newDeckTitleInput" type="text" placeholder="np. Neurologia kliniczna" required />
+        <label class="field-label" for="newDeckCategoryInput">Kategoria / Przedmiot</label>
+        <input class="field-input" id="newDeckCategoryInput" type="text" placeholder="np. Medycyna" value="Ogólne" />
+        <label class="field-label" for="newDeckContentInput">Pierwsze fiszki (Pytanie | Odpowiedź)</label>
+        <textarea class="field-input" id="newDeckContentInput" style="height: 100px; resize: vertical;" placeholder="Pytanie 1 | Odpowiedź 1&#10;Pytanie 2 | Odpowiedź 2"></textarea>
+        <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px;">
+          <button class="btn btn-light" type="button" data-close data-i18n="btn_close">Zamknij</button>
+          <button class="btn btn-primary" id="saveNewDeckSubmitBtn" type="submit">💾 Zapisz talię</button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog id="fsrsAnalyticsModal" aria-labelledby="fsrsModalTitle" style="max-width: min(680px, calc(100vw - 32px)); width: min(680px, calc(100vw - 32px));">
+      <div class="dialog-top">
+        <div>
+          <h2 id="fsrsModalTitle" style="font-size: 22px;" data-i18n="fsrs_modal_title">🧠 Analityka Kognitywna & Model FSRS</h2>
+          <p style="font-size: 13px; margin: 4px 0 0;" data-i18n="fsrs_modal_sub">Krzywa zapominania Hermanna Ebbinghausa vs. Free Spaced Repetition Scheduler</p>
+        </div>
+        <button class="close-dialog" type="button" data-close aria-label="Zamknij analitykę">
+          <svg class="icon" aria-hidden="true"><use href="#i-close" /></svg>
+        </button>
+      </div>
+
+      <div style="background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 18px; margin: 16px 0;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; font-size: 12px; flex-wrap: wrap; gap: 8px;">
+          <span style="display: flex; align-items: center; gap: 6px;">
+            <span style="display: inline-block; width: 12px; height: 3px; background: #dc2626; border-radius: 2px;"></span>
+            <span data-i18n="fsrs_legend_ebbinghaus">Brak powtórek (Krzywa Ebbinghausa: ~20% po 7 dniach)</span>
+          </span>
+          <span style="display: flex; align-items: center; gap: 6px;">
+            <span style="display: inline-block; width: 12px; height: 3px; background: #107843; border-radius: 2px;"></span>
+            <strong data-i18n="fsrs_legend_fsrs">Optymalizacja FSRS (Powrót do 95%+)</strong>
+          </span>
+        </div>
+
+        <svg viewBox="0 0 540 220" style="width: 100%; height: auto; display: block; font-family: inherit;">
+          <line x1="45" y1="20" x2="520" y2="20" stroke="currentColor" stroke-opacity="0.08" stroke-dasharray="3 3"/>
+          <line x1="45" y1="65" x2="520" y2="65" stroke="currentColor" stroke-opacity="0.08" stroke-dasharray="3 3"/>
+          <line x1="45" y1="110" x2="520" y2="110" stroke="currentColor" stroke-opacity="0.08" stroke-dasharray="3 3"/>
+          <line x1="45" y1="155" x2="520" y2="155" stroke="currentColor" stroke-opacity="0.08" stroke-dasharray="3 3"/>
+          <line x1="45" y1="190" x2="520" y2="190" stroke="currentColor" stroke-opacity="0.2"/>
+
+          <text x="35" y="24" text-anchor="end" font-size="10" fill="var(--muted)">100%</text>
+          <text x="35" y="69" text-anchor="end" font-size="10" fill="var(--muted)">75%</text>
+          <text x="35" y="114" text-anchor="end" font-size="10" fill="var(--muted)">50%</text>
+          <text x="35" y="159" text-anchor="end" font-size="10" fill="var(--muted)">25%</text>
+          <text x="35" y="194" text-anchor="end" font-size="10" fill="var(--muted)">0%</text>
+
+          <text x="45" y="206" text-anchor="middle" font-size="10" fill="var(--muted)">Dzień 0</text>
+          <text x="140" y="206" text-anchor="middle" font-size="10" fill="var(--muted)">Dzień 1</text>
+          <text x="235" y="206" text-anchor="middle" font-size="10" fill="var(--muted)">Dzień 3</text>
+          <text x="330" y="206" text-anchor="middle" font-size="10" fill="var(--muted)">Dzień 7</text>
+          <text x="425" y="206" text-anchor="middle" font-size="10" fill="var(--muted)">Dzień 16</text>
+          <text x="515" y="206" text-anchor="middle" font-size="10" fill="var(--muted)">Dzień 35</text>
+
+          <path d="M 45 25 Q 120 145 515 168" fill="none" stroke="#dc2626" stroke-width="2.5" stroke-dasharray="5 4" opacity="0.85"/>
+          <path d="M 45 25 Q 95 50 140 65 L 140 28 Q 185 45 235 60 L 235 26 Q 285 40 330 52 L 330 25 Q 380 38 425 48 L 425 24 Q 470 34 515 42" fill="none" stroke="#107843" stroke-width="3" stroke-linecap="round"/>
+
+          <circle cx="140" cy="28" r="4" fill="#107843"/>
+          <circle cx="235" cy="26" r="4" fill="#107843"/>
+          <circle cx="330" cy="25" r="4" fill="#107843"/>
+          <circle cx="425" cy="24" r="4" fill="#107843"/>
+
+          <text x="140" y="16" text-anchor="middle" font-size="9" font-weight="700" fill="#107843">Powtórka 1</text>
+          <text x="235" y="14" text-anchor="middle" font-size="9" font-weight="700" fill="#107843">Powtórka 2</text>
+          <text x="330" y="13" text-anchor="middle" font-size="9" font-weight="700" fill="#107843">Powtórka 3</text>
+          <text x="425" y="12" text-anchor="middle" font-size="9" font-weight="700" fill="#107843">Powtórka 4</text>
+        </svg>
+      </div>
+
+      <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 16px;">
+        <div style="background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 12px; text-align: center;">
+          <div style="font-size: 11px; color: var(--muted); text-transform: uppercase; font-weight: 700;" data-i18n="fsrs_m_stab_lbl">Stabilność (S)</div>
+          <div style="font-size: 20px; font-weight: 800; color: var(--green); margin-top: 4px;" id="fsrsMetricStability">14.8 dni</div>
+          <div style="font-size: 10px; color: var(--muted);" data-i18n="fsrs_m_stab_sub">średni czas do 90% retencji</div>
+        </div>
+        <div style="background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 12px; text-align: center;">
+          <div style="font-size: 11px; color: var(--muted); text-transform: uppercase; font-weight: 700;" data-i18n="fsrs_m_diff_lbl">Trudność (D)</div>
+          <div style="font-size: 20px; font-weight: 800; color: var(--ink); margin-top: 4px;" id="fsrsMetricDifficulty">3.9 / 10</div>
+          <div style="font-size: 10px; color: var(--muted);" data-i18n="fsrs_m_diff_sub">współczynnik złożoności</div>
+        </div>
+        <div style="background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 12px; text-align: center;">
+          <div style="font-size: 11px; color: var(--muted); text-transform: uppercase; font-weight: 700;" data-i18n="fsrs_m_ret_lbl">Retencja (R)</div>
+          <div style="font-size: 20px; font-weight: 800; color: var(--green); margin-top: 4px;" id="fsrsMetricRetention">94.2%</div>
+          <div style="font-size: 10px; color: var(--muted);" data-i18n="fsrs_m_ret_sub">docelowy próg algorytmu</div>
+        </div>
+      </div>
+
+      <div style="font-size: 13px; line-height: 1.6; color: var(--muted); background: var(--surface); border-radius: 8px; padding: 12px 14px; border-left: 3px solid var(--green);">
+        <strong style="color: var(--ink);" data-i18n="fsrs_why_title">Dlaczego FSRS przewyższa tradycyjne metody?</strong>
+        <p style="margin: 4px 0 0;" data-i18n="fsrs_why_desc">
+          Zwykłe czytanie notatek daje złudzenie opanowania wiedzy (złudzenie płynności). Algorytm FSRS serwuje powtórki w punkcie krytycznym zapominania, zmuszając hipokamp do wzmocnienia połączeń synaptycznych przy minimalnym nakładzie czasu.
+        </p>
+      </div>
+
+      <div style="margin-top: 20px; display: flex; justify-content: flex-end;">
+        <button class="btn btn-primary" type="button" data-close data-i18n="btn_close">Zamknij</button>
+      </div>
+    </dialog>
+
+    <dialog id="printModal" aria-labelledby="printModalTitle" style="max-width: min(820px, calc(100vw - 32px)); width: min(820px, calc(100vw - 32px));">
+      <div class="dialog-top no-print">
+        <div>
+          <h2 id="printModalTitle" style="font-size: 22px;" data-i18n="print_modal_title">🖨️ Przygotuj fiszki do druku (A4)</h2>
+          <p style="font-size: 13px; margin: 4px 0 0;" data-i18n="print_modal_sub">Zestaw gotowy do wycięcia i nauki offline z przerywanymi liniami zagięcia.</p>
+        </div>
+        <button class="close-dialog" type="button" data-close aria-label="Zamknij podgląd druku">
+          <svg class="icon" aria-hidden="true"><use href="#i-close" /></svg>
+        </button>
+      </div>
+
+      <div class="no-print" style="display: flex; gap: 10px; justify-content: space-between; align-items: center; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 10px 14px; margin-bottom: 14px; flex-wrap: wrap;">
+        <span style="font-size: 13px; font-weight: 600;"><span id="printCardsCount">0</span> <span data-i18n="print_cards_in_deck">fiszek w aktywnej talii</span></span>
+        <div style="display: flex; gap: 8px;">
+          <button class="btn btn-primary" id="triggerPrintBtn" type="button" data-i18n="print_btn_action">🖨️ Drukuj teraz (Ctrl+P)</button>
+          <button class="btn btn-light" type="button" data-close data-i18n="btn_close">Zamknij</button>
+        </div>
+      </div>
+
+      <div class="print-sheet-grid" id="printSheetContainer">
+        <!-- Rendered dynamically by app.js -->
+      </div>
+    <!-- TOAST NOTIFICATION CONTAINER -->
+    <div id="toastContainer" class="toast-container" aria-live="polite" aria-atomic="true"></div>
+
+    <!-- RODO / GDPR COOKIE CONSENT BANNER -->
+    <div id="cookieBanner" class="cookie-banner" role="region" aria-label="Zgoda na pliki cookies" hidden>
+      <div class="cookie-content">
+        <div class="cookie-title">
+          <span>🍪</span> <span data-i18n="cookie_title">Prywatność & Pliki Cookie</span>
+        </div>
+        <p class="cookie-text" data-i18n="cookie_desc">
+          Używamy pamięci lokalnej (LocalStorage) oraz niezbędnych ciasteczek do zapamiętywania preferencji językowych, motywu i Twoich talii fiszek zgodnie z RODO. Nie prowadzimy inwazyjnego profilowania reklamowego.
+        </p>
+      </div>
+      <div class="cookie-actions">
+        <button class="btn btn-sm btn-light" id="cookiePrivacyBtn" type="button" data-open="privacyDialog" data-i18n="cookie_privacy_link">Polityka prywatności</button>
+        <button class="btn btn-sm btn-outline" id="cookieNecessaryBtn" type="button" data-i18n="cookie_necessary">Tylko niezbędne</button>
+        <button class="btn btn-sm btn-primary" id="cookieAcceptAllBtn" type="button" data-i18n="cookie_accept_all">Zezwól na wszystkie</button>
+      </div>
+    </div>
+
+    <!-- KEYBOARD SHORTCUTS CHEATSHEET MODAL -->
+    <dialog id="shortcutsModal" aria-labelledby="shortcutsModalTitle" style="max-width: min(640px, calc(100vw - 32px)); width: min(640px, calc(100vw - 32px));">
+      <div class="dialog-top">
+        <div>
+          <h2 id="shortcutsModalTitle" style="font-size: 22px;" data-i18n="shortcuts_title">⌨️ Skróty Klawiszowe</h2>
+          <p style="font-size: 13px; margin: 4px 0 0;" data-i18n="shortcuts_subtitle">Błyskawiczne sterowanie platformą bez odrywania rąk od klawiatury</p>
+        </div>
+        <button class="close-dialog" type="button" data-close aria-label="Zamknij skróty">
+          <svg class="icon" aria-hidden="true"><use href="#i-close" /></svg>
+        </button>
+      </div>
+
+      <div class="shortcuts-grid">
+        <div class="shortcut-row">
+          <span class="shortcut-desc" data-i18n="shortcut_space">Obróć bieżącą fiszkę (Pytanie / Odpowiedź)</span>
+          <span class="shortcut-kbd-group"><kbd>Spacja</kbd></span>
+        </div>
+        <div class="shortcut-row">
+          <span class="shortcut-desc" data-i18n="shortcut_arrows">Poprzednia / Następna fiszka w talii</span>
+          <span class="shortcut-kbd-group"><kbd>←</kbd> <kbd>→</kbd></span>
+        </div>
+        <div class="shortcut-row">
+          <span class="shortcut-desc" data-i18n="shortcut_fsrs">Ocena powtórki FSRS (1: Trudne, 2: Dobre, 3: Łatwe)</span>
+          <span class="shortcut-kbd-group"><kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd></span>
+        </div>
+        <div class="shortcut-row">
+          <span class="shortcut-desc" data-i18n="shortcut_enter">Sprawdź wpisaną odpowiedź (Tryb Wpisywanie)</span>
+          <span class="shortcut-kbd-group"><kbd>Enter</kbd></span>
+        </div>
+        <div class="shortcut-row">
+          <span class="shortcut-desc" data-i18n="shortcut_f">Przełącz na tryb Fiszki</span>
+          <span class="shortcut-kbd-group"><kbd>F</kbd></span>
+        </div>
+        <div class="shortcut-row">
+          <span class="shortcut-desc" data-i18n="shortcut_q">Przełącz na tryb Quiz</span>
+          <span class="shortcut-kbd-group"><kbd>Q</kbd></span>
+        </div>
+        <div class="shortcut-row">
+          <span class="shortcut-desc" data-i18n="shortcut_m">Przełącz na tryb Dopasowywanie</span>
+          <span class="shortcut-kbd-group"><kbd>M</kbd></span>
+        </div>
+        <div class="shortcut-row">
+          <span class="shortcut-desc" data-i18n="shortcut_t">Przełącz na tryb Wpisywanie (Active Recall)</span>
+          <span class="shortcut-kbd-group"><kbd>T</kbd></span>
+        </div>
+        <div class="shortcut-row">
+          <span class="shortcut-desc" data-i18n="shortcut_g">Otwórz Graf pojęć</span>
+          <span class="shortcut-kbd-group"><kbd>G</kbd></span>
+        </div>
+        <div class="shortcut-row">
+          <span class="shortcut-desc" data-i18n="shortcut_s">Otwórz Asystenta Sokratejskiego AI</span>
+          <span class="shortcut-kbd-group"><kbd>S</kbd></span>
+        </div>
+        <div class="shortcut-row">
+          <span class="shortcut-desc" data-i18n="shortcut_question">Otwórz / Zamknij to okno skrótów klawiszowych</span>
+          <span class="shortcut-kbd-group"><kbd>?</kbd></span>
+        </div>
+        <div class="shortcut-row">
+          <span class="shortcut-desc" data-i18n="shortcut_esc">Zamknij aktywne okno modalne lub asystenta</span>
+          <span class="shortcut-kbd-group"><kbd>Esc</kbd></span>
+        </div>
+      </div>
+
+      <div style="margin-top: 20px; display: flex; justify-content: flex-end;">
+        <button class="btn btn-primary" type="button" data-close data-i18n="btn_close">Zamknij</button>
+      </div>
+    </dialog>
+
+    <!-- MULTI-FORMAT EXPORT DIALOG -->
+    <dialog id="exportModal" aria-labelledby="exportModalTitle" style="max-width: min(540px, calc(100vw - 32px)); width: min(540px, calc(100vw - 32px));">
+      <div class="dialog-top">
+        <div>
+          <h2 id="exportModalTitle" style="font-size: 22px;" data-i18n="export_modal_title">📤 Eksportuj Talię Fiszek</h2>
+          <p style="font-size: 13px; margin: 4px 0 0;" data-i18n="export_modal_sub">Wybierz format eksportu dopasowany do Twojego ulubionego ekosystemu:</p>
+        </div>
+        <button class="close-dialog" type="button" data-close aria-label="Zamknij eksport">
+          <svg class="icon" aria-hidden="true"><use href="#i-close" /></svg>
+        </button>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 12px; margin: 18px 0;">
+        <button type="button" class="export-format-tile" id="exportFormatAnkiBtn">
+          <div class="export-tile-icon">⚡</div>
+          <div>
+            <div class="export-tile-title">Anki (.txt / TSV)</div>
+            <div class="export-tile-desc" data-i18n="export_fmt_anki">Format Anki (.txt / TSV) — bezpośredni import do Anki / AnkiWeb</div>
+          </div>
+        </button>
+        <button type="button" class="export-format-tile" id="exportFormatJsonBtn">
+          <div class="export-tile-icon">📦</div>
+          <div>
+            <div class="export-tile-title">JSON (.json)</div>
+            <div class="export-tile-desc" data-i18n="export_fmt_json">Format JSON (.json) — kompletna struktura danych i kopia zapasowa</div>
+          </div>
+        </button>
+        <button type="button" class="export-format-tile" id="exportFormatCsvBtn">
+          <div class="export-tile-icon">📊</div>
+          <div>
+            <div class="export-tile-title">CSV (.csv)</div>
+            <div class="export-tile-desc" data-i18n="export_fmt_csv">Arkusz kalkulacyjny (.csv) — dla Excela, Google Sheets i Numbers</div>
+          </div>
+        </button>
+      </div>
+
+      <div style="display: flex; justify-content: flex-end;">
+        <button class="btn btn-light" type="button" data-close data-i18n="btn_close">Zamknij</button>
+      </div>
+    </dialog>
+
+    <canvas id="confettiCanvas" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 99999; display: none;"></canvas>
+    <noscript
+      ><p class="container" style="padding: 24px 0">
+        Fiszki, quiz i warsztat nauki wymagają włączonej obsługi JavaScriptu w przeglądarce.
+        W razie pytań napisz do nas na
+        <a href="mailto:kontakt@tulislearn.abrdns.com"
+          >kontakt@tulislearn.abrdns.com</a
+        >.
+      </p></noscript
+    >
+  </body>
+</html>

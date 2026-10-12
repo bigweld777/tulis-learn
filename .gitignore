@@ -1,0 +1,11 @@
+# SQLite databases & temp files
+tulis.db
+tulis.db-wal
+tulis.db-shm
+
+node_modules/
+
+# OS & Logs
+*.log
+.DS_Store
+Thumbs.db
