@@ -4,6 +4,8 @@ tulis.db-wal
 tulis.db-shm
 
 node_modules/
+work/
+dist/
 
 # OS & Logs
 *.log

@@ -1,102 +1,91 @@
-# 🧠 Tulis Learn — Intelligent Spaced Repetition Platform
+# Tulis Learn
 
-Nowoczesna, w pełni responsywna platforma do efektywnej nauki oparta o algorytm **FSRS** (*Free Spaced Repetition Scheduler*), zintegrowana z bazą danych **SQLite (WAL mode)**, systemem uwierzytelniania, panelem zarządzania taliami, asystentem sokratejskim AI oraz zaawansowanymi trybami powtórek pamięciowych.
+Platforma do aktywnej nauki: fiszki z rzeczywistym harmonogramem FSRS, quiz, dopasowywanie, wpisywanie odpowiedzi i graf pojęć. Działa z serwerem Node.js/SQLite oraz jako lokalna aplikacja na hostingu statycznym. Opcjonalna integracja Gemini korzysta z klucza użytkownika.
 
----
+## Uruchomienie
 
-## ✨ Kluczowe Funkcje Platformy
+Wymagany Node.js 24. Nie trzeba instalować pakietów npm.
 
-- **Autentykacja & Baza Danych SQLite:**
-  - Wbudowany silnik **SQLite (WAL mode)** bez zewnętrznych kompilacji (`node:sqlite` w Node.js 24).
-  - Bezpieczne haszowanie haseł za pomocą `scryptSync` i kryptograficznych soli (`node:crypto`).
-  - Rejestracja, logowanie sesyjne (Bearer tokens), profil użytkownika, statystyki streak & retention.
-  - Szybkie logowanie jednym kliknięciem: **Konto demonstracyjne** (Tomasz Tulis · Plan PRO).
-- **Zarządzanie Taliami & Analityka:**
-  - Panel zarządzania (`#managementModal`) z zakładkami: Moje Talie, Historia Powtórek, Profil & Konto, Kopia Zapasowa.
-  - CRUD dla talii fiszek z bezpośrednim zapisem w bazie danych SQLite.
-  - Wizualny **Heatmap Aktywności (14 dni)** w stylu GitHub / Duolingo w profilu użytkownika.
-  - Rejestrowanie sesji powtórek w tabeli `study_logs`.
-  - Eksport i import bazy w formacie JSON (`GET /api/backup` & `POST /api/backup`).
-- **5 Zaawansowanych Trybów Nauki:**
-  1. 🃏 **Fiszki 3D:** Przestrzenne obracanie fiszek, ocena trudności (Trudne +1d, Dobre +3d, Łatwe +7d) z algorytmem FSRS, obsługa skrótów klawiaturowych (Spacja, Strzałki, 1/2/3).
-  2. 📝 **Quiz Wielokrotnego Wyboru:** Automatyczne generowanie realistycznych dystraktorów, pasek postępu i natychmiastowe wyjaśnienia.
-  3. ⚡ **Dopasowywanie na Czas:** Dynamiczna gra pamięciowa par pojęcie-definicja z pomiarem czasu.
-  4. ✍️ **Tryb Wpisywania (Type-in Active Recall):** Najskuteczniejsza metoda aktywnego odtwarzania z pamięci z inteligentnym porównywaniem tokenów i podświetlaniem różnic.
-  5. 🕸️ **Semantyczny Graf Pojęć:** Interaktywny graf wiedzy na silniku HTML5 Canvas (fizyka 2D, przeciąganie węzłów).
-- **Inteligentny Asystent Sokratejski AI:**
-  - Czat sokratejski w wysuwanej szufladzie z obsługą pytań użytkownika oraz 4 strategii: Technika Feynmana, Kotwica mnemotechniczna, Pytanie sokratejskie, Przykład z życia.
-  - Integracja na żywo z modelem wnioskowania **Gemini 3.8 Flash** z natychmiastowym fallbackiem semantycznym offline.
-- **Konfigurator Modeli AI (`#aiSettingsModal`):**
-  - Dostępny z paska nawigacji przycisk `⚡ Gemini 3.8`.
-  - Możliwość weryfikacji połączenia live z pomiarem pingu (ms) oraz opcjonalnego podpięcia własnego klucza API (zapisywanego lokalnie w `localStorage`).
-- **Progresywna Aplikacja PWA & Offline:**
-  - Zaimplementowany Service Worker (`sw.js`) z cache'owaniem zasobów statycznych i pełnym wsparciem offline.
-  - Aplikacja może być instalowana na urządzeniach mobilnych i desktopach.
-- **Architektura Dual-Mode (Node.js + GitHub Pages / Netlify Fallback):**
-  - **Tryb Full-Stack:** Po uruchomieniu `node server.js` całe API REST i baza SQLite działają lokalnie na `http://localhost:3000/`.
-  - **Tryb Statyczny (Offline Fallback):** Po wrzuceniu na **GitHub Pages** lub Netlify bez serwera Node, wbudowany mechanizm `localFallbackApi` w `app.js` automatycznie przejmuje zapytania i synchronizuje stan w `localStorage`.
-- **Wielojęzyczność (100% Parity):**
-  - Pełne wsparcie dla języka polskiego (PL) i angielskiego (EN) ze 100% symetrią kluczy tłumaczeń (214 kluczy).
+```sh
+node server.js
+```
 
----
+Otwórz `http://localhost:3000/`. Pierwsza wizyta otwiera osobną przestrzeń demonstracyjną z trzema taliami. Przycisk Demo nie loguje kolejnych osób do wspólnego konta. Wylogowanie jest zachowywane po odświeżeniu.
 
-## 🚀 Uruchomienie Lokalne (Full-Stack)
+Konfiguracja przez zmienne środowiskowe:
 
-1. Upewnij się, że masz zainstalowany **Node.js v22+** (rekomendowany v24 z natywnym `node:sqlite`).
-2. Uruchom serwer:
-   ```bash
-   node server.js
-   ```
-3. Otwórz w przeglądarce:
-   ```
-   http://localhost:3000/
-   ```
+| Zmienna | Domyślnie | Znaczenie |
+| --- | --- | --- |
+| `PORT` | `3000` | Port HTTP |
+| `HOST` | `127.0.0.1` | Interfejs nasłuchiwania |
+| `TULIS_DB_PATH` | `tulis.db` obok kodu | Lokalizacja SQLite; testy używają `:memory:` |
+| `PUBLIC_ORIGIN` | lokalny origin żądania | Docelowy origin HTTPS za reverse proxy; walidacja Host i Origin |
+| `DISABLE_DEMO` | `0` | Ustaw `1`, aby wyłączyć tworzenie kont demo |
 
-### Dane konta demonstracyjnego:
-- **E-mail:** `tomasz@tulislearn.com`
-- **Hasło:** `demo1234`
-- *(Możesz też kliknąć przycisk „Zaloguj jako Demo” w oknie logowania).*
+Przy publicznym wdrożeniu Node skonfiguruj HTTPS, stały `PUBLIC_ORIGIN`, trwały dysk dla SQLite i kopie bazy. Limiter działa na adres połączenia, bez zaufania do dowolnego `X-Forwarded-For`; przy reverse proxy trzeba także zastosować limitowanie na brzegu infrastruktury.
 
----
+## Architektura
 
-## 🧪 Testy Jakościowe i Bezpieczeństwa
+| Plik | Odpowiedzialność |
+| --- | --- |
+| `index.html`, `app.js` | Interfejs, i18n, pięć trybów nauki, klient API i integracja AI |
+| `api-contract.js` | Wspólna walidacja kont, talii, historii i kopii |
+| `server.js` | REST, autoryzacja, ograniczenia żądań, CSP i zamknięta lista zasobów publicznych |
+| `db.js` | SQLite/WAL, przygotowane zapytania, scrypt, sesje i transakcyjny import |
+| `local-api.js` | Lokalny adapter API, profile, Web Crypto PBKDF2, atomowy zapis i Web Locks |
+| `review-store.js` | Rzeczywiste stany FSRS, terminy powtórek, oceny i kopie harmonogramu |
+| `vendor/ts-fsrs.js` | Przypięta biblioteka `ts-fsrs` 5.4.2, MIT |
+| `sw.js`, `manifest.json` | Cache publicznej powłoki, offline, instalacja w katalogu głównym lub podkatalogu |
+| `build-static.js` | Przygotowanie wyłącznie publicznych plików do `dist/` |
+| `test_suite.js`, `regression-tests.js` | Oryginalne kontrole i testy regresji SQLite, fallbacku, FSRS i PWA |
 
-Projekt zawiera zautomatyzowany audyt weryfikujący spójność DOM, ikony SVG, klucze i18n, bezpieczeństwo blokad plików bazodanowych oraz endpointy REST API:
+### Dwa tryby zapisu
 
-```bash
+Serwer przechowuje konta, talie i historię w SQLite. Hosting statyczny korzysta z osobnej lokalnej bazy w `localStorage`. Oba adaptery stosują ten sam kontrakt walidacji, własność danych, wygasanie sesji i semantykę CRUD/importu. Lokalny profil nie jest zewnętrzną usługą tożsamości: osoba mająca dostęp do przeglądarki może odczytać lub zmienić jej pamięć.
+
+Tryb jest wybierany przez kontrolę `/api/health` i zapamiętywany dla originu. Błąd serwera nie uruchamia cichego zapisu do drugiej bazy. Przy niedostępnym serwerze można kontynuować naukę, pracować z lokalnym FSRS i wyeksportować notatki, ale zapis talii i historii na serwerze wymaga ponownego połączenia. Nie ma automatycznej synchronizacji lokalnej bazy z SQLite ani kolejki ponawiania zapisów. Po świadomej zmianie typu hostingu na tym samym originie usuń wyłącznie preferencję `tulis_api_mode` w narzędziach przeglądarki.
+
+Newsletter w SQLite rejestruje adres na liście; wysyłka wiadomości wymaga osobnej usługi. Tryb lokalny zwraca błąd dostępności, zamiast potwierdzać fikcyjną subskrypcję. Kontakt otwiera aplikację pocztową użytkownika.
+
+### FSRS
+
+Biblioteka `ts-fsrs` oblicza stabilność, trudność, szacowane przypomnienie i termin następnej powtórki. Przyciski prezentują interwały obliczone dla konkretnej fiszki. Dostępne są cztery oceny: Again, Hard, Good i Easy. Przycisk „Powtórz zaplanowane” wybiera fiszki wymagające nauki teraz.
+
+Harmonogram jest lokalny, rozdzielony według profilu i trybu zapisu, a fiszki są identyfikowane przez parę pytanie–odpowiedź. Identyczna para w dwóch taliach tego samego profilu współdzieli stan pamięci. Zmiana treści tworzy nową fiszkę. Domyślna docelowa retencja to 90%, bez losowego fuzzingu. Wykres w oknie analityki jest ilustracją; wartości liczbowe pochodzą z ocenionych fiszek. Quiz i porównanie wpisanego tekstu nie udają pomiaru pamięci ani automatycznej oceny FSRS.
+
+Kopia pobierana z panelu obejmuje talie, historię oraz lokalny harmonogram FSRS. Samo REST `GET /api/backup` zwraca talie i historię. Import jest dodający: nie usuwa istniejących talii. Dane SQLite są importowane w jednej transakcji, lokalna baza jednym zapisem. Harmonogram jest walidowany przed importem i łączony oddzielnie, zachowując nowsze oceny. Błąd jego zapisu po imporcie talii jest zgłaszany wprost. Historia ocen FSRS obejmuje ostatnie 2000 ocen; serwerowa kopia historii do 10 000 sesji.
+
+### AI i prywatność
+
+Własny klucz Gemini jest przechowywany w `sessionStorage` bieżącej karty, nigdy w kodzie ani w kopii zapasowej. Wywołania używają nagłówka `x-goog-api-key`, limitu czasu i wybranego modelu. Test połączenia wykonuje małą generację na wybranym modelu i może podlegać rozliczeniu dostawcy. Wywołania AI przesyłają wybrany tekst do Google; zasady retencji i wykorzystania danych wynikają z warunków dostawcy. Projekt nie gwarantuje Zero Data Retention.
+
+Bez klucza parser wyodrębnia istniejące pary i proste definicje. Asystent pokazuje wyraźnie oznaczone ćwiczenie lokalne. Nie zmyśla odpowiedzi i nie zastępuje nieudanego wyniku przykładową talią. Generowane odpowiedzi wymagają sprawdzenia przez użytkownika. Integracja Anthropic i Google OAuth nie są zaimplementowane i nie są oferowane w interfejsie.
+
+## Testy
+
+```sh
 node test_suite.js
+node build-static.js
 ```
 
-Wynik: **41/41 testów zdanych (100% pass rate)**.
+Zestaw sam uruchamia własny serwer na wolnym porcie i bazę SQLite w pamięci; nie wymaga działającego serwera i nie modyfikuje `tulis.db`. Sprawdza m.in. izolację użytkowników, błędne JSON-y/tokeny, limity rozmiaru, atomowy import, awarie pamięci, równoległe zapisy, wygaśnięcie sesji, stany i kopie FSRS oraz cache PWA w podkatalogu. Kontrole UI obejmują również rzeczywiste przepływy w przeglądarce; same testy tekstowe DOM nie dowodzą poprawności runtime.
 
----
+## Wdrożenie statyczne
 
-## 🌐 Wdrożenie na GitHub / GitHub Pages / Netlify
+Netlify odczyta `netlify.toml`, uruchomi `node build-static.js` i opublikuje tylko `dist/`. Nie publikuj katalogu repozytorium: zawiera kod serwera, testy i lokalną bazę. Build odmawia publikacji nieoczekiwanych starych plików w `dist/`.
 
-### 1. Inicjalizacja repozytorium Git (już wykonana):
-```bash
-git add .
-git commit -m "feat: complete Tulis Learn platform with SQLite, FSRS and Netlify support"
-```
+Dla GitHub Pages wybierz **Settings → Pages → Source: GitHub Actions**, a następnie ręcznie uruchom workflow **Publish public Tulis Learn assets**. Workflow najpierw uruchamia testy, a potem publikuje `dist/`. Jest uruchamiany wyłącznie na żądanie. Ścieżki aplikacji i service workera są względne, także pod `/nazwa-repozytorium/`. GitHub Pages nie stosuje pliku `_headers`; nagłówki CSP są aktywne na Node i Netlify.
 
-### 2. Podpięcie pod Twoje repozytorium na GitHubie (GitHub Student):
-1. Utwórz nowe, puste repozytorium na [github.com/new](https://github.com/new) (np. o nazwie `tulis-learn`).
-2. W terminalu wykonaj:
-```bash
-git remote add origin https://github.com/<TWOJ_LOGIN>/tulis-learn.git
-git branch -M main
-git push -u origin main
-```
+PWA wymaga HTTPS albo localhost. Po pierwszym udanym załadowaniu cache pozwala uruchomić powłokę offline; pierwsza wizyta bez sieci nie może pobrać aplikacji. Service worker nie cache'uje API, tokenów ani odpowiedzi zewnętrznego AI i usuwa wyłącznie własne stare cache.
 
-### 3. Automatyczne wdrożenie na Netlify (zalecane):
-1. Wejdź na [app.netlify.com](https://app.netlify.com) i kliknij **Add new site ➔ Import an existing project**.
-2. Wybierz **GitHub** i wskaż repozytorium `tulis-learn`.
-3. Parametry wdrożenia zostaną automatycznie wykryte z pliku `netlify.toml`:
-   - **Publish directory:** `.`
-   - **Build command:** *(pozostaw puste)*
-4. Kliknij **Deploy site**. Strona otrzyma natychmiast bezpłatny adres SSL (np. `tulis-learn.netlify.app`). Każdy kolejny `git push` zaktualizuje stronę automatycznie!
+## Zakres demonstratora
 
-### 4. Hosting na GitHub Pages (alternatywa):
-- W repozytorium GitHub: **Settings -> Pages**.
-- Wybierz źródło: `Deploy from a branch` -> branch `main` -> folder `/ (root)`.
-- Gotowe! Dzięki wbudowanemu `localFallbackApi` i `sw.js` aplikacja natychmiast działa w 100% w przeglądarce.
+Wersja nadaje się do demonstracji technicznej i dalszej walidacji produktu. Płatności, współdzielenie talii, reset hasła, weryfikacja e-mail, usuwanie konta i synchronizacja FSRS między urządzeniami nie są jeszcze wdrożone. Cennik opisuje propozycję przyszłej oferty. Przed uruchomieniem publicznej usługi potrzebne są te przepływy konta, polityka retencji i czyszczenia przestrzeni demo, obsługa operacyjna oraz niezależny przegląd bezpieczeństwa i dokumentów prywatności. Zielone testy nie zastępują tych prac.
+
+## Źródła i licencja zależności
+
+- [ts-fsrs](https://github.com/open-spaced-repetition/ts-fsrs), wersja 5.4.2; licencja w `vendor/LICENSE.ts-fsrs`. Integralność archiwum npm sprawdzono SHA-512: `z4qop4pzTcyTzuJ566d9EaX/4bZZzhYfeaPImfVr+xcYT65c5oBgFDijUhCE/D+C78eaolHIhKRZ04/RwF+v2g==`.
+- [Gemini GenerateContent](https://ai.google.dev/api/generate-content).
+- [GitHub Pages custom workflows](https://docs.github.com/en/pages/getting-started-with-github-pages/using-custom-workflows-with-github-pages).
+
+W trakcie przeglądu usunięto zakodowany w kodzie klucz API. Należy unieważnić go u dostawcy, ponieważ może pozostać w poprzednich commitach. Usunięcie ciągu z aktualnego pliku nie unieważnia credentiala.

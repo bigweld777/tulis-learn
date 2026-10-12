@@ -2,6 +2,11 @@ const fs = require("fs");
 const path = require("path");
 const http = require("http");
 
+process.env.TULIS_DB_PATH = ":memory:";
+const server = require("./server.js").createServer();
+server.listen(0, "127.0.0.1", runSuite);
+function runSuite() {
+const BASE = "http://127.0.0.1:" + server.address().port;
 console.log("=== TULIS LEARN COMPREHENSIVE TEST SUITE ===");
 let passed = 0;
 let failed = 0;
@@ -32,7 +37,7 @@ assert(missingIcons.length === 0, `All SVG icon <use> references resolve (${icon
 const htmlIds = new Set([...html.matchAll(/id="([a-zA-Z0-9_-]+)"/g)].map(m => m[1]));
 
 // 3. Extract $(id) calls from app.js
-const jsDollarIds = [...js.matchAll(/\$\("([a-zA-Z0-9_-]+)"\)/g)].map(m => m[1]);
+const jsDollarIds = [...js.matchAll(/\$\(\s*["']([a-zA-Z0-9_-]+)["']\s*\)/g)].map(m => m[1]);
 const missingJsIds = [...new Set(jsDollarIds)].filter(id => !htmlIds.has(id));
 assert(missingJsIds.length === 0, `All $(id) DOM queries in app.js exist in index.html (checked ${new Set(jsDollarIds).size} unique IDs, missing: ${missingJsIds.join(", ") || "none"})`);
 
@@ -72,7 +77,7 @@ const foundTokens = draftTokens.filter(t => upperHtml.includes(t));
 assert(foundTokens.length === 0, `Clean production copy without prototype/draft tokens (found: ${foundTokens.join(", ") || "none"})`);
 
 // 7. Verify local dev server HTTP 200 response & Security Headers
-const req = http.get("http://localhost:3000/", (res) => {
+const req = http.get(BASE + "/", (res) => {
   let body = "";
   res.on("data", chunk => body += chunk);
   res.on("end", () => {
@@ -102,7 +107,7 @@ const req = http.get("http://localhost:3000/", (res) => {
 
 function httpGet(path) {
   return new Promise((resolve) => {
-    http.get(`http://localhost:3000${path}`, (res) => {
+    http.get(`${BASE}${path}`, (res) => {
       let data = "";
       res.on("data", c => data += c);
       res.on("end", () => resolve({ status: res.statusCode, data, headers: res.headers }));
@@ -113,7 +118,7 @@ function httpGet(path) {
 function httpPost(path, body = {}, headers = {}) {
   return new Promise((resolve) => {
     const payload = typeof body === "string" ? body : JSON.stringify(body);
-    const req = http.request(`http://localhost:3000${path}`, {
+    const req = http.request(`${BASE}${path}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -166,7 +171,7 @@ async function runExtendedTests() {
   // Test /api/decks with Bearer token
   const token = authData.token;
   const decksRes = await new Promise((resolve) => {
-    http.get("http://localhost:3000/api/decks", { headers: { "Authorization": `Bearer ${token}` } }, (res) => {
+    http.get(BASE + "/api/decks", { headers: { "Authorization": `Bearer ${token}` } }, (res) => {
       let d = "";
       res.on("data", c => d += c);
       res.on("end", () => resolve({ status: res.statusCode, data: JSON.parse(d || "{}") }));
@@ -176,7 +181,7 @@ async function runExtendedTests() {
 
   // Test /api/backup export
   const backupRes = await new Promise((resolve) => {
-    http.get("http://localhost:3000/api/backup", { headers: { "Authorization": `Bearer ${token}` } }, (res) => {
+    http.get(BASE + "/api/backup", { headers: { "Authorization": `Bearer ${token}` } }, (res) => {
       let d = "";
       res.on("data", c => d += c);
       res.on("end", () => resolve({ status: res.statusCode, data: JSON.parse(d || "{}") }));
@@ -215,6 +220,7 @@ async function runExtendedTests() {
   const newsInvalidRes = await httpPost("/api/newsletter", { email: "invalid-email" });
   assert(newsInvalidRes.status === 400, "API POST /api/newsletter rejects invalid email format (400 Bad Request)");
 
+  await require("./regression-tests.js")({ assert, base: BASE, db: require("./db.js") });
   console.log(`\nTEST SUITE SUMMARY: ${passed} passed, ${failed} failed`);
   process.exit(failed > 0 ? 1 : 0);
 }
@@ -225,3 +231,5 @@ req.on("error", (err) => {
   console.log(`\nTEST SUITE SUMMARY: ${passed} passed, ${failed} failed`);
   process.exit(1);
 });
+
+}

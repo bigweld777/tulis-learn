@@ -1,382 +1,171 @@
-const http = require('http');
-const fs = require('fs');
-const path = require('path');
+'use strict';
+const http = require('node:http');
+const fs = require('node:fs');
+const path = require('node:path');
 const db = require('./db.js');
-
-const PORT = 3000;
-
-// Process-level resilience against crashes
-process.on('uncaughtException', (err) => {
-  console.error('[SERVER RESILIENCE] Uncaught Exception caught safely:', err.message);
-});
-process.on('unhandledRejection', (reason) => {
-  console.error('[SERVER RESILIENCE] Unhandled Rejection caught safely:', reason);
-});
-
-const MIME_TYPES = {
-  '.html': 'text/html; charset=utf-8',
-  '.js': 'text/javascript; charset=utf-8',
-  '.css': 'text/css; charset=utf-8',
-  '.json': 'application/json; charset=utf-8',
-  '.svg': 'image/svg+xml',
-  '.txt': 'text/plain; charset=utf-8',
-  '.xml': 'application/xml; charset=utf-8',
-  '.ico': 'image/x-icon',
-  '.png': 'image/png',
-  '.jpg': 'image/jpeg',
-  '.webp': 'image/webp'
-};
+const contract = require('./api-contract.js');
 
 const SECURITY_HEADERS = {
-  'X-Content-Type-Options': 'nosniff',
-  'X-Frame-Options': 'SAMEORIGIN',
+  'X-Content-Type-Options': 'nosniff', 'X-Frame-Options': 'SAMEORIGIN',
   'Referrer-Policy': 'strict-origin-when-cross-origin',
   'Permissions-Policy': 'camera=(), microphone=(), geolocation=()',
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-  'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS'
+  'Content-Security-Policy': "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' https://generativelanguage.googleapis.com; object-src 'none'; base-uri 'self'; frame-ancestors 'self'; form-action 'self'",
+  'Cross-Origin-Resource-Policy': 'same-origin'
 };
+const PUBLIC_FILES = new Set(['index.html', 'app.js', 'api-contract.js', 'local-api.js', 'review-store.js', 'vendor/ts-fsrs.js', 'favicon.svg', 'icon-192.png', 'icon-512.png', 'manifest.json', 'sw.js', '404.html', 'robots.txt', 'sitemap.xml']);
+const MIME_TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.json': 'application/json; charset=utf-8', '.svg': 'image/svg+xml', '.png': 'image/png', '.txt': 'text/plain; charset=utf-8', '.xml': 'application/xml; charset=utf-8' };
+const MAX_BODY = 2 * 1024 * 1024;
 
+/** Drain oversized requests so the client receives a real 413 response. */
 function parseJsonBody(req) {
   return new Promise((resolve, reject) => {
-    let body = '';
+    const chunks = [];
+    let bytes = 0;
+    let tooLarge = false;
     req.on('data', chunk => {
-      body += chunk;
-      if (body.length > 2 * 1024 * 1024) { // 2MB limit
-        req.destroy();
-        const err = new Error('Payload too large');
-        err.statusCode = 413;
-        reject(err);
-      }
+      bytes += chunk.length;
+      if (bytes > MAX_BODY) {
+        if (!tooLarge) { tooLarge = true; chunks.length = 0; reject(Object.assign(new Error('Payload too large'), { statusCode: 413 })); }
+      } else if (!tooLarge) chunks.push(chunk);
     });
     req.on('end', () => {
-      if (!body) return resolve({});
-      try {
-        resolve(JSON.parse(body));
-      } catch (err) {
-        const parseErr = new Error('Invalid JSON format');
-        parseErr.statusCode = 400;
-        reject(parseErr);
-      }
+      if (tooLarge) return;
+      try { resolve(contract.object(JSON.parse(Buffer.concat(chunks).toString('utf8') || '{}'))); }
+      catch (error) { reject(Object.assign(error, { statusCode: 400 })); }
     });
-    req.on('error', (err) => {
-      err.statusCode = 400;
-      reject(err);
-    });
+    req.on('error', reject);
+    req.on('aborted', () => reject(Object.assign(new Error('Request aborted'), { statusCode: 400 })));
   });
 }
-
-function sendJson(res, statusCode, data) {
-  res.writeHead(statusCode, {
-    'Content-Type': 'application/json; charset=utf-8',
-    ...SECURITY_HEADERS
-  });
+function sendJson(res, status, data) {
+  res.writeHead(status, { ...SECURITY_HEADERS, 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' });
   res.end(JSON.stringify(data));
 }
-
-function getAuthUser(req) {
-  const authHeader = req.headers['authorization'] || '';
-  let token = '';
-  if (authHeader.startsWith('Bearer ')) {
-    token = authHeader.slice(7).trim();
-  }
-  if (!token && req.headers['cookie']) {
-    const match = req.headers['cookie'].match(/tulis_token=([a-zA-Z0-9_-]+)/);
-    if (match) token = match[1];
-  }
-  if (!token) return null;
-  return db.getUserByToken(token);
+function tokenOf(req) {
+  const header = req.headers.authorization || '';
+  return /^Bearer [a-f0-9]{64}$/.test(header) ? header.slice(7) : '';
 }
-
-const server = http.createServer(async (req, res) => {
-  try {
-    // CORS Preflight
-    if (req.method === 'OPTIONS') {
-      res.writeHead(204, SECURITY_HEADERS);
-      res.end();
-      return;
-    }
-
-    let urlObj;
+function requireUser(req) {
+  const user = db.getUserByToken(tokenOf(req));
+  if (!user) contract.fail('Wymagane logowanie.', 401);
+  return user;
+}
+/** Each instance owns its limiter; tests run against an isolated database. */
+function createServer() {
+  const buckets = new Map();
+  function rateLimit(req, auth) {
+    const now = Date.now();
+    for (const [key, value] of buckets) if (value.until <= now) buckets.delete(key);
+    const key = `${req.socket.remoteAddress}:${auth ? 'auth' : 'api'}`;
+    const entry = buckets.get(key) || { count: 0, until: now + 60000 };
+    entry.count++;
+    buckets.set(key, entry);
+    if (entry.count > (auth ? 20 : 240)) contract.fail('Zbyt wiele żądań. Spróbuj za minutę.', 429);
+  }
+  const server = http.createServer(async (req, res) => {
     try {
-      urlObj = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
-    } catch {
-      res.writeHead(400, { 'Content-Type': 'text/plain; charset=utf-8', ...SECURITY_HEADERS });
-      res.end('Bad Request: Invalid URL');
-      return;
-    }
-
-    const pathname = urlObj.pathname;
-
-    // === REST API ROUTES ===
-    if (pathname.startsWith('/api/')) {
-      try {
-        // 1. Auth Register
-        if (pathname === '/api/auth/register' && req.method === 'POST') {
+      const host = new URL(`http://${req.headers.host || 'localhost'}`).hostname;
+      const allowedHosts = process.env.PUBLIC_ORIGIN ? [new URL(process.env.PUBLIC_ORIGIN).hostname] : ['localhost', '127.0.0.1', '[::1]'];
+      if (!allowedHosts.includes(host)) contract.fail('Host not allowed', 403);
+      const url = new URL(req.url, 'http://localhost');
+      let pathname;
+      try { pathname = decodeURIComponent(url.pathname); } catch { contract.fail('Malformed URI', 400); }
+      if (pathname.includes('\0')) contract.fail('Invalid path', 400);
+      if (pathname.startsWith('/api/')) {
+        const origin = req.headers.origin;
+        const expectedOrigin = process.env.PUBLIC_ORIGIN || `http://${req.headers.host}`;
+        if (origin && origin !== expectedOrigin) contract.fail('Origin not allowed', 403);
+        rateLimit(req, pathname.startsWith('/api/auth/') && req.method === 'POST');
+        const route = `${req.method} ${pathname}`;
+        if (route === 'GET /api/health') return sendJson(res, 200, { success: true, status: 'operational', uptime: Math.round(process.uptime()), timestamp: new Date().toISOString() });
+        if (route === 'GET /api/stats') return sendJson(res, 200, { success: true, stats: db.getPlatformStats() });
+        if (route === 'POST /api/auth/register') {
+          const body = contract.credentials(await parseJsonBody(req), true);
+          if (db.getUserByEmail(body.email)) contract.fail('Konto o tym adresie e-mail już istnieje.', 409);
+          const user = db.createUser(body.email, body.name, body.password, 'starter');
+          return sendJson(res, 201, { success: true, user, token: db.createSession(user.id).token });
+        }
+        if (route === 'POST /api/auth/login') {
+          const body = contract.credentials(await parseJsonBody(req));
+          const user = db.getUserByEmail(body.email);
+          if (!user || !db.verifyPassword(body.password, user.password_hash)) contract.fail('Nieprawidłowy e-mail lub hasło.', 401);
+          return sendJson(res, 200, { success: true, user: db.getUserById(user.id), token: db.createSession(user.id).token });
+        }
+        if (route === 'POST /api/auth/demo') {
+          if (process.env.DISABLE_DEMO === '1') contract.fail('Demo disabled', 403);
+          return sendJson(res, 200, { success: true, ...db.createDemoSession() });
+        }
+        if (route === 'POST /api/newsletter') {
           const body = await parseJsonBody(req);
-          const { email, name, password } = body;
-          if (!email || !name || !password || password.length < 5) {
-            return sendJson(res, 400, { success: false, error: 'Wypełnij wszystkie pola (hasło min. 5 znaków).' });
-          }
-          const existing = db.getUserByEmail(email);
-          if (existing) {
-            return sendJson(res, 409, { success: false, error: 'Konto o tym adresie e-mail już istnieje.' });
-          }
-          const user = db.createUser(email, name, password, 'pro');
-          const session = db.createSession(user.id);
-          return sendJson(res, 201, { success: true, user, token: session.token });
-        }
-
-        // 2. Auth Login
-        if (pathname === '/api/auth/login' && req.method === 'POST') {
-          const body = await parseJsonBody(req);
-          const { email, password } = body;
-          if (!email || !password) {
-            return sendJson(res, 400, { success: false, error: 'Podaj adres e-mail i hasło.' });
-          }
-          const user = db.getUserByEmail(email);
-          if (!user || !db.verifyPassword(password, user.password_hash)) {
-            return sendJson(res, 401, { success: false, error: 'Nieprawidłowy e-mail lub hasło.' });
-          }
-          const session = db.createSession(user.id);
-          const safeUser = db.getUserById(user.id);
-          return sendJson(res, 200, { success: true, user: safeUser, token: session.token });
-        }
-
-        // 3. Demo Quick Login
-        if (pathname === '/api/auth/demo' && req.method === 'POST') {
-          let demoUser = db.getUserByEmail('tomasz@tulislearn.com');
-          if (!demoUser) {
-            demoUser = db.createUser('tomasz@tulislearn.com', 'Tomasz Tulis', 'demo1234', 'pro');
-          }
-          const session = db.createSession(demoUser.id);
-          const safeUser = db.getUserById(demoUser.id);
-          return sendJson(res, 200, { success: true, user: safeUser, token: session.token });
-        }
-
-        // 4. Current User (Auth Me)
-        if (pathname === '/api/auth/me' && req.method === 'GET') {
-          const user = getAuthUser(req);
-          if (!user) {
-            return sendJson(res, 401, { success: false, error: 'Brak aktywnej sesji' });
-          }
-          return sendJson(res, 200, { success: true, user });
-        }
-
-        // 5. Auth Logout
-        if (pathname === '/api/auth/logout' && req.method === 'POST') {
-          const authHeader = req.headers['authorization'] || '';
-          let token = authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : '';
-          if (token) db.deleteSession(token);
-          return sendJson(res, 200, { success: true, message: 'Wylogowano pomyślnie' });
-        }
-
-        // 6. User Decks: GET & POST
-        if (pathname === '/api/decks' && req.method === 'GET') {
-          const user = getAuthUser(req);
-          const userId = user ? user.id : 1; // Default to demo user if unauthenticated
-          const decks = db.getUserDecks(userId);
-          return sendJson(res, 200, { success: true, decks });
-        }
-
-        if (pathname === '/api/decks' && req.method === 'POST') {
-          const user = getAuthUser(req);
-          if (!user) return sendJson(res, 401, { success: false, error: 'Wymagane logowanie' });
-          const body = await parseJsonBody(req);
-          const { title, category, content, card_count } = body;
-          if (!title || !content) {
-            return sendJson(res, 400, { success: false, error: 'Tytuł i zawartość są wymagane' });
-          }
-          const deck = db.createDeck(user.id, title, category, content, card_count);
-          return sendJson(res, 201, { success: true, deck });
-        }
-
-        // 7. Deck specific: PUT & DELETE
-        const deckMatch = pathname.match(/^\/api\/decks\/(\d+)$/);
-        if (deckMatch) {
-          const deckId = parseInt(deckMatch[1], 10);
-          const user = getAuthUser(req);
-          if (!user) return sendJson(res, 401, { success: false, error: 'Wymagane logowanie' });
-
-          if (req.method === 'PUT') {
-            const body = await parseJsonBody(req);
-            const { title, content, card_count } = body;
-            const updated = db.updateDeck(deckId, user.id, title, content, card_count);
-            return sendJson(res, 200, { success: true, deck: updated });
-          }
-
-          if (req.method === 'DELETE') {
-            const ok = db.deleteDeck(deckId, user.id);
-            return sendJson(res, 200, { success: ok });
-          }
-        }
-
-        // 8. Study Log: POST & GET
-        if (pathname === '/api/study/log' && req.method === 'POST') {
-          const user = getAuthUser(req);
-          const userId = user ? user.id : 1;
-          const body = await parseJsonBody(req);
-          const { deck_title, mode, score } = body;
-          db.logStudy(userId, deck_title || 'Talia', mode || 'Fiszki', score || 'Ukończono');
-
-          if (user) {
-            const newStreak = (user.streak || 5) + 1;
-            db.updateUserStats(user.id, newStreak, user.retention || '95.0%');
-          }
+          db.subscribeNewsletter(contract.email(body.email));
           return sendJson(res, 200, { success: true });
         }
-
-        if (pathname === '/api/study/history' && req.method === 'GET') {
-          const user = getAuthUser(req);
-          const userId = user ? user.id : 1;
-          const logs = db.getUserStudyLogs(userId);
-          return sendJson(res, 200, { success: true, logs });
+        const user = requireUser(req);
+        if (route === 'GET /api/auth/me') return sendJson(res, 200, { success: true, user });
+        if (route === 'POST /api/auth/logout') {
+          db.deleteSession(tokenOf(req));
+          return sendJson(res, 200, { success: true });
         }
-
-        // 9. Platform Overview Stats
-        if (pathname === '/api/stats' && req.method === 'GET') {
-          const stats = db.getPlatformStats();
-          return sendJson(res, 200, { success: true, stats });
+        if (route === 'GET /api/decks') return sendJson(res, 200, { success: true, decks: db.getUserDecks(user.id) });
+        if (route === 'POST /api/decks') {
+          const body = contract.deck(await parseJsonBody(req));
+          return sendJson(res, 201, { success: true, deck: db.createDeck(user.id, body.title, body.category, body.content, body.card_count) });
         }
-
-        // 10. Backup Export (GET) & Import (POST)
-        if (pathname === '/api/backup' && req.method === 'GET') {
-          const user = getAuthUser(req);
-          const userId = user ? user.id : 1;
-          const decks = db.getUserDecks(userId);
-          const logs = db.getUserStudyLogs(userId);
-          return sendJson(res, 200, {
-            success: true,
-            backup: {
-              export_date: new Date().toISOString(),
-              user: user || { name: 'Gość' },
-              decks,
-              logs
-            }
-          });
-        }
-
-        if (pathname === '/api/backup' && req.method === 'POST') {
-          const user = getAuthUser(req);
-          if (!user) return sendJson(res, 401, { success: false, error: 'Wymagane logowanie' });
-          const body = await parseJsonBody(req);
-          if (!body || !Array.isArray(body.decks)) {
-            return sendJson(res, 400, { success: false, error: 'Nieprawidłowy format kopii zapasowej.' });
+        const match = pathname.match(/^\/api\/decks\/(\d+)$/);
+        if (match && ['PUT', 'DELETE'].includes(req.method)) {
+          const id = Number(match[1]);
+          if (!Number.isSafeInteger(id)) contract.fail('Invalid deck ID');
+          const existing = db.getUserDecks(user.id).find(deck => deck.id === id);
+          if (!existing) contract.fail('Nie znaleziono talii.', 404);
+          if (req.method === 'DELETE') {
+            db.deleteDeck(id, user.id);
+            return sendJson(res, 200, { success: true });
           }
-          let imported = 0;
-          for (const d of body.decks) {
-            if (d && d.title && d.content) {
-              db.createDeck(user.id, d.title, d.category || 'Import', d.content, d.card_count || 4);
-              imported++;
-            }
-          }
-          const updatedDecks = db.getUserDecks(user.id);
-          return sendJson(res, 200, { success: true, imported, decks: updatedDecks });
+          const body = contract.deck({ ...existing, ...await parseJsonBody(req) });
+          return sendJson(res, 200, { success: true, deck: db.updateDeck(id, user.id, body.title, body.content, body.card_count, body.category) });
         }
-
-        // 11. Health Check
-        if (pathname === '/api/health' && req.method === 'GET') {
-          return sendJson(res, 200, {
-            success: true,
-            status: 'operational',
-            uptime: Math.round(process.uptime()),
-            timestamp: new Date().toISOString()
-          });
+        if (route === 'POST /api/study/log') {
+          const body = contract.study(await parseJsonBody(req));
+          db.logStudy(user.id, body.deck_title, body.mode, body.score);
+          return sendJson(res, 200, { success: true, user: db.getUserById(user.id) });
         }
-
-        // 12. Newsletter Subscription
-        if (pathname === '/api/newsletter' && req.method === 'POST') {
-          const body = await parseJsonBody(req);
-          const email = (body.email || '').trim();
-          const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-          if (!email || !emailRegex.test(email)) {
-            return sendJson(res, 400, { success: false, error: 'Podaj poprawny adres e-mail.' });
-          }
-          db.subscribeNewsletter(email);
-          return sendJson(res, 200, {
-            success: true,
-            message: 'Dziękujemy za zapis do biuletynu kognitywnego!'
-          });
-        }
-
-        return sendJson(res, 404, { success: false, error: 'Endpoint not found' });
-      } catch (err) {
-        console.error('API Error:', err.message);
-        const code = err.statusCode || 500;
-        return sendJson(res, code, { success: false, error: err.message });
+        if (route === 'GET /api/study/history') return sendJson(res, 200, { success: true, logs: db.getUserStudyLogs(user.id) });
+        if (route === 'GET /api/backup') return sendJson(res, 200, { success: true, backup: { version: 1, export_date: new Date().toISOString(), user, decks: db.getUserDecks(user.id), logs: db.getUserStudyLogs(user.id, 10000) } });
+        if (route === 'POST /api/backup') return sendJson(res, 200, { success: true, ...db.importBackup(user.id, await parseJsonBody(req)) });
+        contract.fail('Endpoint not found', 404);
       }
+      if (!['GET', 'HEAD'].includes(req.method)) contract.fail('Method not allowed', 405);
+      const relative = pathname === '/' ? 'index.html' : pathname.slice(1);
+      // The allowlist blocks .git, nested dotfiles, configs and unknown files.
+      if (!PUBLIC_FILES.has(relative)) contract.fail('Forbidden', 403);
+      const filename = path.join(__dirname, relative);
+      const real = await fs.promises.realpath(filename).catch(() => null);
+      if (!real) contract.fail('Not found', 404);
+      const within = path.relative(__dirname, real);
+      if (within.startsWith('..') || path.isAbsolute(within)) contract.fail('Forbidden', 403);
+      const content = await fs.promises.readFile(real);
+      res.writeHead(200, { ...SECURITY_HEADERS, 'Content-Type': MIME_TYPES[path.extname(relative)] || 'application/octet-stream', 'Content-Length': content.length, 'Cache-Control': 'no-cache', ...(relative === 'sw.js' ? { 'Service-Worker-Allowed': '/' } : {}) });
+      res.end(req.method === 'HEAD' ? undefined : content);
+    } catch (error) {
+      const status = error.statusCode || 500;
+      if (status === 500) console.error('Request failed:', error.message);
+      if (!res.headersSent && !res.destroyed) sendJson(res, status, { success: false, error: status === 500 ? 'Internal server error' : error.message });
+      else if (!res.destroyed) res.end();
     }
-
-    // === STATIC FILE SERVING WITH STRICT SECURITY ===
-    let reqPath;
-    try {
-      reqPath = decodeURIComponent(pathname);
-    } catch {
-      res.writeHead(400, { 'Content-Type': 'text/plain; charset=utf-8', ...SECURITY_HEADERS });
-      res.end('Bad Request: Malformed URI');
-      return;
-    }
-
-    if (reqPath === '/' || reqPath === '') reqPath = '/index.html';
-
-    // Normalize and sanitize path
-    const safeRelative = path.normalize(reqPath).replace(/^(\.\.[\/\\])+/, '');
-    const filePath = path.join(__dirname, safeRelative);
-
-    // Security check 1: Directory traversal defense
-    if (!filePath.startsWith(__dirname)) {
-      res.writeHead(403, { 'Content-Type': 'text/plain; charset=utf-8', ...SECURITY_HEADERS });
-      res.end('Forbidden: Directory traversal denied');
-      return;
-    }
-
-    // Security check 2: Block server code, database files, and sensitive configurations
-    const baseName = path.basename(filePath).toLowerCase();
-    const ext = path.extname(filePath).toLowerCase();
-    const blockedFiles = new Set(['server.js', 'db.js', 'test_suite.js', 'package.json', 'package-lock.json', '.gitignore']);
-
-    if (
-      blockedFiles.has(baseName) ||
-      baseName.startsWith('.') ||
-      ext === '.db' ||
-      baseName.includes('.db-') ||
-      ext === '.wal' ||
-      ext === '.shm' ||
-      ext === '.log' ||
-      ext === '.sqlite'
-    ) {
-      res.writeHead(403, { 'Content-Type': 'text/plain; charset=utf-8', ...SECURITY_HEADERS });
-      res.end('Forbidden: Access to sensitive file is prohibited');
-      return;
-    }
-
-    fs.stat(filePath, (err, stats) => {
-      if (err || !stats.isFile()) {
-        res.writeHead(404, { 'Content-Type': 'text/html; charset=utf-8', ...SECURITY_HEADERS });
-        res.end('<!DOCTYPE html><html><head><meta charset="utf-8"><title>404 Not Found</title></head><body><h1>404 Not Found</h1><p><a href="/">Powrót do Tulis Learn</a></p></body></html>');
-        return;
-      }
-
-      const contentType = MIME_TYPES[ext] || 'application/octet-stream';
-
-      res.writeHead(200, {
-        'Content-Type': contentType,
-        'Cache-Control': (ext === '.html' || baseName === 'sw.js') ? 'no-cache' : 'public, max-age=3600',
-        'Service-Worker-Allowed': '/',
-        ...SECURITY_HEADERS
-      });
-
-      fs.createReadStream(filePath).pipe(res);
-    });
-  } catch (globalErr) {
-    console.error('[SERVER GLOBAL CATCH]:', globalErr);
-    if (!res.headersSent) {
-      res.writeHead(500, { 'Content-Type': 'text/plain; charset=utf-8', ...SECURITY_HEADERS });
-      res.end('Internal Server Error');
-    }
-  }
-});
-
-server.listen(PORT, '127.0.0.1', () => {
-  console.log(`Tulis Learn server with SQLite DB running at: http://localhost:${PORT}/`);
-});
+  });
+  server.requestTimeout = 15000;
+  server.headersTimeout = 10000;
+  return server;
+}
+if (require.main === module) {
+  const server = createServer();
+  const port = Number(process.env.PORT || 3000);
+  const host = process.env.HOST || '127.0.0.1';
+  server.listen(port, host, () => console.log(`Tulis Learn: http://${host}:${port}/`));
+  server.on('error', error => { console.error(error.message); process.exitCode = 1; });
+  for (const signal of ['SIGINT', 'SIGTERM']) process.once(signal, () => {
+    server.close(() => { db.db.close(); process.exit(0); });
+    server.closeIdleConnections();
+  });
+}
+module.exports = { createServer, parseJsonBody };

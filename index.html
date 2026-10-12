@@ -13,11 +13,11 @@
     <link rel="canonical" href="https://tulislearn.abrdns.com/" />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://tulislearn.abrdns.com/" />
-    <meta property="og:title" content="Tulis Learn — Ucz się 3x szybciej z silnikiem AI i FSRS" />
+    <meta property="og:title" content="Tulis Learn — Ucz się aktywnie z silnikiem AI i FSRS" />
     <meta property="og:description" content="Nowoczesna platforma edukacyjna. Zamień notatki w interaktywne fiszki i quizy zoptymalizowane pod algorytm powtórek FSRS." />
     <meta property="og:site_name" content="Tulis Learn" />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Tulis Learn — Ucz się 3x szybciej z silnikiem AI" />
+    <meta name="twitter:title" content="Tulis Learn — Ucz się aktywnie z silnikiem AI" />
     <meta name="twitter:description" content="Przekształć własne notatki w fiszki i quizy. Ucz się aktywnie i bez wysiłku." />
     <link rel="manifest" href="manifest.json" />
     <link
@@ -232,11 +232,12 @@
         font-size: 11px;
       }
       .menu-toggle {
+        color: var(--ink);
         display: none;
         width: 42px;
         height: 42px;
         padding: 10px;
-        background: white;
+        background: var(--surface);
         border: 1px solid var(--line);
         border-radius: 9px;
       }
@@ -389,7 +390,7 @@
         font-size: 8px;
         letter-spacing: 1.4px;
       }
-      .preview-card h3 {
+      .preview-card h2 {
         margin: 17px auto;
         max-width: 260px;
         font-size: 23px;
@@ -1271,28 +1272,6 @@
       .access-form .btn {
         width: 100%;
       }
-      .signup-draft {
-        background: #f1f7ed;
-        border: 1px solid #dae7d3;
-        border-radius: 12px;
-        padding: 17px;
-        margin-top: 20px;
-      }
-      .signup-draft h3 {
-        margin-top: 0;
-      }
-      .signup-draft textarea {
-        min-height: 140px;
-        font-size: 11px;
-        margin-top: 10px;
-      }
-      .signup-draft .btn {
-        width: 100%;
-        margin-top: 12px;
-      }
-      .signup-draft .micro {
-        font-size: 10px;
-      }
       @media (min-width: 1500px) {
         .hero {
           padding-block: 100px 85px;
@@ -1373,7 +1352,7 @@
           padding: 10px;
           font-size: 9px;
         }
-        .preview-card h3 {
+        .preview-card h2 {
           font-size: 20px;
         }
         .hero-actions .btn {
@@ -1741,7 +1720,7 @@
         color: var(--white);
         border-color: var(--green);
       }
-      .ai-simulate-btn {
+      .ai-extract-btn {
         background: linear-gradient(135deg, #1b5334 0%, #246b45 100%);
         color: var(--white);
         border: 1px solid #144026;
@@ -1756,11 +1735,11 @@
         box-shadow: 0 4px 14px rgba(36,107,69,0.25);
         transition: transform 0.18s, box-shadow 0.18s;
       }
-      .ai-simulate-btn:hover {
+      .ai-extract-btn:hover {
         transform: translateY(-2px);
         box-shadow: 0 6px 20px rgba(36,107,69,0.35);
       }
-      .ai-simulate-btn.loading {
+      .ai-extract-btn.loading {
         opacity: 0.8;
         cursor: wait;
         animation: pulse 1.2s infinite;
@@ -1871,20 +1850,6 @@
         font-size: 12px;
         color: var(--muted);
         line-height: 1.5;
-      }
-      .waitlist-ticket {
-        background: #eef8f1;
-        border: 1px solid #b7e3c5;
-        border-radius: 12px;
-        padding: 18px;
-        margin-top: 16px;
-        text-align: center;
-      }
-      .ticket-num {
-        font-size: 26px;
-        font-weight: 800;
-        color: var(--green);
-        letter-spacing: -0.5px;
       }
       /* === ULTRA-PREMIUM KOGNITYWNY DARK MODE (VENTURE-READY) === */
       body.dark-theme {
@@ -2010,7 +1975,7 @@
         background: #18281e;
         border: 1px solid #284232;
       }
-      body.dark-theme .preview-card h3 {
+      body.dark-theme .preview-card h2 {
         color: #eaf3ed;
       }
       body.dark-theme .preview-card p {
@@ -2073,13 +2038,13 @@
         border-color: #203528;
         color: #eaf3ed;
       }
-      body.dark-theme .ai-simulate-btn {
+      body.dark-theme .ai-extract-btn {
         background: linear-gradient(135deg, #165b35 0%, #228b50 100%);
         color: #ffffff;
         border-color: #2ecc71;
         box-shadow: 0 4px 16px rgba(46, 204, 113, 0.28);
       }
-      body.dark-theme .ai-simulate-btn:hover {
+      body.dark-theme .ai-extract-btn:hover {
         background: linear-gradient(135deg, #1a6d40 0%, #2ecc71 100%);
       }
 
@@ -2369,11 +2334,6 @@
         background: #131f17;
         border-color: #243c2c;
       }
-      body.dark-theme .auth-google-btn {
-        background: #18271e;
-        border-color: #253a2c;
-        color: #eaf3ed;
-      }
       body.dark-theme .auth-divider span {
         background: #131f17;
         color: #8ea195;
@@ -2420,18 +2380,6 @@
         background: #1c2e22;
         color: #eaf3ed;
         box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
-      }
-      body.dark-theme .waitlist-ticket {
-        background: #14281d;
-        border-color: #274734;
-        color: #eaf3ed;
-      }
-      body.dark-theme .ticket-num {
-        color: #2ecc71;
-      }
-      body.dark-theme .auth-google-btn:hover {
-        background: #1e3124;
-        border-color: #2ecc71;
       }
       body.dark-theme #authFeedback {
         background: #3b1717 !important;
@@ -2619,10 +2567,12 @@
         min-width: 220px;
       }
       .deck-tools {
-        display: flex;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        width: 100%;
         gap: 6px;
-        flex-wrap: wrap;
       }
+      .editor .deck-tools .btn { margin-top: 0; min-height: 40px; }
       .btn-sm {
         padding: 6px 12px;
         font-size: 12px;
@@ -2864,24 +2814,6 @@
       .auth-header {
         text-align: center;
         margin-bottom: 24px;
-      }
-      .auth-google-btn {
-        width: 100%;
-        padding: 12px;
-        border: 1px solid var(--line);
-        border-radius: 10px;
-        background: var(--white);
-        font-weight: 700;
-        font-size: 13px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 10px;
-        cursor: pointer;
-        transition: background 0.15s;
-      }
-      .auth-google-btn:hover {
-        background: #f7faf7;
       }
       .auth-divider {
         display: flex;
@@ -3547,7 +3479,61 @@
         font-size: 12px;
         color: var(--muted);
       }
+      /* Interaction, contrast and compact viewport refinements. */
+      :root { color-scheme: light; }
+      body.dark-theme { color-scheme: dark; --muted: #a4b8aa; }
+      :where(button, a, input, textarea, select, [tabindex]):focus-visible {
+        outline: 3px solid #2b9f67; outline-offset: 4px;
+      }
+      button:disabled { cursor: default; }
+      .study, .workspace > *, .mgmt-deck-info, .card-navigation { min-width: 0; }
+      .flashcard, .card-text, .quiz-option, .match-card, .mgmt-deck-title, dialog { overflow-wrap: anywhere; }
+      .match-card { font: inherit; color: var(--ink); }
+      .storage-mode { color: var(--muted); font-size: 12px; margin-bottom: 12px; min-height: 18px; }
+      .graph-accessible-list { position: absolute; left: 12px; right: 12px; bottom: 8px; }
+      .graph-accessible-list details { max-height: 230px; overflow: auto; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 8px; }
+      .graph-accessible-list summary { cursor: pointer; color: var(--ink); font-size: 12px; }
+      .graph-accessible-list ul { padding-left: 20px; }
+      .graph-accessible-list button { text-align: left; color: var(--ink); background: transparent; border: 0; padding: 8px; }
+      #graphCanvas { touch-action: none; }
+      dialog { max-height: calc(100dvh - 32px); overflow-y: auto; overscroll-behavior: contain; }
+      body.dark-theme .feedback-exact, body.dark-theme .feedback-close, body.dark-theme .feedback-wrong { color: #132a1e; }
+      body.dark-theme .btn-primary { color: #fff; background: #246b45; }
+      body.dark-theme .mgmt-deck-row, body.dark-theme .mgmt-log-row { background: var(--surface); }
+      .srs-actions { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .footer-links { flex-wrap: wrap; min-width: 0; }
+      .footer-links > * { overflow-wrap: anywhere; }
+      .nav-controls { min-width: 0; }
+      .theme-toggle-btn { flex-shrink: 0; }
+      body:has(dialog[open]) { overflow: hidden; }
+      @media (max-width: 960px) {
+        .demo-grid { grid-template-columns: minmax(0, 1fr); }
+        .editor { border-right: 0; border-bottom: 1px solid var(--line); }
+      }
+      @media (max-width: 600px) {
+        .srs-buttons, .card-navigation, .socratic-custom-box, .study-tabs, .tabs { flex-wrap: wrap; }
+        .srs-btn { flex: 1 1 40%; min-height: 44px; }
+        .mgmt-deck-row { align-items: flex-start; flex-direction: column; gap: 12px; }
+        .mgmt-deck-actions { flex-wrap: wrap; }
+        .auth-switch, .mgmt-tabs { flex-wrap: wrap; }
+        .graph-container { min-width: 0; }
+        #socraticCustomInput { width: 100%; min-width: 0; }
+        .price-grid { grid-template-columns: minmax(0, 1fr) !important; }
+        .shortcuts-grid { grid-template-columns: minmax(0, 1fr); }
+        .nav-auth-group { max-width: 100%; }
+        .nav-controls { flex-wrap: wrap; order: 3; width: 100%; }
+        #navAiSettingsBtn { white-space: nowrap; }
+        #navShortcutsBtn { display: none; }
+        .lang-btn { padding-inline: 6px; }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        *, *::before, *::after { scroll-behavior: auto !important; animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+      }
     </style>
+    <script src="api-contract.js" defer></script>
+    <script src="local-api.js" defer></script>
+    <script src="vendor/ts-fsrs.js" defer></script>
+    <script src="review-store.js" defer></script>
     <script src="app.js" defer></script>
   </head>
   <body>
@@ -3632,7 +3618,7 @@
           <a href="#plany" data-i18n="nav_plans">Cennik</a>
           <a href="#faq" data-i18n="nav_faq">FAQ</a>
         </div>
-        <div style="display: flex; align-items: center; gap: 8px;">
+        <div class="nav-controls" style="display: flex; align-items: center; gap: 8px;">
           <button type="button" class="theme-toggle-btn" id="navAiSettingsBtn" data-open="aiSettingsModal" aria-label="Konfiguracja modeli AI" title="Konfiguracja modeli AI & API" style="width: auto; padding: 0 10px; font-size: 11px; gap: 4px; display: inline-flex; align-items: center; font-weight: 600;">⚡ Gemini 3.8</button>
           <button type="button" class="theme-toggle-btn" id="soundToggleBtn" aria-label="Włącz/wyłącz efekty dźwiękowe" title="Efekty dźwiękowe (Wycisz/Włącz)">🔊</button>
           <button type="button" class="theme-toggle-btn" id="themeToggleBtn" aria-label="Przełącz motyw ciemny/jasny" title="Przełącz motyw ciemny/jasny">🌙</button>
@@ -3656,9 +3642,9 @@
             <button type="button" class="btn btn-sm btn-light" id="navMgmtBtn" data-open="managementModal" style="display: flex; align-items: center; gap: 6px;">
               <span class="user-avatar-sm" id="navUserAvatar" style="width: 22px; height: 22px; font-size: 10px;">TT</span>
               <span id="navUserName" style="font-weight: 600;">Tomasz Tulis</span>
-              <span class="badge-plan" style="font-size: 10px; padding: 1px 5px;">PRO</span>
+              <span class="badge-plan" id="navUserBadge" style="font-size: 10px; padding: 1px 5px;">DEMO</span>
             </button>
-            <button type="button" class="btn btn-sm btn-outline" id="navLogoutBtn" title="Wyloguj się" style="padding: 4px 8px; font-size: 12px;">🚪</button>
+            <button type="button" class="btn btn-sm btn-outline" id="navLogoutBtn" aria-label="Wyloguj się" title="Wyloguj się" style="padding: 4px 8px; font-size: 12px;">🚪</button>
           </div>
         </div>
         <button
@@ -3680,13 +3666,11 @@
             <span class="dot" aria-hidden="true"></span><span data-i18n="hero_badge">Platforma Edukacyjna AI · Nowa Generacja</span>
           </div>
           <h1 id="heroTitle">
-            <span data-i18n="hero_h1_1">Ucz się 3x szybciej.</span><br /><span data-i18n="hero_h1_2">Pamiętaj na zawsze.</span><br /><span class="highlight" data-i18n="hero_h1_3"
-              >Zasilane przez AI.</span
+            <span data-i18n="hero_h1_1">Zrozum więcej.</span><br /><span data-i18n="hero_h1_2">Wracaj w dobrym czasie.</span><br /><span class="highlight" data-i18n="hero_h1_3"
+              >Ucz się aktywnie.</span
             >
           </h1>
-          <p class="hero-description" data-i18n="hero_desc">
-            Przekształć własne notatki, podręczniki i wykłady w interaktywne fiszki z algorytmem FSRS, quizy oraz gry pamięciowe. Ucz się aktywnie i bez wysiłku.
-          </p>
+          <p class="hero-description" data-i18n="hero_desc">Zamień notatki w fiszki, sprawdź wiedzę w pięciu trybach i planuj powtórki z FSRS. Zacznij lokalnie; dodaj własny klucz, gdy potrzebujesz AI.</p>
           <div class="hero-actions">
             <a class="btn btn-primary" href="#aplikacja" id="heroTryBtn" data-i18n="hero_try_btn"
               >Rozpocznij naukę bezpłatnie
@@ -3707,20 +3691,20 @@
           </p>
           <div class="hero-stats">
             <div class="stat-card">
-              <div class="stat-number">14,800+</div>
-              <div class="stat-label" data-i18n="stat_cards">Fiszek wygenerowanych</div>
+              <div class="stat-number">5</div>
+              <div class="stat-label" data-i18n="stat_cards">trybów nauki</div>
             </div>
             <div class="stat-card">
-              <div class="stat-number">98.4%</div>
-              <div class="stat-label" data-i18n="stat_retention">Zdawalność egzaminów</div>
+              <div class="stat-number">FSRS</div>
+              <div class="stat-label" data-i18n="stat_retention">adaptacyjne powtórki</div>
             </div>
             <div class="stat-card">
-              <div class="stat-number">&lt; 0.8s</div>
-              <div class="stat-label" data-i18n="stat_speed">Czas ekstrakcji AI</div>
+              <div class="stat-number">Offline</div>
+              <div class="stat-label" data-i18n="stat_speed">lokalna nauka</div>
             </div>
             <div class="stat-card">
-              <div class="stat-number">4.9 / 5</div>
-              <div class="stat-label" data-i18n="stat_rating">Średnia ocen studentów</div>
+              <div class="stat-number">PL / EN</div>
+              <div class="stat-label" data-i18n="stat_rating">dwa języki</div>
             </div>
           </div>
         </div>
@@ -3736,7 +3720,7 @@
             </div>
             <div class="preview-card">
               <div class="eyebrow">METODY NAUKI · FISZKA 01</div>
-              <h3>Na czym polega aktywne przypominanie?</h3>
+              <h2>Na czym polega aktywne przypominanie?</h2>
               <p>Najpierw pomyśl. Potem sprawdź odpowiedź.</p>
             </div>
             <div class="preview-bottom">
@@ -3783,17 +3767,14 @@
             </div>
             <h2 id="demoTitle" data-i18n="workspace_title">Mniej teorii. Więcej pamiętania.</h2>
           </div>
-          <p class="section-description" data-i18n="workspace_desc">
-            Wybierz gotowy zestaw lub wklej dowolny materiał. Silnik AI
-            błyskawicznie wygeneruje fiszki, quiz oraz grę pamięciową.
-          </p>
+          <p class="section-description" data-i18n="workspace_desc">Wybierz talię lub wpisz pary pytanie | odpowiedź. Lokalny parser działa offline; generacja AI wymaga własnego klucza Gemini.</p>
         </div>
         <div class="demo-shell">
           <div class="user-dashboard-strip">
             <div class="dash-stats-group">
               <div class="dash-stat">🔥 <strong id="streakCount">5</strong> <span data-i18n="dash_streak">dni serii</span></div>
               <div class="dash-stat">📚 <strong id="deckCount">3</strong> <span data-i18n="dash_decks">zestawy</span></div>
-              <div class="dash-stat" data-open="fsrsAnalyticsModal" role="button" tabindex="0" style="cursor: pointer;" title="Analityka pamięci FSRS">🎯 <strong id="masteryRate">94.2%</strong> <span data-i18n="dash_retention">retencji FSRS</span> <span style="font-size: 11px; opacity: 0.7;">↗</span></div>
+              <div class="dash-stat" data-open="fsrsAnalyticsModal" role="button" tabindex="0" style="cursor: pointer;" title="Analityka pamięci FSRS">🎯 <strong id="masteryRate">—</strong> <span data-i18n="dash_retention">retencji FSRS</span> <span style="font-size: 11px; opacity: 0.7;">↗</span></div>
             </div>
             <div class="dash-user-pill" id="dashUserPill" data-open="managementModal" role="button" tabindex="0" title="Otwórz panel zarządzania i talii" style="cursor: pointer;">
               <span class="user-avatar-sm" id="dashUserAvatar">TT</span>
@@ -3847,10 +3828,10 @@ Jaki gaz roślina pobiera podczas fotosyntezy? | Dwutlenek węgla.</textarea>
                     <use href="#i-spark" /></svg
                   ><span>Kompiluj fiszki</span>
                 </button>
-                <button class="ai-simulate-btn" id="simulateClaudeBtn" type="button" data-i18n="btn_ai_simulate">
+                <button class="ai-extract-btn" id="extractAiBtn" type="button" data-i18n="btn_ai_simulate">
                   <svg class="icon" aria-hidden="true">
                     <use href="#i-spark" /></svg
-                  ><span id="simulateClaudeBtnText">✨ Inteligentna ekstrakcja AI</span>
+                  ><span id="extractAiBtnText">✨ Inteligentna ekstrakcja AI</span>
                 </button>
               </div>
               <p
@@ -3861,6 +3842,7 @@ Jaki gaz roślina pobiera podczas fotosyntezy? | Dwutlenek węgla.</textarea>
               ></p>
             </div>
             <div class="study">
+              <div id="storageMode" class="storage-mode" role="status">…</div>
               <div class="study-top">
                 <span class="study-title"
                   ><span class="step-number">02 / </span><span data-i18n="study_title">Przestrzeń powtórki</span></span
@@ -3950,7 +3932,7 @@ Jaki gaz roślina pobiera podczas fotosyntezy? | Dwutlenek węgla.</textarea>
                   >
                 </button>
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 6px;">
-                  <button class="socratic-trigger-btn" id="socraticBtn" type="button" title="Zapytaj asystenta AI o to pojęcie" aria-expanded="false" data-i18n="socratic_btn">
+                  <button class="socratic-trigger-btn" id="socraticBtn" aria-controls="socraticDrawer" type="button" title="Zapytaj asystenta AI o to pojęcie" aria-expanded="false" data-i18n="socratic_btn">
                     💡 Asystent Sokratejski AI
                   </button>
                   <button class="tts-btn" id="ttsBtn" type="button" title="Odsłuchaj wymowę (Audio TTS)" aria-label="Odsłuchaj treść fiszki" data-i18n="tts_btn">
@@ -3969,11 +3951,12 @@ Jaki gaz roślina pobiera podczas fotosyntezy? | Dwutlenek węgla.</textarea>
                     <button class="socratic-chip" data-prompt="example" type="button" data-i18n="socratic_example">🌍 Przykład z życia</button>
                   </div>
                   <div class="socratic-custom-box">
-                    <input type="text" id="socraticCustomInput" class="field-input socratic-input" placeholder="Zadaj własne pytanie asystentowi AI..." data-i18n-placeholder="socratic_custom_ph" />
+                    <input type="text" id="socraticCustomInput" aria-label="Pytanie do asystenta / Question for tutor" class="field-input socratic-input" placeholder="Zadaj własne pytanie asystentowi AI..." data-i18n-placeholder="socratic_custom_ph" />
                     <button type="button" id="socraticSendBtn" class="btn btn-sm btn-primary" data-i18n="socratic_send_btn">Zapytaj 🚀</button>
                   </div>
-                  <div class="socratic-response" id="socraticResponse" style="display: none;"></div>
+                  <div class="socratic-response" id="socraticResponse" role="status" aria-live="polite" style="display: none;"></div>
                 </div>
+                <button type="button" class="btn btn-sm btn-light" id="dueReviewBtn" data-i18n="due_review" style="margin-top: 12px;">Powtórz zaplanowane</button>
                 <div class="card-navigation">
                   <button class="btn btn-light" id="prev" type="button" data-i18n="btn_prev">
                     <svg class="icon" aria-hidden="true">
@@ -3995,6 +3978,7 @@ Jaki gaz roślina pobiera podczas fotosyntezy? | Dwutlenek węgla.</textarea>
                     <span id="srsBadge" style="font-weight: 600; color: var(--green);"></span>
                   </div>
                   <div class="srs-actions">
+                    <button type="button" class="srs-btn srs-hard" id="srsAgainBtn" data-srs="again">Jeszcze raz</button>
                     <button type="button" class="srs-btn srs-hard" id="srsHardBtn" data-srs="hard" data-i18n="srs_hard">Trudne (+1 d)</button>
                     <button type="button" class="srs-btn srs-med" id="srsGoodBtn" data-srs="good" data-i18n="srs_med">Dobre (+3 d)</button>
                     <button type="button" class="srs-btn srs-easy" id="srsEasyBtn" data-srs="easy" data-i18n="srs_easy">Łatwe (+7 d)</button>
@@ -4084,8 +4068,9 @@ Jaki gaz roślina pobiera podczas fotosyntezy? | Dwutlenek węgla.</textarea>
                   <button class="btn btn-light" id="resetGraphBtn" type="button" style="padding: 4px 10px; font-size: 12px;" data-i18n="graph_reset">↺ Wycentruj</button>
                 </div>
                 <div class="graph-wrapper">
-                  <canvas id="graphCanvas" class="graph-canvas" width="600" height="340"></canvas>
-                  <div class="graph-tooltip" id="graphTooltip" style="display: none;"></div>
+                  <canvas role="img" aria-label="Graf pojęć; lista pojęć i odpowiedzi dostępna poniżej" id="graphCanvas" class="graph-canvas" width="600" height="340"></canvas>
+                  <div id="graphAccessibleList" class="graph-accessible-list"></div>
+                  <div class="graph-tooltip" id="graphTooltip" role="status" style="display: none;"></div>
                 </div>
                 <p class="study-help" style="margin-top: 8px;" data-i18n="graph_help">
                   Wizualizacja zależności pojęciowych w talii. Przeciągaj węzły, kliknij dwukrotnie, aby przejść do fiszki.
@@ -4101,9 +4086,9 @@ Jaki gaz roślina pobiera podczas fotosyntezy? | Dwutlenek węgla.</textarea>
                     <div class="type-q-tag">PYTANIE</div>
                     <h3 class="type-question" id="typeQuestion">...</h3>
                   </div>
-                  <form id="typeForm" onsubmit="event.preventDefault();" style="margin-top: 14px;">
+                  <form id="typeForm" style="margin-top: 14px;">
                     <label for="typeInput" class="field-label" data-i18n="type_label">Wpisz odpowiedź z pamięci (Active Recall):</label>
-                    <input type="text" id="typeInput" class="field-input" placeholder="Wpisz definicję..." autocomplete="off" />
+                    <input type="text" id="typeInput" aria-label="Twoja odpowiedź / Your answer" class="field-input" placeholder="Wpisz definicję..." autocomplete="off" />
                     <div style="display: flex; gap: 8px; margin-top: 10px;">
                       <button class="btn btn-primary" id="typeCheckBtn" type="submit" data-i18n="type_btn_check">Sprawdź odpowiedź (Enter)</button>
                       <button class="btn btn-light" id="typeSkipBtn" type="button" data-i18n="type_btn_skip">Pokaż odpowiedź</button>
@@ -4172,8 +4157,7 @@ Jaki gaz roślina pobiera podczas fotosyntezy? | Dwutlenek węgla.</textarea>
             </div>
             <h3>Prywatność i bezpieczeństwo</h3>
             <p>
-              Twoje notatki i materiały są poufne. Przetwarzanie i ekstrakcja
-              odbywają się w bezpiecznym standardzie bez trenowania modeli na Twoich danych.
+              Lokalny parser pracuje na urządzeniu. Generacja AI wymaga własnego klucza i przesyła wybrany tekst do Google zgodnie z zasadami dostawcy.
             </p>
             <span class="feature-foot">Poufność · Bezpieczeństwo wiedzy</span>
           </article>
@@ -4203,10 +4187,7 @@ Jaki gaz roślina pobiera podczas fotosyntezy? | Dwutlenek węgla.</textarea>
             <svg class="icon" aria-hidden="true"><use href="#i-cards" /></svg>
             <div>
               <h3 data-i18n="tech_feat1_h">Ważne pojęcia, wyłuskane z kontekstu</h3>
-              <p data-i18n="tech_feat1_p">
-                Błyskawiczna analiza materiałów pozwala generować fiszki i quizy
-                w ułamku sekundy, bez żmudnego ręcznego przepisywania.
-              </p>
+              <p data-i18n="tech_feat1_p">Parser przekształca pary i proste definicje w fiszki. Z własnym kluczem możesz wygenerować pytania z surowych notatek.</p>
             </div>
           </article>
           <article class="technology-item">
@@ -4222,11 +4203,8 @@ Jaki gaz roślina pobiera podczas fotosyntezy? | Dwutlenek węgla.</textarea>
           <article class="technology-item">
             <svg class="icon" aria-hidden="true"><use href="#i-lock" /></svg>
             <div>
-              <h3 data-i18n="tech_feat3_h">Prywatność i ochrona własności intelektualnej</h3>
-              <p data-i18n="tech_feat3_p">
-                Działamy w architekturze Zero Data Retention — korzystamy z bezpiecznego
-                bezstanowego API bez trenowania modeli bazowych na notatkach użytkownika.
-              </p>
+              <h3 data-i18n="tech_feat3_h">Kontrola nad materiałami</h3>
+              <p data-i18n="tech_feat3_p">Lokalny parser nie wysyła notatek. Generacja AI wymaga Twojego klucza i przesyła wybrany tekst do Google.</p>
             </div>
           </article>
         </div>
@@ -4239,17 +4217,17 @@ Jaki gaz roślina pobiera podczas fotosyntezy? | Dwutlenek węgla.</textarea>
             <div class="pipeline-step">
               <span class="pipeline-step-badge" data-i18n="pipe1_badge">KROK 1 · Szybka Ingestia</span>
               <h4 data-i18n="pipe1_h">Ingestia & Segmentacja</h4>
-              <p data-i18n="pipe1_p">Rozbijanie surowego tekstu lub PDF na atomowe jednostki logiczne i wykrywanie terminologii z ultra-niską latencją (&lt; 0.6s).</p>
+              <p data-i18n="pipe1_p">Odczyt tekstu lub plików TXT i CSV z parami pytanie–odpowiedź.</p>
             </div>
             <div class="pipeline-step">
               <span class="pipeline-step-badge" data-i18n="pipe2_badge">KROK 2 · Głębokie Rozumowanie</span>
               <h4 data-i18n="pipe2_h">Analiza Semantyczna</h4>
-              <p data-i18n="pipe2_p">Weryfikacja zależności przyczynowo-skutkowych. Odrzucenie faktograficznych halucynacji i tworzenie pytań problemowych.</p>
+              <p data-i18n="pipe2_p">Opcjonalny model Gemini tworzy pytania z Twojego tekstu. Sprawdź poprawność wygenerowanych odpowiedzi.</p>
             </div>
             <div class="pipeline-step">
               <span class="pipeline-step-badge" data-i18n="pipe3_badge">KROK 3 · Pętla Sokratyczna</span>
               <h4 data-i18n="pipe3_h">Pętla Sokratyczna</h4>
-              <p data-i18n="pipe3_p">Gdy uczeń popełnia błąd, model nie narzuca gotowca – zadaje adaptacyjne pytanie naprowadzające na zrozumienie.</p>
+              <p data-i18n="pipe3_p">Wybierz pytanie sokratejskie lub prośbę o wyjaśnienie. Bez klucza otrzymasz lokalne ćwiczenie do samodzielnej refleksji.</p>
             </div>
             <div class="pipeline-step">
               <span class="pipeline-step-badge" data-i18n="pipe4_badge">KROK 4 · Algorytm FSRS</span>
@@ -4259,53 +4237,53 @@ Jaki gaz roślina pobiera podczas fotosyntezy? | Dwutlenek węgla.</textarea>
           </div>
         </div>
         <p class="technology-note">
-          <span data-i18n="tech_note">Architektura Tulis Learn łączy wysokowydajne modele językowe Frontier LLM z adaptacyjnym silnikiem powtórek FSRS. Wszystkie zapytania są szyfrowane i przetwarzane bezstanowo, z zachowaniem pełnej poufności materiałów użytkownika.</span>
+          <span data-i18n="tech_note">Talie i historia są przechowywane w SQLite lub lokalnie w przeglądarce. Harmonogram FSRS jest zapisywany na urządzeniu. Wywołania AI podlegają polityce dostawcy.</span>
         </p>
       </section>
       <!-- SEKCJA OPINIE / TESTIMONIALS -->
       <section id="opinie" class="testimonials container" aria-labelledby="opinieTitle">
         <div class="center-heading">
-          <div class="eyebrow" data-i18n="testi_eyebrow">SPOŁECZNOŚĆ AKTYWNYCH STUDENTÓW</div>
-          <h2 id="opinieTitle" data-i18n="testi_title">Co mówią osoby, które uczą się z Tulis Learn?</h2>
-          <p data-i18n="testi_desc">Dołącz do ponad 450 studentów i specjalistów oszczędzających setki godzin na nauce.</p>
+          <div class="eyebrow" data-i18n="testi_eyebrow">SCENARIUSZE NAUKI</div>
+          <h2 id="opinieTitle" data-i18n="testi_title">Trzy sposoby na aktywną naukę</h2>
+          <p data-i18n="testi_desc">Przykładowe sposoby wykorzystania platformy w nauce.</p>
         </div>
         <div class="testimonial-grid">
           <article class="testimonial-card">
             <div>
-              <div class="testi-stars">★★★★★</div>
-              <p class="testi-text" data-i18n="testi_1_text">„Zdałam anatomię prawidłową w 1. terminie! Wrzucam skany wykładów, a silnik AI wyciąga najtrudniejsze zależności i tworzy fiszki, których nie muszę pisać ręcznie.”</p>
+              <div class="testi-stars"></div>
+              <p class="testi-text" data-i18n="testi_1_text">Medycyna: zamień definicje z wykładu w fiszki i sprawdzaj je w quizie przed egzaminem.</p>
             </div>
             <div class="testi-author">
               <div class="testi-avatar">KM</div>
               <div>
-                <div class="testi-name">Katarzyna M.</div>
-                <div class="testi-role" data-i18n="testi_1_role">Kierunek Lekarski · Collegium Medicum UJ</div>
+                <div class="testi-name">Scenariusz · Medycyna</div>
+                <div class="testi-role" data-i18n="testi_1_role">Definicje · Aktywne przypominanie</div>
               </div>
             </div>
           </article>
           <article class="testimonial-card">
             <div>
-              <div class="testi-stars">★★★★★</div>
-              <p class="testi-text" data-i18n="testi_2_text">„Algorytm FSRS w połączeniu z trybem dopasowywania to absolutny game-changer. Uczę się algorytmów i sieci komputerowych 3 razy szybciej niż z suchych slajdów.”</p>
+              <div class="testi-stars"></div>
+              <p class="testi-text" data-i18n="testi_2_text">Informatyka: łącz pojęcia w grafie i wyjaśniaj własnymi słowami działanie algorytmów.</p>
             </div>
             <div class="testi-author">
               <div class="testi-avatar">MK</div>
               <div>
-                <div class="testi-name">Michał K.</div>
-                <div class="testi-role" data-i18n="testi_2_role">Informatyka · Politechnika Warszawska</div>
+                <div class="testi-name">Scenariusz · Informatyka</div>
+                <div class="testi-role" data-i18n="testi_2_role">Algorytmy · Powiązania pojęć</div>
               </div>
             </div>
           </article>
           <article class="testimonial-card">
             <div>
-              <div class="testi-stars">★★★★★</div>
-              <p class="testi-text" data-i18n="testi_3_text">„Do egzaminu na aplikację radcowską materiału jest za dużo na zwykłe notatki. Tulis Learn pozwala mi powtarzać kodeksy w tramwaju i sprawdzać się w szybkich quizach.”</p>
+              <div class="testi-stars"></div>
+              <p class="testi-text" data-i18n="testi_3_text">Prawo: porządkuj pojęcia w taliach i planuj kolejne powtórki na podstawie własnych ocen.</p>
             </div>
             <div class="testi-author">
               <div class="testi-avatar">AW</div>
               <div>
-                <div class="testi-name">Aleksandra W.</div>
-                <div class="testi-role" data-i18n="testi_3_role">Aplikantka Radcowska · OIRP Wrocław</div>
+                <div class="testi-name">Scenariusz · Prawo</div>
+                <div class="testi-role" data-i18n="testi_3_role">Pojęcia · Regularne powtórki</div>
               </div>
             </div>
           </article>
@@ -4317,7 +4295,7 @@ Jaki gaz roślina pobiera podczas fotosyntezy? | Dwutlenek węgla.</textarea>
         <div class="center-heading">
           <div class="eyebrow" data-i18n="pricing_eyebrow">TRANSPARENTNE PAKIETY</div>
           <h2 id="plansTitle" data-i18n="pricing_title">Wybierz plan dopasowany do Twojej nauki</h2>
-          <p data-i18n="pricing_desc">Zacznij bezpłatnie na zawsze. Odblokuj pełną moc AI, gdy zbliża się sesja.</p>
+          <p data-i18n="pricing_desc">Wersja demonstracyjna jest bezpłatna. Ceny Pro i Campus to propozycja przyszłej oferty; płatności i współdzielenie nie są jeszcze dostępne.</p>
           <div class="pricing-toggle">
             <span style="font-size: 13px; font-weight: 600;" data-i18n="bill_monthly">Miesięcznie</span>
             <div class="toggle-pill">
@@ -4338,7 +4316,7 @@ Jaki gaz roślina pobiera podczas fotosyntezy? | Dwutlenek węgla.</textarea>
             <ul class="price-list">
               <li><svg class="icon" aria-hidden="true"><use href="#i-check" /></svg><span data-i18n="p1_f1">Fiszki, Quizy i Tryb Dopasowywania</span></li>
               <li><svg class="icon" aria-hidden="true"><use href="#i-check" /></svg><span data-i18n="p1_f2">Algorytm powtórek FSRS w przeglądarce</span></li>
-              <li><svg class="icon" aria-hidden="true"><use href="#i-check" /></svg><span data-i18n="p1_f3">Do 3 aktywnych talii w pamięci</span></li>
+              <li><svg class="icon" aria-hidden="true"><use href="#i-check" /></svg><span data-i18n="p1_f3">Własna biblioteka talii</span></li>
               <li><svg class="icon" aria-hidden="true"><use href="#i-check" /></svg><span data-i18n="p1_f4">Brak reklam i brak wymogu rejestracji</span></li>
             </ul>
             <a class="btn btn-light" href="#aplikacja" data-i18n="btn_plan_free">Rozpocznij naukę</a>
@@ -4352,13 +4330,12 @@ Jaki gaz roślina pobiera podczas fotosyntezy? | Dwutlenek węgla.</textarea>
             <p class="price-caption" data-i18n="plan_pro_caption">Maksymalne przyspieszenie z silnikiem AI</p>
             <ul class="price-list">
               <li><svg class="icon" aria-hidden="true"><use href="#i-check" /></svg><span data-i18n="p2_f1">Wszystko z planu Starter</span></li>
-              <li><svg class="icon" aria-hidden="true"><use href="#i-check" /></svg><span data-i18n="p2_f2"><strong>Nielimitowana ekstrakcja AI</strong> z notatek</span></li>
+              <li><svg class="icon" aria-hidden="true"><use href="#i-check" /></svg><span data-i18n="p2_f2">Ekstrakcja AI z własnym kluczem<strong>Nielimitowana ekstrakcja AI</strong> z notatek</span></li>
               <li><svg class="icon" aria-hidden="true"><use href="#i-check" /></svg><span data-i18n="p2_f3">Lektor Audio (wymowa i nauka słuchowa)</span></li>
               <li><svg class="icon" aria-hidden="true"><use href="#i-check" /></svg><span data-i18n="p2_f4">Nielimitowane zestawy w bibliotece</span></li>
               <li><svg class="icon" aria-hidden="true"><use href="#i-check" /></svg><span data-i18n="p2_f5">Sokratyczny asystent wyjaśniający błędy</span></li>
             </ul>
-            <button class="btn btn-primary" type="button" data-open="authDialog" data-i18n="btn_plan_pro">
-              Wybierz Student Pro <svg class="icon" aria-hidden="true"><use href="#i-arrow" /></svg>
+            <button class="btn btn-primary" type="button" data-open="authDialog" data-i18n="btn_plan_pro">Wypróbuj demonstrację<svg class="icon" aria-hidden="true"><use href="#i-arrow" /></svg>
             </button>
           </article>
           <article class="price-card">
@@ -4370,9 +4347,9 @@ Jaki gaz roślina pobiera podczas fotosyntezy? | Dwutlenek węgla.</textarea>
             <p class="price-caption" data-i18n="plan_team_caption">Dla grup studenckich i roczników</p>
             <ul class="price-list">
               <li><svg class="icon" aria-hidden="true"><use href="#i-check" /></svg><span data-i18n="p3_f1">Wszystko z planu Student Pro</span></li>
-              <li><svg class="icon" aria-hidden="true"><use href="#i-check" /></svg><span data-i18n="p3_f2">Współdzielona baza talii dla grupy</span></li>
-              <li><svg class="icon" aria-hidden="true"><use href="#i-check" /></svg><span data-i18n="p3_f3">Eksport do systemów uczelnianych LMS</span></li>
-              <li><svg class="icon" aria-hidden="true"><use href="#i-check" /></svg><span data-i18n="p3_f4">Dedykowane wsparcie i priorytet API</span></li>
+              <li><svg class="icon" aria-hidden="true"><use href="#i-check" /></svg><span data-i18n="p3_f2">Planowane: wspólne talie</span></li>
+              <li><svg class="icon" aria-hidden="true"><use href="#i-check" /></svg><span data-i18n="p3_f3">Eksport JSON, CSV i Anki</span></li>
+              <li><svg class="icon" aria-hidden="true"><use href="#i-check" /></svg><span data-i18n="p3_f4">Planowane: wsparcie dla uczelni</span></li>
             </ul>
             <a class="btn btn-light" href="mailto:kontakt@tulislearn.abrdns.com" data-i18n="btn_plan_team">Skontaktuj się</a>
           </article>
@@ -4401,9 +4378,7 @@ Jaki gaz roślina pobiera podczas fotosyntezy? | Dwutlenek węgla.</textarea>
               <span data-i18n="faq_q2">Czym różni się algorytm FSRS od klasycznego SuperMemo/Anki SM-2?</span>
               <span class="faq-icon">+</span>
             </button>
-            <div class="faq-answer" data-i18n="faq_a2">
-              FSRS (Free Spaced Repetition Scheduler) to nowoczesny, oparty na uczeniu maszynowym model pamięci, który precyzyjnie szacuje stabilność śladu pamięciowego i trudność pojęcia. W badaniach osiąga o 20-30% wyższą efektywność zapamiętywania niż 30-letni algorytm SM-2 znany z klasycznego Anki.
-            </div>
+            <div class="faq-answer" data-i18n="faq_a2">FSRS modeluje stabilność i trudność pamięci na podstawie ocen powtórek. Tulis Learn korzysta z biblioteki ts-fsrs; interwały zależą od historii danej fiszki.</div>
           </div>
           <div class="faq-item">
             <button class="faq-question" type="button">
@@ -4419,9 +4394,7 @@ Jaki gaz roślina pobiera podczas fotosyntezy? | Dwutlenek węgla.</textarea>
               <span data-i18n="faq_q4">Czy moje materiały edukacyjne są prywatne?</span>
               <span class="faq-icon">+</span>
             </button>
-            <div class="faq-answer" data-i18n="faq_a4">
-              W 100%. Twoje zestawy i postępy są przechowywane bezpośrednio w Twojej przeglądarce. Korzystamy wyłącznie z bezpiecznych komercyjnych API z gwarancją braku trenowania modeli językowych na Twoich prywatnych materiałach.
-            </div>
+            <div class="faq-answer" data-i18n="faq_a4">Lokalny parser pracuje na urządzeniu. W trybie serwera talie trafiają do SQLite. Użycie generacji AI przesyła tekst do Google; obowiązują zasady dostawcy.</div>
           </div>
           <div class="faq-item">
             <button class="faq-question" type="button">
@@ -4450,7 +4423,7 @@ Jaki gaz roślina pobiera podczas fotosyntezy? | Dwutlenek węgla.</textarea>
       <section class="access-banner" aria-labelledby="accessTitle">
         <div>
           <h2 id="accessTitle" data-i18n="cta_banner_h">Gotowy, by uczyć się skuteczniej?</h2>
-          <p data-i18n="cta_banner_p">Dołącz do studentów, którzy opanowali sesję bez stresu. Rozpocznij za darmo już teraz.</p>
+          <p data-i18n="cta_banner_p">Wybierz talię i sprawdź, ile potrafisz odtworzyć z pamięci.</p>
         </div>
         <a class="btn btn-primary" href="#aplikacja" data-i18n="cta_banner_btn">
           Otwórz warsztat nauki
@@ -4468,8 +4441,8 @@ Jaki gaz roślina pobiera podczas fotosyntezy? | Dwutlenek węgla.</textarea>
           </p>
         </div>
         <div>
-          <form class="newsletter-form" id="newsletterForm" onsubmit="event.preventDefault();">
-            <input class="field-input" id="newsletterEmail" type="email" placeholder="twoj.email@student.edu.pl" style="margin: 0;" required />
+          <form class="newsletter-form" id="newsletterForm">
+            <input class="field-input" id="newsletterEmail" aria-label="E-mail" type="email" placeholder="twoj.email@student.edu.pl" style="margin: 0;" required />
             <button class="btn btn-primary" id="newsletterSubmitBtn" type="button" style="white-space: nowrap;" data-i18n="newsletter_btn_sub">Zapisz się bezpłatnie</button>
           </form>
           <div id="newsletterFeedback" class="newsletter-feedback" style="display: none;"></div>
@@ -4512,7 +4485,7 @@ Jaki gaz roślina pobiera podczas fotosyntezy? | Dwutlenek węgla.</textarea>
       <p style="font-size: 13px; color: var(--muted); margin-bottom: 18px;">
         Masz pytania dotyczące wdrożeń na uczelni, licencji grupowych lub rozwoju platformy? Napisz bezpośrednio do zespołu Tulis Learn.
       </p>
-      <form id="contactForm" onsubmit="event.preventDefault();">
+      <form id="contactForm">
         <label class="field-label" for="contactName">Imię i nazwisko / Organizacja</label>
         <input class="field-input" id="contactName" type="text" placeholder="Tomasz Kowalski (np. Samorząd PW)" required />
         <label class="field-label" for="contactEmail">Adres e-mail</label>
@@ -4520,10 +4493,10 @@ Jaki gaz roślina pobiera podczas fotosyntezy? | Dwutlenek węgla.</textarea>
         <label class="field-label" for="contactMsg">Wiadomość</label>
         <textarea class="field-input" id="contactMsg" style="min-height: 90px; resize: vertical;" placeholder="W czym możemy pomóc?"></textarea>
         <button class="btn btn-primary" id="sendContactBtn" type="button" style="width: 100%; margin-top: 14px;">
-          Wyślij zapytanie <svg class="icon" aria-hidden="true"><use href="#i-arrow" /></svg>
+          Otwórz aplikację pocztową <svg class="icon" aria-hidden="true"><use href="#i-arrow" /></svg>
         </button>
         <div id="contactFeedback" style="display: none; margin-top: 12px; font-size: 13px; color: var(--green); text-align: center; font-weight: 600;">
-          ✓ Dziękujemy! Twoja wiadomość została zarejestrowana. Skontaktujemy się wkrótce.
+          Dokończ wysyłanie w aplikacji pocztowej.
         </div>
       </form>
     </dialog>
@@ -4539,7 +4512,7 @@ Jaki gaz roślina pobiera podczas fotosyntezy? | Dwutlenek węgla.</textarea>
           <svg class="icon" aria-hidden="true"><use href="#i-close" /></svg>
         </button>
       </div>
-      <p>Wersja 1.0 · Obowiązuje od 2026 r. (Zgodność z RODO / GDPR)</p>
+      <p>Informacja o przetwarzaniu danych · 2026</p>
       <h3>1. Administrator Danych Osobowych</h3>
       <p>
         Administratorem danych osobowych platformy Tulis Learn jest Tomasz Tulis.
@@ -4551,10 +4524,7 @@ Jaki gaz roślina pobiera podczas fotosyntezy? | Dwutlenek węgla.</textarea>
       </p>
       <h3>2. Ochrona materiałów i notatek użytkownika</h3>
       <p>
-        Materiały edukacyjne, notatki, fiszki oraz statystyki algorytmu powtórek FSRS
-        są przetwarzane w środowisku użytkownika lub bezstanowo przesyłane przez szyfrowane
-        połączenie TLS 1.3 do dedykowanego silnika AI. Gwarantujemy standard Zero Data Retention:
-        Twoje notatki i materiały nie są wykorzystywane do trenowania publicznych modeli AI.
+        Lokalny parser nie wysyła notatek poza urządzenie. W trybie serwera talie, konta i historia są zapisywane w bazie SQLite. Harmonogram FSRS pozostaje w przeglądarce i może zostać wyeksportowany w kopii zapasowej. Opcjonalna generacja AI przesyła wybrany tekst bezpośrednio do Google Gemini API; przetwarzanie i retencja podlegają warunkom dostawcy. Klucz API jest przechowywany wyłącznie w sesji bieżącej karty.
       </p>
       <h3>3. Bezpieczeństwo i pliki cookie</h3>
       <p>
@@ -4644,15 +4614,13 @@ Jaki gaz roślina pobiera podczas fotosyntezy? | Dwutlenek węgla.</textarea>
 
         <label class="field-label" for="aiProviderSelect" data-i18n="ai_provider_label">Wybór silnika AI:</label>
         <select id="aiProviderSelect" class="field-input" style="cursor: pointer;">
-          <option value="gemini-3.8-flash" selected>Google Gemini 3.8 Flash (Domyślny · Gotowy do użycia)</option>
-          <option value="claude-3-7-sonnet">Anthropic Claude 3.7 Sonnet (Wymaga własnego klucza)</option>
-          <option value="claude-3-5-haiku">Anthropic Claude 3.5 Haiku (Wymaga własnego klucza)</option>
-          <option value="custom">Własny model / Własny klucz API</option>
+          <option value="gemini-3.8-flash" selected>Google Gemini 3.8 Flash · Własny klucz API</option>
+
         </select>
 
-        <label class="field-label" for="customApiKeyInput" style="margin-top: 12px;" data-i18n="ai_custom_key_label">Własny klucz API (Opcjonalnie):</label>
-        <input type="password" id="customApiKeyInput" class="field-input" placeholder="Wklej swój klucz API (zapisywany lokalnie w Twojej przeglądarce)" />
-        <span style="font-size: 11px; color: var(--muted);" data-i18n="ai_key_hint">Pozostaw puste, aby korzystać z wbudowanego bezpłatnego silnika platformy.</span>
+        <label class="field-label" for="customApiKeyInput" style="margin-top: 12px;" data-i18n="ai_custom_key_label">Własny klucz Gemini API (tylko sesja):</label>
+        <input type="password" id="customApiKeyInput" class="field-input" autocomplete="off" placeholder="Klucz Gemini API — tylko na czas sesji tej karty" />
+        <span style="font-size: 11px; color: var(--muted);" data-i18n="ai_key_hint">Bez klucza działa lokalny parser i ćwiczenia. Klucz pozostaje w tej karcie do końca sesji. Użycie AI wysyła wybrany tekst do Google zgodnie z zasadami dostawcy.</span>
 
         <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 16px;">
           <label for="aiTempRange" style="font-size: 12px; font-weight: 600;" data-i18n="ai_temp_label">Temperatura wnioskowania:</label>
@@ -4677,17 +4645,17 @@ Jaki gaz roślina pobiera podczas fotosyntezy? | Dwutlenek węgla.</textarea>
         </button>
       </div>
 
-      <div class="auth-switcher" role="tablist">
-        <button type="button" class="auth-switch-btn active" id="authTabLogin" data-i18n="auth_tab_login">Logowanie</button>
-        <button type="button" class="auth-switch-btn" id="authTabRegister" data-i18n="auth_tab_register">Rejestracja</button>
+      <div class="auth-switcher" role="tablist" aria-label="Logowanie lub rejestracja">
+        <button type="button" role="tab" aria-selected="true" aria-controls="loginForm" class="auth-switch-btn active" id="authTabLogin" data-i18n="auth_tab_login">Logowanie</button>
+        <button type="button" role="tab" aria-selected="false" aria-controls="registerForm" tabindex="-1" class="auth-switch-btn" id="authTabRegister" data-i18n="auth_tab_register">Rejestracja</button>
       </div>
 
-      <p style="font-size: 13px; color: var(--muted); margin-bottom: 16px;" id="authSubtitle" data-i18n="auth_sub">Zaloguj się, aby synchronizować talie i historię powtórek FSRS.</p>
+      <p style="font-size: 13px; color: var(--muted); margin-bottom: 16px;" id="authSubtitle" data-i18n="auth_sub">Talie i historia korzystają z wybranego trybu zapisu. W trybie lokalnym konto działa tylko na tym urządzeniu.</p>
 
       <div id="authFeedback" style="display: none; padding: 10px 12px; border-radius: 8px; font-size: 12px; margin-bottom: 14px; background: #fee2e2; border: 1px solid #f87171; color: #991b1b;"></div>
 
       <!-- Login Form -->
-      <form id="loginForm" onsubmit="event.preventDefault();">
+      <form id="loginForm" role="tabpanel" aria-labelledby="authTabLogin">
         <label class="field-label" for="loginEmail" data-i18n="auth_email">Adres e-mail</label>
         <input class="field-input" id="loginEmail" type="email" placeholder="student@uczelnia.pl" required autocomplete="email" />
         <label class="field-label" for="loginPass" data-i18n="auth_pass">Hasło</label>
@@ -4698,26 +4666,19 @@ Jaki gaz roślina pobiera podczas fotosyntezy? | Dwutlenek węgla.</textarea>
       </form>
 
       <!-- Register Form -->
-      <form id="registerForm" onsubmit="event.preventDefault();" style="display: none;">
+      <form id="registerForm" role="tabpanel" aria-labelledby="authTabRegister" style="display: none;">
         <label class="field-label" for="regName" data-i18n="auth_name">Imię i nazwisko</label>
         <input class="field-input" id="regName" type="text" placeholder="Anna Kowalska" required autocomplete="name" />
         <label class="field-label" for="regEmail" data-i18n="auth_email">Adres e-mail</label>
         <input class="field-input" id="regEmail" type="email" placeholder="student@uczelnia.pl" required autocomplete="email" />
         <label class="field-label" for="regPass" data-i18n="auth_pass">Hasło (min. 5 znaków)</label>
-        <input class="field-input" id="regPass" type="password" placeholder="••••••••" required minlength="5" autocomplete="new-password" />
+        <input class="field-input" id="regPass" type="password" placeholder="••••••••" required minlength="8" autocomplete="new-password" />
         <button class="btn btn-primary" id="submitRegisterBtn" type="submit" style="width: 100%; margin-top: 14px;" data-i18n="auth_btn_register">
           Zarejestruj się
         </button>
       </form>
 
-      <div class="auth-divider"><span data-i18n="auth_or">lub przez e-mail</span></div>
-
-      <button type="button" class="auth-google-btn" id="googleAuthBtn">
-        <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/></svg>
-        <span data-i18n="auth_google">Kontynuuj z kontem Google</span>
-      </button>
-
-      <div style="margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--line); text-align: center;">
+<div style="margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--line); text-align: center;">
         <button type="button" class="text-button" id="demoLoginBtn" style="font-weight: 700; color: var(--green);" data-i18n="auth_demo_btn">
           ⚡ Wejdź w trybie Demo (Tomasz Tulis)
         </button>
@@ -4751,7 +4712,7 @@ Jaki gaz roślina pobiera podczas fotosyntezy? | Dwutlenek węgla.</textarea>
           <button class="btn btn-sm btn-primary" id="mgmtNewDeckBtn" type="button" data-i18n="mgmt_btn_new_deck">+ Nowa talia</button>
         </div>
         <div style="margin-bottom: 12px;">
-          <input class="field-input" id="mgmtDeckSearchInput" type="search" placeholder="Szukaj talii po nazwie lub kategorii..." style="padding: 8px 12px; font-size: 13px; margin: 0;" />
+          <input class="field-input" id="mgmtDeckSearchInput" aria-label="Szukaj talii / Search decks" type="search" placeholder="Szukaj talii po nazwie lub kategorii..." style="padding: 8px 12px; font-size: 13px; margin: 0;" />
         </div>
         <div id="mgmtDecksList" style="display: flex; flex-direction: column; gap: 8px; max-height: 340px; overflow-y: auto;">
           <!-- Dynamically populated from SQLite DB -->
@@ -4777,11 +4738,11 @@ Jaki gaz roślina pobiera podczas fotosyntezy? | Dwutlenek węgla.</textarea>
           <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; text-align: center;">
             <div style="background: var(--white); border: 1px solid var(--line); border-radius: 6px; padding: 8px;">
               <div style="font-size: 10px; color: var(--muted); font-weight: 700;">SERIA NAUKI</div>
-              <div style="font-size: 18px; font-weight: 800; color: var(--green);" id="mgmtStreak">7 dni</div>
+              <div style="font-size: 18px; font-weight: 800; color: var(--green);" id="mgmtStreak">0 dni</div>
             </div>
             <div style="background: var(--white); border: 1px solid var(--line); border-radius: 6px; padding: 8px;">
               <div style="font-size: 10px; color: var(--muted); font-weight: 700;">RETENCJA FSRS</div>
-              <div style="font-size: 18px; font-weight: 800; color: var(--green);" id="mgmtRetention">96.4%</div>
+              <div style="font-size: 18px; font-weight: 800; color: var(--green);" id="mgmtRetention">—</div>
             </div>
             <div style="background: var(--white); border: 1px solid var(--line); border-radius: 6px; padding: 8px;">
               <div style="font-size: 10px; color: var(--muted); font-weight: 700;">PLAN KONTA</div>
@@ -4820,7 +4781,7 @@ Jaki gaz roślina pobiera podczas fotosyntezy? | Dwutlenek węgla.</textarea>
           <svg class="icon" aria-hidden="true"><use href="#i-close" /></svg>
         </button>
       </div>
-      <form id="newDeckForm" onsubmit="event.preventDefault();">
+      <form id="newDeckForm">
         <label class="field-label" for="newDeckTitleInput">Nazwa talii</label>
         <input class="field-input" id="newDeckTitleInput" type="text" placeholder="np. Neurologia kliniczna" required />
         <label class="field-label" for="newDeckCategoryInput">Kategoria / Przedmiot</label>
@@ -4838,7 +4799,7 @@ Jaki gaz roślina pobiera podczas fotosyntezy? | Dwutlenek węgla.</textarea>
       <div class="dialog-top">
         <div>
           <h2 id="fsrsModalTitle" style="font-size: 22px;" data-i18n="fsrs_modal_title">🧠 Analityka Kognitywna & Model FSRS</h2>
-          <p style="font-size: 13px; margin: 4px 0 0;" data-i18n="fsrs_modal_sub">Krzywa zapominania Hermanna Ebbinghausa vs. Free Spaced Repetition Scheduler</p>
+          <p style="font-size: 13px; margin: 4px 0 0;" data-i18n="fsrs_modal_sub">Model ts-fsrs · dane ocenionych fiszek; wykres poniżej jest ilustracją</p>
         </div>
         <button class="close-dialog" type="button" data-close aria-label="Zamknij analitykę">
           <svg class="icon" aria-hidden="true"><use href="#i-close" /></svg>
@@ -4895,18 +4856,18 @@ Jaki gaz roślina pobiera podczas fotosyntezy? | Dwutlenek węgla.</textarea>
       <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 16px;">
         <div style="background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 12px; text-align: center;">
           <div style="font-size: 11px; color: var(--muted); text-transform: uppercase; font-weight: 700;" data-i18n="fsrs_m_stab_lbl">Stabilność (S)</div>
-          <div style="font-size: 20px; font-weight: 800; color: var(--green); margin-top: 4px;" id="fsrsMetricStability">14.8 dni</div>
+          <div style="font-size: 20px; font-weight: 800; color: var(--green); margin-top: 4px;" id="fsrsMetricStability">—</div>
           <div style="font-size: 10px; color: var(--muted);" data-i18n="fsrs_m_stab_sub">średni czas do 90% retencji</div>
         </div>
         <div style="background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 12px; text-align: center;">
           <div style="font-size: 11px; color: var(--muted); text-transform: uppercase; font-weight: 700;" data-i18n="fsrs_m_diff_lbl">Trudność (D)</div>
-          <div style="font-size: 20px; font-weight: 800; color: var(--ink); margin-top: 4px;" id="fsrsMetricDifficulty">3.9 / 10</div>
+          <div style="font-size: 20px; font-weight: 800; color: var(--ink); margin-top: 4px;" id="fsrsMetricDifficulty">—</div>
           <div style="font-size: 10px; color: var(--muted);" data-i18n="fsrs_m_diff_sub">współczynnik złożoności</div>
         </div>
         <div style="background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 12px; text-align: center;">
-          <div style="font-size: 11px; color: var(--muted); text-transform: uppercase; font-weight: 700;" data-i18n="fsrs_m_ret_lbl">Retencja (R)</div>
-          <div style="font-size: 20px; font-weight: 800; color: var(--green); margin-top: 4px;" id="fsrsMetricRetention">94.2%</div>
-          <div style="font-size: 10px; color: var(--muted);" data-i18n="fsrs_m_ret_sub">docelowy próg algorytmu</div>
+          <div style="font-size: 11px; color: var(--muted); text-transform: uppercase; font-weight: 700;" data-i18n="fsrs_m_ret_lbl">Szacowana pamięć (R)</div>
+          <div style="font-size: 20px; font-weight: 800; color: var(--green); margin-top: 4px;" id="fsrsMetricRetention">—</div>
+          <div style="font-size: 10px; color: var(--muted);" data-i18n="fsrs_m_ret_sub">na podstawie ocenionych fiszek</div>
         </div>
       </div>
 
@@ -4944,6 +4905,7 @@ Jaki gaz roślina pobiera podczas fotosyntezy? | Dwutlenek węgla.</textarea>
       <div class="print-sheet-grid" id="printSheetContainer">
         <!-- Rendered dynamically by app.js -->
       </div>
+    </dialog>
     <!-- TOAST NOTIFICATION CONTAINER -->
     <div id="toastContainer" class="toast-container" aria-live="polite" aria-atomic="true"></div>
 
@@ -4986,8 +4948,8 @@ Jaki gaz roślina pobiera podczas fotosyntezy? | Dwutlenek węgla.</textarea>
           <span class="shortcut-kbd-group"><kbd>←</kbd> <kbd>→</kbd></span>
         </div>
         <div class="shortcut-row">
-          <span class="shortcut-desc" data-i18n="shortcut_fsrs">Ocena powtórki FSRS (1: Trudne, 2: Dobre, 3: Łatwe)</span>
-          <span class="shortcut-kbd-group"><kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd></span>
+          <span class="shortcut-desc" data-i18n="shortcut_fsrs">Ocena FSRS (1: Jeszcze raz, 2: Trudne, 3: Dobre, 4: Łatwe)</span>
+          <span class="shortcut-kbd-group"><kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd> <kbd>4</kbd></span>
         </div>
         <div class="shortcut-row">
           <span class="shortcut-desc" data-i18n="shortcut_enter">Sprawdź wpisaną odpowiedź (Tryb Wpisywanie)</span>
@@ -5073,7 +5035,21 @@ Jaki gaz roślina pobiera podczas fotosyntezy? | Dwutlenek węgla.</textarea>
       </div>
     </dialog>
 
-    <canvas id="confettiCanvas" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 99999; display: none;"></canvas>
+    <canvas id="confettiCanvas" aria-hidden="true" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 99999; display: none;"></canvas>
+    <dialog id="deckActionDialog" aria-labelledby="deckActionTitle" aria-describedby="deckActionDescription" style="width: min(440px, calc(100vw - 32px));">
+      <form method="dialog">
+        <h2 id="deckActionTitle">Nazwa talii</h2>
+        <p id="deckActionDescription"></p>
+        <div id="deckActionField">
+          <label class="field-label" for="deckActionInput" data-i18n="mgmt_deck_title">Nazwa talii</label>
+        <input class="field-input" id="deckActionInput" required pattern=".*\S.*" maxlength="200" autocomplete="off" />
+        </div>
+        <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 20px;">
+          <button class="btn btn-light" id="deckActionCancel" type="submit" value="cancel" formnovalidate>Anuluj</button>
+          <button class="btn btn-primary" id="deckActionConfirm" type="submit" value="confirm">Zapisz</button>
+        </div>
+      </form>
+    </dialog>
     <noscript
       ><p class="container" style="padding: 24px 0">
         Fiszki, quiz i warsztat nauki wymagają włączonej obsługi JavaScriptu w przeglądarce.

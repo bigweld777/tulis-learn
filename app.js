@@ -2,12 +2,35 @@
 
 (() => {
   const $ = (id) => document.getElementById(id);
+  function escapeHtml(value) {
+    return String(value).replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
+  }
 
-  // Hostname-aware email routing
-  const currentHost = window.location.hostname || "tulislearn.abrdns.com";
-  const contact = currentHost.includes("dynv6.net")
-    ? "hello@tulislearn.dynv6.net"
-    : (currentHost.includes("abrdns.com") ? "kontakt@tulislearn.abrdns.com" : `kontakt@${currentHost}`);
+  // Preferences may be ephemeral; data adapters report persistence failures explicitly.
+  const memoryPreferences = new Map();
+  const preferences = {
+    getItem(key) { try { return window.localStorage.getItem(key); } catch { return memoryPreferences.get(key) ?? null; } },
+    setItem(key, value) { try { window.localStorage.setItem(key, String(value)); } catch { memoryPreferences.set(key, String(value)); } },
+    removeItem(key) { try { window.localStorage.removeItem(key); } catch {} memoryPreferences.delete(key); }
+  };
+  const durableStorage = {
+    getItem(key) { return window.localStorage.getItem(key); },
+    setItem(key, value) { window.localStorage.setItem(key, value); }
+  };
+  // Keys are user supplied and retained for this tab session only.
+  const aiKeys = {
+    get() { try { return window.sessionStorage.getItem('tulis_custom_ai_key') || ''; } catch { return ''; } },
+    set(value) { window.sessionStorage.setItem('tulis_custom_ai_key', value); }
+  };
+  preferences.removeItem('tulis_custom_ai_key');
+  let ratingPending = false;
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+  let currentMode = 'cards';
+  function reviewStore() {
+    return TulisReviews.create(durableStorage, currentUser ? currentUser.id + ':' + apiMode : 'guest');
+  }
+
+  const contact = 'kontakt@tulislearn.abrdns.com';
 
   // Update contact links in footer
   const footerMailEl = $("footerEmail");
@@ -22,7 +45,7 @@
   let revealed = false;
   let quiz = null;
   let matchGame = null;
-  let isSimulating = false;
+  let isExtracting = false;
 
   // Multi-domain Curated Presets
   const PRESETS = {
@@ -74,6 +97,7 @@ What is force majeure? | Unforeseeable circumstances that prevent someone from f
   // Comprehensive Bilingual i18n Dictionary
   const TRANSLATIONS = {
     pl: {
+      due_review: "Powtórz zaplanowane",
       nav_app: "Aplikacja",
       nav_features: "Funkcje",
       nav_reviews: "Opinie",
@@ -82,20 +106,20 @@ What is force majeure? | Unforeseeable circumstances that prevent someone from f
       nav_login: "Zaloguj się",
       nav_start_free: "Zacznij za darmo",
       hero_badge: "Platforma Edukacyjna AI · Nowa Generacja",
-      hero_h1_1: "Ucz się 3x szybciej.",
-      hero_h1_2: "Pamiętaj na zawsze.",
-      hero_h1_3: "Zasilane przez AI.",
-      hero_desc: "Przekształć własne notatki, podręczniki i wykłady w interaktywne fiszki z algorytmem FSRS, quizy oraz gry pamięciowe. Ucz się aktywnie i bez wysiłku.",
+      hero_h1_1: "Zrozum więcej.",
+      hero_h1_2: "Wracaj w dobrym czasie.",
+      hero_h1_3: "Ucz się aktywnie.",
+      hero_desc: "Zamień notatki w fiszki, sprawdź wiedzę w pięciu trybach i planuj powtórki z FSRS. Zacznij lokalnie; dodaj własny klucz, gdy potrzebujesz AI.",
       hero_try_btn: "Rozpocznij naukę bezpłatnie",
       hero_login_btn: "Zaloguj się do platformy",
       hero_micro: "Brak wymogu karty. Gotowe do nauki w kilka sekund.",
-      stat_cards: "Fiszek wygenerowanych",
-      stat_retention: "Zdawalność egzaminów",
-      stat_speed: "Czas ekstrakcji AI",
-      stat_rating: "Średnia ocen studentów",
+      stat_cards: "trybów nauki",
+      stat_retention: "adaptacyjne powtórki",
+      stat_speed: "lokalna nauka",
+      stat_rating: "dwa języki",
       workspace_eyebrow: "INTERAKTYWNY WARSZTAT NAUKI",
       workspace_title: "Mniej teorii. Więcej pamiętania.",
-      workspace_desc: "Wybierz gotowy zestaw lub wklej dowolny materiał. Silnik AI błyskawicznie wygeneruje fiszki, quiz oraz grę pamięciową.",
+      workspace_desc: "Wybierz talię lub wpisz pary pytanie | odpowiedź. Lokalny parser działa offline; generacja AI wymaga własnego klucza Gemini.",
       dash_streak: "dni serii",
       dash_decks: "zestawy",
       dash_retention: "retencji FSRS",
@@ -128,12 +152,12 @@ What is force majeure? | Unforeseeable circumstances that prevent someone from f
       quiz_restart: "Spróbuj jeszcze raz",
       match_win_h: "Wszystkie pojęcia połączone!",
       match_restart: "Zagraj ponownie",
-      testi_eyebrow: "SPOŁECZNOŚĆ AKTYWNYCH STUDENTÓW",
-      testi_title: "Co mówią osoby, które uczą się z Tulis Learn?",
-      testi_desc: "Dołącz do ponad 450 studentów i specjalistów oszczędzających setki godzin na nauce.",
+      testi_eyebrow: "SCENARIUSZE NAUKI",
+      testi_title: "Trzy sposoby na aktywną naukę",
+      testi_desc: "Przykładowe sposoby wykorzystania platformy w nauce.",
       pricing_eyebrow: "TRANSPARENTNE PAKIETY",
       pricing_title: "Wybierz plan dopasowany do Twojej nauki",
-      pricing_desc: "Zacznij bezpłatnie na zawsze. Odblokuj pełną moc AI, gdy zbliża się sesja.",
+      pricing_desc: "Wersja demonstracyjna jest bezpłatna. Ceny Pro i Campus to propozycja przyszłej oferty; płatności i współdzielenie nie są jeszcze dostępne.",
       bill_monthly: "Miesięcznie",
       bill_save: "Oszczędzasz 20%",
       plan_free_name: "Starter",
@@ -143,7 +167,7 @@ What is force majeure? | Unforeseeable circumstances that prevent someone from f
       plan_pro_name: "Student Pro",
       plan_pro_tag: "Najpopularniejszy",
       plan_pro_caption: "Maksymalne przyspieszenie z silnikiem AI",
-      btn_plan_pro: "Wybierz Student Pro",
+      btn_plan_pro: "Wypróbuj demonstrację",
       plan_team_name: "Campus & Grupy",
       plan_team_tag: "Koła naukowe",
       plan_team_caption: "Dla grup studenckich i roczników",
@@ -154,12 +178,10 @@ What is force majeure? | Unforeseeable circumstances that prevent someone from f
       about_title: "Nowoczesna edukacja bez zbędnego chaosu.",
       about_desc: "Cześć, tu Tomasz Tulis. Tworzę Tulis Learn jako platformę nowej generacji — łączącą kognitywistykę, algorytmy powtórek interwałowych FSRS oraz sztuczną inteligencję. Chcę, by każdy student i uczeń w Polsce i Europie mógł uczyć się skutecznie, w spokoju i bez marnowania czasu na bezproduktywne zakuwanie.",
       cta_banner_h: "Gotowy, by uczyć się skuteczniej?",
-      cta_banner_p: "Dołącz do studentów, którzy opanowali sesję bez stresu. Rozpocznij za darmo już teraz.",
+      cta_banner_p: "Wybierz talię i sprawdź, ile potrafisz odtworzyć z pamięci.",
       cta_banner_btn: "Otwórz warsztat nauki",
       auth_title: "Witaj w Tulis Learn",
-      auth_sub: "Zaloguj się, aby synchronizować talie i historię powtórek FSRS.",
-      auth_google: "Kontynuuj z kontem Google",
-      auth_or: "lub przez e-mail",
+      auth_sub: "Talie i historia korzystają z wybranego trybu zapisu. W trybie lokalnym konto działa tylko na tym urządzeniu.",
       auth_email: "Adres e-mail",
       auth_pass: "Hasło",
       auth_submit: "Zaloguj się",
@@ -175,56 +197,56 @@ What is force majeure? | Unforeseeable circumstances that prevent someone from f
       quiz_finish: "Zobacz wynik",
       tech_eyebrow: "SILNIK KOGNITYWNY · ARCHITEKTURA AI",
       tech_title: "Zaawansowany potok semantyczny.<br />Od notatek do trwałej wiedzy.",
-      tech_intro: "Tulis Learn łączy adaptacyjny algorytm powtórek FSRS z zaawansowanym silnikiem semantycznym. Od złożonych podręczników i wykładów do pytań, które budują krytyczne myślenie i zrozumienie.",
+      tech_intro: "Połącz fiszki z adaptacyjnym harmonogramem FSRS, przejrzyj wspólne słowa na grafie i skorzystaj z opcjonalnych pytań generowanych przez Gemini.",
       tech_tag: "Silnik Kognitywny · Architektura AI",
       tech_feat1_h: "Ważne pojęcia, wyłuskane z kontekstu",
-      tech_feat1_p: "Błyskawiczna analiza materiałów pozwala generować fiszki i quizy w ułamku sekundy, bez żmudnego ręcznego przepisywania.",
+      tech_feat1_p: "Parser przekształca pary i proste definicje w fiszki. Z własnym kluczem możesz wygenerować pytania z surowych notatek.",
       tech_feat2_h: "Asystent sokratyczny, który pomaga dojść do odpowiedzi",
       tech_feat2_p: "Adaptacyjne podpowiedzi i wyjaśnienia błędów prowadzą do głębokiego zrozumienia, zamiast mechanicznego wkuwania.",
-      tech_feat3_h: "Prywatność i ochrona własności intelektualnej",
-      tech_feat3_p: "Działamy w architekturze Zero Data Retention — korzystamy z bezpiecznego bezstanowego API bez trenowania modeli bazowych na notatkach użytkownika.",
+      tech_feat3_h: "Kontrola nad materiałami",
+      tech_feat3_p: "Lokalny parser nie wysyła notatek. Generacja AI wymaga Twojego klucza i przesyła wybrany tekst do Google.",
       pipeline_title: "Potok Kognitywny & Architektura AI",
       pipeline_badge: "⚡ Hybrydowy Potok LLM",
       pipe1_badge: "KROK 1 · Szybka Ingestia",
       pipe1_h: "Ingestia & Segmentacja",
-      pipe1_p: "Rozbijanie surowego tekstu lub PDF na atomowe jednostki logiczne i wykrywanie terminologii z ultra-niską latencją (< 0.6s).",
+      pipe1_p: "Odczyt tekstu lub plików TXT i CSV z parami pytanie–odpowiedź.",
       pipe2_badge: "KROK 2 · Głębokie Rozumowanie",
       pipe2_h: "Analiza Semantyczna",
-      pipe2_p: "Weryfikacja zależności przyczynowo-skutkowych. Odrzucenie faktograficznych halucynacji i tworzenie pytań problemowych.",
+      pipe2_p: "Opcjonalny model Gemini tworzy pytania z Twojego tekstu. Sprawdź poprawność wygenerowanych odpowiedzi.",
       pipe3_badge: "KROK 3 · Pętla Sokratyczna",
       pipe3_h: "Pętla Sokratyczna",
-      pipe3_p: "Gdy uczeń popełnia błąd, model nie narzuca gotowca – zadaje adaptacyjne pytanie naprowadzające na zrozumienie.",
+      pipe3_p: "Wybierz pytanie sokratejskie lub prośbę o wyjaśnienie. Bez klucza otrzymasz lokalne ćwiczenie do samodzielnej refleksji.",
       pipe4_badge: "KROK 4 · Algorytm FSRS",
       pipe4_h: "Optymalizacja Pamięci",
       pipe4_p: "Adaptacyjny algorytm Free Spaced Repetition Scheduler przelicza krzywą zapominania Ebbinghausa dla każdego pojęcia.",
-      tech_note: "Architektura Tulis Learn łączy wysokowydajne modele językowe Frontier LLM z adaptacyjnym silnikiem powtórek FSRS. Wszystkie zapytania są szyfrowane i przetwarzane bezstanowo, z zachowaniem pełnej poufności materiałów użytkownika.",
-      testi_1_text: "„Zdałam anatomię prawidłową w 1. terminie! Wrzucam skany wykładów, a silnik AI wyciąga najtrudniejsze zależności i tworzy fiszki, których nie muszę pisać ręcznie.”",
-      testi_1_role: "Kierunek Lekarski · Collegium Medicum UJ",
-      testi_2_text: "„Algorytm FSRS w połączeniu z trybem dopasowywania to absolutny game-changer. Uczę się algorytmów i sieci komputerowych 3 razy szybciej niż z suchych slajdów.”",
-      testi_2_role: "Informatyka · Politechnika Warszawska",
-      testi_3_text: "„Do egzaminu na aplikację radcowską materiału jest za dużo na zwykłe notatki. Tulis Learn pozwala mi powtarzać kodeksy w tramwaju i sprawdzać się w szybkich quizach.”",
-      testi_3_role: "Aplikantka Radcowska · OIRP Wrocław",
+      tech_note: "Talie i historia są przechowywane w SQLite lub lokalnie w przeglądarce. Harmonogram FSRS jest zapisywany na urządzeniu. Wywołania AI podlegają polityce dostawcy.",
+      testi_1_text: "Medycyna: zamień definicje z wykładu w fiszki i sprawdzaj je w quizie przed egzaminem.",
+      testi_1_role: "Definicje · Aktywne przypominanie",
+      testi_2_text: "Informatyka: łącz pojęcia w grafie i wyjaśniaj własnymi słowami działanie algorytmów.",
+      testi_2_role: "Algorytmy · Powiązania pojęć",
+      testi_3_text: "Prawo: porządkuj pojęcia w taliach i planuj kolejne powtórki na podstawie własnych ocen.",
+      testi_3_role: "Pojęcia · Regularne powtórki",
       p1_f1: "Fiszki, Quizy i Tryb Dopasowywania",
       p1_f2: "Algorytm powtórek FSRS w przeglądarce",
-      p1_f3: "Do 3 aktywnych talii w pamięci",
+      p1_f3: "Własna biblioteka talii",
       p1_f4: "Brak reklam i brak wymogu rejestracji",
       p2_f1: "Wszystko z planu Starter",
-      p2_f2: "<strong>Nielimitowana ekstrakcja AI</strong> z notatek",
+      p2_f2: "Ekstrakcja AI z własnym kluczem",
       p2_f3: "Lektor Audio (wymowa i nauka słuchowa)",
       p2_f4: "Nielimitowane zestawy w bibliotece",
       p2_f5: "Sokratyczny asystent wyjaśniający błędy",
       p3_f1: "Wszystko z planu Student Pro",
-      p3_f2: "Współdzielona baza talii dla grupy",
-      p3_f3: "Eksport do systemów uczelnianych LMS",
-      p3_f4: "Dedykowane wsparcie i priorytet API",
+      p3_f2: "Planowane: wspólne talie",
+      p3_f3: "Eksport JSON, CSV i Anki",
+      p3_f4: "Planowane: wsparcie dla uczelni",
       faq_q1: "Jak Tulis Learn pomaga uczyć się szybciej?",
       faq_a1: "Łączymy dwie najskuteczniejsze techniki kognitywne poparte badaniami: aktywne przypominanie (Active Recall) oraz algorytm powtórek interwałowych FSRS. Zamiast biernego czytania notatek po raz dziesiąty, zmuszasz mózg do odtwarzania wiedzy, a algorytm serwuje Ci pytania dokładnie wtedy, gdy zaczynasz je zapominać.",
       faq_q2: "Czym różni się algorytm FSRS od klasycznego SuperMemo/Anki SM-2?",
-      faq_a2: "FSRS (Free Spaced Repetition Scheduler) to nowoczesny, oparty na uczeniu maszynowym model pamięci, który precyzyjnie szacuje stabilność śladu pamięciowego i trudność pojęcia. W badaniach osiąga o 20-30% wyższą efektywność zapamiętywania niż 30-letni algorytm SM-2 znany z klasycznego Anki.",
+      faq_a2: "FSRS modeluje stabilność i trudność pamięci na podstawie ocen powtórek. Tulis Learn korzysta z biblioteki ts-fsrs; interwały zależą od historii danej fiszki.",
       faq_q3: "Czy mogę wgrywać własne pliki i notatki z uczelni?",
       faq_a3: "Tak! Możesz wkleić dowolny tekst, zaimportować pliki tekstowe (.txt, .csv) lub skorzystać z przycisku „Inteligentna ekstrakcja AI”, który w ułamku sekundy automatycznie wychwyci definicje i przekształci je w zestaw pytań i odpowiedzi.",
       faq_q4: "Czy moje materiały edukacyjne są prywatne?",
-      faq_a4: "W 100%. Twoje zestawy i postępy są przechowywane bezpośrednio w Twojej przeglądarce. Korzystamy wyłącznie z bezpiecznych komercyjnych API z gwarancją braku trenowania modeli językowych na Twoich prywatnych materiałach.",
+      faq_a4: "Lokalny parser pracuje na urządzeniu. W trybie serwera talie trafiają do SQLite. Użycie generacji AI przesyła tekst do Google; obowiązują zasady dostawcy.",
       faq_q5: "Czy aplikacja działa na smartfonach i tabletach?",
       faq_a5: "Tak, platforma jest w pełni responsywna i zoptymalizowana pod ekrany dotykowe. Możesz uczyć się w podróży, przewijając fiszki kciukiem lub testując się w quizach w dowolnym miejscu.",
       tab_graph: "Graf pojęć",
@@ -242,33 +264,34 @@ What is force majeure? | Unforeseeable circumstances that prevent someone from f
       print_cards_in_deck: "fiszek w aktywnej talii",
       print_btn_action: "🖨️ Drukuj teraz (Ctrl+P)",
       fsrs_modal_title: "🧠 Analityka Kognitywna & Model FSRS",
-      fsrs_modal_sub: "Krzywa zapominania Hermanna Ebbinghausa vs. Free Spaced Repetition Scheduler",
-      fsrs_legend_ebbinghaus: "Brak powtórek (Krzywa Ebbinghausa: ~20% po 7 dniach)",
-      fsrs_legend_fsrs: "Optymalizacja FSRS (Powrót do 95%+)",
+      fsrs_modal_sub: "Model ts-fsrs · dane ocenionych fiszek; wykres poniżej jest ilustracją",
+      fsrs_legend_ebbinghaus: "Ilustracja: zapominanie bez powtórek",
+      fsrs_legend_fsrs: "Ilustracja: przypominanie z powtórkami",
       fsrs_m_stab_lbl: "Stabilność (S)",
       fsrs_m_stab_sub: "średni czas do 90% retencji",
       fsrs_m_diff_lbl: "Trudność (D)",
       fsrs_m_diff_sub: "współczynnik złożoności",
-      fsrs_m_ret_lbl: "Retencja (R)",
-      fsrs_m_ret_sub: "docelowy próg algorytmu",
+      fsrs_m_ret_lbl: "Szacowana pamięć (R)",
+      fsrs_m_ret_sub: "na podstawie ocenionych fiszek",
       fsrs_why_title: "Dlaczego FSRS przewyższa tradycyjne metody?",
-      fsrs_why_desc: "Zwykłe czytanie notatek daje złudzenie opanowania wiedzy (złudzenie płynności). Algorytm FSRS serwuje powtórki w punkcie krytycznym zapominania, zmuszając hipokamp do wzmocnienia połączeń synaptycznych przy minimalnym nakładzie czasu.",
+      fsrs_why_desc: "FSRS wykorzystuje Twoje oceny i czas od ostatniej powtórki, aby aktualizować stabilność, trudność i termin kolejnej sesji. Szacowana pamięć jest prognozą modelu, nie pomiarem wyniku egzaminu.",
       btn_close: "Zamknij",
       auth_tab_login: "Logowanie",
       auth_tab_register: "Rejestracja",
       auth_name: "Imię i nazwisko",
       auth_btn_register: "Zarejestruj się",
+      mgmt_deck_title: "Nazwa talii",
       mgmt_title: "⚙️ Panel Zarządzania & Baza Danych",
-      mgmt_sub: "Zarządzaj swoimi taliami, kontem, statystykami i kopią zapasową w bazie SQLite.",
+      mgmt_sub: "Zarządzaj swoimi taliami, kontem, statystykami i kopią zapasową w bazie danych.",
       mgmt_tab_decks: "📚 Moje Talie",
       mgmt_tab_history: "📊 Historia Powtórek",
       mgmt_tab_profile: "👤 Profil & Konto",
       mgmt_tab_backup: "💾 Kopia Zapasowa",
-      mgmt_decks_hint: "Wszystkie talie zapisane w Twojej lokalnej bazie SQLite:",
+      mgmt_decks_hint: "Wszystkie talie zapisane w Twojej lokalnej bazie danych:",
       mgmt_btn_new_deck: "+ Nowa talia",
       mgmt_history_hint: "Rejestr sesji powtórkowych zapisywany automatycznie przez algorytm FSRS:",
       mgmt_btn_logout: "🚪 Wyloguj się z konta",
-      mgmt_backup_hint: "Eksportuj całą bazę wiedzy do formatu JSON lub zaimportuj zestaw talii do SQLite:",
+      mgmt_backup_hint: "Pobierz kopię talii, historii i harmonogramu FSRS lub zaimportuj kopię JSON:",
       mgmt_btn_download_backup: "📥 Pobierz kopię bazy (JSON)",
       mgmt_btn_import_backup: "📤 Wgraj kopię z pliku",
       tab_type: "Wpisywanie",
@@ -279,12 +302,12 @@ What is force majeure? | Unforeseeable circumstances that prevent someone from f
       socratic_send_btn: "Zapytaj 🚀",
       mgmt_heatmap_title: "AKTYWNOŚĆ POWTÓREK (OSTATNIE 14 DNI)",
       ai_modal_title: "⚙️ Konfiguracja Modeli Kognitywnych AI",
-      ai_modal_sub: "Zarządzaj silnikiem semantycznym, kluczami API i parametrami wnioskowania FSRS.",
+      ai_modal_sub: "Wybierz model Gemini, własny klucz API i temperaturę generacji.",
       ai_status_label: "Aktywny silnik platformy:",
       ai_status_desc: "Google Gemini 3.8 Flash (Google DeepMind / AI Studio) • Ekstrakcja w locie • Metoda sokratejska.",
       ai_provider_label: "Wybór silnika AI:",
-      ai_custom_key_label: "Własny klucz API (Opcjonalnie):",
-      ai_key_hint: "Pozostaw puste, aby korzystać z wbudowanego bezpłatnego silnika platformy.",
+      ai_custom_key_label: "Własny klucz Gemini API (tylko sesja):",
+      ai_key_hint: "Bez klucza działa lokalny parser i ćwiczenia. Klucz pozostaje w tej karcie do końca sesji. Użycie AI wysyła wybrany tekst do Google zgodnie z zasadami dostawcy.",
       ai_temp_label: "Temperatura wnioskowania:",
       ai_btn_test: "⚡ Przetestuj połączenie",
       ai_btn_save: "Zapisz ustawienia",
@@ -303,7 +326,7 @@ What is force majeure? | Unforeseeable circumstances that prevent someone from f
       shortcuts_subtitle: "Błyskawiczne sterowanie platformą bez odrywania rąk od klawiatury",
       shortcut_space: "Obróć bieżącą fiszkę (Pytanie / Odpowiedź)",
       shortcut_arrows: "Poprzednia / Następna fiszka w talii",
-      shortcut_fsrs: "Ocena powtórki FSRS (1: Trudne, 2: Dobre, 3: Łatwe)",
+      shortcut_fsrs: "Ocena FSRS (1: Jeszcze raz, 2: Trudne, 3: Dobre, 4: Łatwe)",
       shortcut_enter: "Sprawdź wpisaną odpowiedź (Tryb Wpisywanie)",
       shortcut_f: "Przełącz na tryb Fiszki",
       shortcut_q: "Przełącz na tryb Quiz",
@@ -320,6 +343,7 @@ What is force majeure? | Unforeseeable circumstances that prevent someone from f
       export_fmt_csv: "Arkusz kalkulacyjny (.csv) — dla Excela, Google Sheets i Numbers"
     },
     en: {
+      due_review: "Review due cards",
       nav_app: "App Workspace",
       nav_features: "Features",
       nav_reviews: "Reviews",
@@ -328,20 +352,20 @@ What is force majeure? | Unforeseeable circumstances that prevent someone from f
       nav_login: "Log in",
       nav_start_free: "Get Started Free",
       hero_badge: "Next-Gen AI Learning Platform",
-      hero_h1_1: "Learn 3x faster.",
-      hero_h1_2: "Retain forever.",
-      hero_h1_3: "Powered by AI.",
-      hero_desc: "Transform messy lecture notes, textbooks, and documents into smart FSRS flashcards, adaptive quizzes, and memory match games. Master any subject effortlessly.",
+      hero_h1_1: "Understand more.",
+      hero_h1_2: "Review at the right time.",
+      hero_h1_3: "Learn actively.",
+      hero_desc: "Turn notes into flashcards, test your knowledge in five modes, and schedule reviews with FSRS. Start locally; add your own key for AI guidance.",
       hero_try_btn: "Start Learning for Free",
       hero_login_btn: "Sign in to Platform",
       hero_micro: "No credit card required. Ready to study in seconds.",
-      stat_cards: "Flashcards generated",
-      stat_retention: "Exam pass rate",
-      stat_speed: "AI extraction speed",
-      stat_rating: "Student user rating",
+      stat_cards: "study modes",
+      stat_retention: "adaptive reviews",
+      stat_speed: "local study",
+      stat_rating: "two languages",
       workspace_eyebrow: "INTERACTIVE STUDY WORKSPACE",
       workspace_title: "Less theory. Deep retention.",
-      workspace_desc: "Pick a curated deck or paste source material. The AI engine instantly compiles flashcards, quizzes, and speed match games.",
+      workspace_desc: "Choose a deck or enter question | answer pairs. Local parsing works offline; AI generation requires your Gemini key.",
       dash_streak: "day streak",
       dash_decks: "active decks",
       dash_retention: "FSRS retention",
@@ -374,12 +398,12 @@ What is force majeure? | Unforeseeable circumstances that prevent someone from f
       quiz_restart: "Try Again",
       match_win_h: "All concepts matched!",
       match_restart: "Play Again",
-      testi_eyebrow: "ACTIVE LEARNER COMMUNITY",
-      testi_title: "What learners say about Tulis Learn",
-      testi_desc: "Join over 450 students and professionals saving dozens of study hours every week.",
+      testi_eyebrow: "STUDY SCENARIOS",
+      testi_title: "Three ways to study actively",
+      testi_desc: "Illustrative ways to use the platform for studying.",
       pricing_eyebrow: "TRANSPARENT PRICING",
       pricing_title: "Choose the plan that fits your study pace",
-      pricing_desc: "Free forever for core studying. Unlock unlimited AI power when exam season peaks.",
+      pricing_desc: "The demonstrator is free. Pro and Campus prices describe a proposed future offering; payments and sharing are not yet available.",
       bill_monthly: "Monthly",
       bill_save: "Save 20%",
       plan_free_name: "Starter",
@@ -389,7 +413,7 @@ What is force majeure? | Unforeseeable circumstances that prevent someone from f
       plan_pro_name: "Student Pro",
       plan_pro_tag: "Most Popular",
       plan_pro_caption: "Maximum acceleration with full AI power",
-      btn_plan_pro: "Choose Student Pro",
+      btn_plan_pro: "Try the demonstrator",
       plan_team_name: "Campus & Groups",
       plan_team_tag: "Study Clubs",
       plan_team_caption: "For study groups and academic departments",
@@ -400,12 +424,10 @@ What is force majeure? | Unforeseeable circumstances that prevent someone from f
       about_title: "Modern education without needless friction.",
       about_desc: "Hi, I'm Tomasz Tulis. I'm building Tulis Learn as a next-generation platform combining cognitive science, FSRS memory scheduling, and frontier AI. Our mission is to empower students across Europe to learn deeply, calmly, and without exhausting all-nighters.",
       cta_banner_h: "Ready to accelerate your learning?",
-      cta_banner_p: "Join hundreds of students passing exams with confidence. Get started for free today.",
+      cta_banner_p: "Choose a deck and discover what you can recall.",
       cta_banner_btn: "Open App Workspace",
       auth_title: "Welcome to Tulis Learn",
-      auth_sub: "Sign in to sync decks, streaks, and FSRS memory schedules.",
-      auth_google: "Continue with Google",
-      auth_or: "or via email",
+      auth_sub: "Decks and history use the selected storage mode. Local accounts work only on this device.",
       auth_email: "Email address",
       auth_pass: "Password",
       auth_submit: "Sign In",
@@ -421,56 +443,56 @@ What is force majeure? | Unforeseeable circumstances that prevent someone from f
       quiz_finish: "View Results",
       tech_eyebrow: "COGNITIVE ENGINE · AI ARCHITECTURE",
       tech_title: "Advanced Semantic Pipeline.<br />From Messy Notes to Long-Term Memory.",
-      tech_intro: "Tulis Learn pairs adaptive FSRS spaced repetition with an advanced semantic reasoning engine. Transforming dense textbooks and lectures into active-recall questions that build critical understanding.",
+      tech_intro: "Combine flashcards with adaptive FSRS schedules, explore shared words in the concept graph and optionally generate practice questions with Gemini.",
       tech_tag: "Cognitive Engine · AI Architecture",
       tech_feat1_h: "High-yield concepts, extracted in context",
-      tech_feat1_p: "Instant text parsing generates atomic flashcards and quiz questions in sub-seconds without tedious manual creation.",
+      tech_feat1_p: "The parser turns pairs and simple definitions into flashcards. With your own key, generate questions from raw notes.",
       tech_feat2_h: "Socratic assistant guiding you toward answers",
       tech_feat2_p: "Adaptive progressive hints and mistake explanations foster first-principles understanding instead of rote memorization.",
-      tech_feat3_h: "Data privacy & zero retention architecture",
-      tech_feat3_p: "Strict Zero Data Retention: secure stateless API with guaranteed protection against model training on your proprietary notes.",
+      tech_feat3_h: "Control over study materials",
+      tech_feat3_p: "Local parsing keeps notes on your device. AI generation requires your key and sends selected text to Google.",
       pipeline_title: "Cognitive Pipeline & AI Architecture",
       pipeline_badge: "⚡ Hybrid LLM Pipeline",
       pipe1_badge: "STEP 1 · Fast Ingestion",
       pipe1_h: "Ingestion & Chunking",
-      pipe1_p: "Decomposes raw notes or documents into atomic logical units and identifies key terminology with ultra-low latency (< 0.6s).",
+      pipe1_p: "Read text or TXT and CSV files containing question–answer pairs.",
       pipe2_badge: "STEP 2 · Deep Reasoning",
       pipe2_h: "Semantic Reasoning",
-      pipe2_p: "Validates cause-and-effect relationships, filters factual hallucinations, and crafts high-yield conceptual questions.",
+      pipe2_p: "An optional Gemini model creates questions from your text. Verify the generated answers.",
       pipe3_badge: "STEP 3 · Socratic Loop",
       pipe3_h: "Socratic Tutoring",
-      pipe3_p: "When learners make mistakes, the system prompts them with guided questions rather than spoiling the answer.",
+      pipe3_p: "Choose a Socratic question or explanation. Without a key, a local exercise supports self-reflection.",
       pipe4_badge: "STEP 4 · FSRS Scheduling",
       pipe4_h: "Memory Optimization",
       pipe4_p: "Adaptive Free Spaced Repetition Scheduler tracks memory stability across the Ebbinghaus forgetting curve.",
-      tech_note: "The Tulis Learn architecture pairs frontier language models with an adaptive FSRS spaced repetition engine. All requests are encrypted and processed statelessly with zero data retention.",
-      testi_1_text: "“Passed my Gross Anatomy exam on the first attempt! I upload messy lecture notes and the AI engine distills high-yield concepts into atomic flashcards, saving me dozens of manual typing hours.”",
-      testi_1_role: "Medicine (MD Candidate) · Jagiellonian University Medical College",
-      testi_2_text: "“The FSRS algorithm paired with the rapid match mode is a total game-changer. I master operating systems and computer networks 3x faster than reading dry lecture slides.”",
-      testi_2_role: "Computer Science · Warsaw University of Technology",
-      testi_3_text: "“The volume of civil and administrative law for the bar exam is immense. Tulis Learn lets me review legal codes on my commute and test retention with quick adaptive quizzes.”",
-      testi_3_role: "Trainee Attorney-at-Law · Bar Association",
+      tech_note: "Decks and history are stored in SQLite or locally in the browser. FSRS schedules are saved on the device. AI calls are subject to provider policies.",
+      testi_1_text: "Medicine: turn lecture definitions into flashcards and check your recall in a quiz before an exam.",
+      testi_1_role: "Definitions · Active recall",
+      testi_2_text: "Computer science: connect concepts in the graph and explain algorithms in your own words.",
+      testi_2_role: "Algorithms · Concept links",
+      testi_3_text: "Law: organize concepts into decks and plan reviews from your own ratings.",
+      testi_3_role: "Concepts · Regular reviews",
       p1_f1: "Flashcards, Quizzes & Speed Match Mode",
       p1_f2: "In-browser FSRS spaced repetition engine",
-      p1_f3: "Up to 3 active decks in local library",
+      p1_f3: "Your personal deck library",
       p1_f4: "No ads & instant guest access",
       p2_f1: "Everything in Starter plan",
-      p2_f2: "<strong>Unlimited AI extraction</strong> from notes",
+      p2_f2: "AI extraction with your own key",
       p2_f3: "Audio TTS pronunciation & auditory learning",
       p2_f4: "Unlimited decks in library",
       p2_f5: "Socratic assistant explaining conceptual errors",
       p3_f1: "Everything in Student Pro plan",
-      p3_f2: "Shared team deck repository",
-      p3_f3: "LMS export integration for faculties",
-      p3_f4: "Dedicated priority support & high-tier API",
+      p3_f2: "Planned: shared decks",
+      p3_f3: "JSON, CSV and Anki export",
+      p3_f4: "Planned: campus support",
       faq_q1: "How does Tulis Learn help you retain knowledge faster?",
       faq_a1: "We combine two empirically proven cognitive techniques: Active Recall and the FSRS spaced repetition algorithm. Instead of passively re-reading textbooks, you train your brain to actively retrieve information, scheduled at the mathematically optimal forgetting curve interval.",
       faq_q2: "How does the FSRS algorithm differ from legacy Anki SM-2?",
-      faq_a2: "FSRS (Free Spaced Repetition Scheduler) is a modern machine-learning-based memory model that computes memory stability and difficulty. Benchmark studies demonstrate a 20-30% retention gain over the 30-year-old SM-2 algorithm used in traditional flashcard apps.",
+      faq_a2: "FSRS models memory stability and difficulty from review ratings. Tulis Learn uses ts-fsrs; intervals depend on each flashcard’s review history.",
       faq_q3: "Can I upload my own lecture notes and documents?",
       faq_a3: "Yes! You can paste raw text, import text files (.txt, .csv), or click 'Smart AI Extraction' to instantly distill key definitions into active-recall question-and-answer pairs.",
       faq_q4: "Is my study material kept private and secure?",
-      faq_a4: "100%. Decks and review schedules are stored locally in your browser. We adhere to Zero Data Retention standards—commercial APIs never train foundational models on your proprietary lecture notes.",
+      faq_a4: "The local parser runs on your device. In server mode, decks are saved to SQLite. AI generation sends text to Google under its provider policies.",
       faq_q5: "Does Tulis Learn work on mobile devices and tablets?",
       faq_a5: "Yes, the platform is fully responsive and touch-optimized. You can review flashcards, take quizzes, and play the speed match game seamlessly on any mobile phone or tablet.",
       tab_graph: "Concept Graph",
@@ -488,33 +510,34 @@ What is force majeure? | Unforeseeable circumstances that prevent someone from f
       print_cards_in_deck: "flashcards in active deck",
       print_btn_action: "🖨️ Print now (Ctrl+P)",
       fsrs_modal_title: "🧠 Cognitive Analytics & FSRS Model",
-      fsrs_modal_sub: "Hermann Ebbinghaus Forgetting Curve vs. Free Spaced Repetition Scheduler",
-      fsrs_legend_ebbinghaus: "No reviews (Ebbinghaus decay: ~20% at 7 days)",
-      fsrs_legend_fsrs: "FSRS Optimization (Reset to 95%+)",
+      fsrs_modal_sub: "ts-fsrs model · rated flashcard data; the chart below is illustrative",
+      fsrs_legend_ebbinghaus: "Illustration: forgetting without reviews",
+      fsrs_legend_fsrs: "Illustration: recall with reviews",
       fsrs_m_stab_lbl: "Stability (S)",
       fsrs_m_stab_sub: "mean time to 90% retention",
       fsrs_m_diff_lbl: "Difficulty (D)",
       fsrs_m_diff_sub: "complexity rating",
-      fsrs_m_ret_lbl: "Retention (R)",
-      fsrs_m_ret_sub: "target scheduler threshold",
+      fsrs_m_ret_lbl: "Estimated recall (R)",
+      fsrs_m_ret_sub: "based on rated flashcards",
       fsrs_why_title: "Why does FSRS outperform traditional methods?",
-      fsrs_why_desc: "Passive re-reading creates an illusion of competence. The FSRS algorithm schedules reviews at critical memory decay intervals, strengthening synaptic consolidation with minimum study time.",
+      fsrs_why_desc: "FSRS uses your ratings and elapsed time to update stability, difficulty and the next review date. Estimated recall is a model prediction, not a measured exam result.",
       btn_close: "Close",
       auth_tab_login: "Sign In",
       auth_tab_register: "Sign Up",
       auth_name: "Full Name",
       auth_btn_register: "Create Account",
+      mgmt_deck_title: "Deck title",
       mgmt_title: "⚙️ Management Dashboard & Database",
-      mgmt_sub: "Manage your decks, account, analytics and SQLite database backups.",
+      mgmt_sub: "Manage your decks, account, analytics and backups.",
       mgmt_tab_decks: "📚 My Decks",
       mgmt_tab_history: "📊 Study History",
       mgmt_tab_profile: "👤 Profile & Account",
       mgmt_tab_backup: "💾 Backup & Export",
-      mgmt_decks_hint: "All decks persisted in your local SQLite database:",
+      mgmt_decks_hint: "All decks in the selected storage mode:",
       mgmt_btn_new_deck: "+ New Deck",
       mgmt_history_hint: "Study session activity recorded by the FSRS algorithm:",
       mgmt_btn_logout: "🚪 Log out",
-      mgmt_backup_hint: "Export your full knowledge base to JSON or import decks into SQLite:",
+      mgmt_backup_hint: "Download decks, history and FSRS schedules, or import a JSON backup:",
       mgmt_btn_download_backup: "📥 Download JSON Backup",
       mgmt_btn_import_backup: "📤 Import from JSON",
       tab_type: "Type-in",
@@ -525,12 +548,12 @@ What is force majeure? | Unforeseeable circumstances that prevent someone from f
       socratic_send_btn: "Ask 🚀",
       mgmt_heatmap_title: "STUDY ACTIVITY (LAST 14 DAYS)",
       ai_modal_title: "⚙️ Cognitive AI Models Configuration",
-      ai_modal_sub: "Manage semantic engines, API keys and FSRS inference settings.",
+      ai_modal_sub: "Choose a Gemini model, your API key and generation temperature.",
       ai_status_label: "Active Platform Engine:",
       ai_status_desc: "Google Gemini 3.8 Flash (Google DeepMind / AI Studio) • Real-time extraction • Socratic tutoring.",
       ai_provider_label: "Select AI Provider:",
-      ai_custom_key_label: "Custom API Key (Optional):",
-      ai_key_hint: "Leave blank to use the platform's default high-speed engine.",
+      ai_custom_key_label: "Your Gemini API key (session only):",
+      ai_key_hint: "Without a key, local parsing and exercises are available. Your key stays in this tab session. AI sends selected text to Google under its provider terms.",
       ai_temp_label: "Inference Temperature:",
       ai_btn_test: "⚡ Test Connection",
       ai_btn_save: "Save Settings",
@@ -549,7 +572,7 @@ What is force majeure? | Unforeseeable circumstances that prevent someone from f
       shortcuts_subtitle: "Instant platform control without lifting your hands from the keyboard",
       shortcut_space: "Flip active flashcard (Question / Answer)",
       shortcut_arrows: "Previous / Next card in deck",
-      shortcut_fsrs: "FSRS review rating (1: Hard, 2: Good, 3: Easy)",
+      shortcut_fsrs: "FSRS rating (1: Again, 2: Hard, 3: Good, 4: Easy)",
       shortcut_enter: "Submit typed answer (Type-in Mode)",
       shortcut_f: "Switch to Flashcards mode",
       shortcut_q: "Switch to Quiz mode",
@@ -568,14 +591,16 @@ What is force majeure? | Unforeseeable circumstances that prevent someone from f
   };
 
   let currentLang = "pl";
-  const savedLang = localStorage.getItem("tulis_lang");
+  const savedLang = preferences.getItem("tulis_lang");
   if (savedLang === "en" || (!savedLang && navigator.language && navigator.language.startsWith("en"))) {
     currentLang = "en";
   }
 
   function setLanguage(lang) {
     currentLang = lang;
-    localStorage.setItem("tulis_lang", lang);
+    $("langPl").setAttribute("aria-pressed", String(lang === "pl"));
+    $("langEn").setAttribute("aria-pressed", String(lang === "en"));
+    preferences.setItem("tulis_lang", lang);
     document.documentElement.lang = lang;
 
     $("langPl").classList.toggle("active", lang === "pl");
@@ -584,7 +609,9 @@ What is force majeure? | Unforeseeable circumstances that prevent someone from f
     document.querySelectorAll("[data-i18n]").forEach((el) => {
       const key = el.dataset.i18n;
       if (TRANSLATIONS[lang] && TRANSLATIONS[lang][key]) {
-        if (key === "hero_desc" || key === "notes_help" || key === "tech_title" || key === "p2_f2") {
+        if (el.id === "extractAiBtn") {
+          $("extractAiBtnText").textContent = TRANSLATIONS[lang][key];
+        } else if (key === "hero_desc" || key === "notes_help" || key === "tech_title" || key === "p2_f2") {
           el.innerHTML = TRANSLATIONS[lang][key];
         } else {
           const svg = el.querySelector("svg");
@@ -606,6 +633,9 @@ What is force majeure? | Unforeseeable circumstances that prevent someone from f
       }
     });
 
+    document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+      el.placeholder = TRANSLATIONS[lang][el.dataset.i18nPlaceholder] || el.placeholder;
+    });
     if (deck.length > 0) {
       renderCard();
     }
@@ -617,10 +647,12 @@ What is force majeure? | Unforeseeable circumstances that prevent someone from f
     document.body.classList.toggle("dark-theme", isDark);
     if (themeToggleBtn) {
       themeToggleBtn.textContent = isDark ? "☀️" : "🌙";
+      themeToggleBtn.setAttribute('aria-pressed', String(isDark));
+      document.querySelector('meta[name="theme-color"]').content = isDark ? '#101b15' : '#f8faf7';
     }
-    localStorage.setItem("tulis_theme", isDark ? "dark" : "light");
+    preferences.setItem("tulis_theme", isDark ? "dark" : "light");
   }
-  const savedTheme = localStorage.getItem("tulis_theme");
+  const savedTheme = preferences.getItem("tulis_theme");
   const prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
   applyTheme(savedTheme === "dark" || (!savedTheme && prefersDark));
 
@@ -637,7 +669,7 @@ What is force majeure? | Unforeseeable circumstances that prevent someone from f
 
   // Web Audio Synthesizer & Sound Effects (Zero Dependencies)
   let audioCtx = null;
-  let soundEnabled = localStorage.getItem("tulis_sound") !== "false";
+  let soundEnabled = preferences.getItem("tulis_sound") !== "false";
   const soundToggleBtn = $("soundToggleBtn");
 
   function initAudio() {
@@ -660,7 +692,7 @@ What is force majeure? | Unforeseeable circumstances that prevent someone from f
   if (soundToggleBtn) {
     soundToggleBtn.addEventListener("click", () => {
       soundEnabled = !soundEnabled;
-      localStorage.setItem("tulis_sound", String(soundEnabled));
+      preferences.setItem("tulis_sound", String(soundEnabled));
       updateSoundButton();
       if (soundEnabled) playSound("correct");
     });
@@ -729,6 +761,7 @@ What is force majeure? | Unforeseeable circumstances that prevent someone from f
 
   // Lightweight Physics Confetti Particle Engine
   function launchConfetti() {
+    if (reducedMotion.matches) return;
     const canvas = $("confettiCanvas");
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
@@ -792,19 +825,30 @@ What is force majeure? | Unforeseeable circumstances that prevent someone from f
   let hoveredNode = null;
   let graphCanvasInitialized = false;
 
+  function resizeGraph(canvas) {
+    const parent = canvas.parentElement;
+    const width = parent.clientWidth || 600;
+    const height = parent.clientHeight || 340;
+    const ratio = Math.min(window.devicePixelRatio || 1, 2);
+    canvas.width = Math.round(width * ratio);
+    canvas.height = Math.round(height * ratio);
+    canvas.style.width = width + 'px';
+    canvas.style.height = height + 'px';
+    canvas.dataset.ratio = ratio;
+    canvas.getContext('2d').setTransform(ratio, 0, 0, ratio, 0, 0);
+  }
+  function graphSize(canvas) { const ratio = Number(canvas.dataset.ratio || 1); return { width: canvas.width / ratio, height: canvas.height / ratio }; }
   function initConceptGraph() {
     const canvas = $("graphCanvas");
     if (!canvas) return;
-    const parent = canvas.parentElement;
-    canvas.width = parent.clientWidth || 600;
-    canvas.height = parent.clientHeight || 340;
+    resizeGraph(canvas);
 
     const deckSel = $("deckSelector");
     const deckName = (deckSel && deckSel.selectedIndex >= 0 && deckSel.options[deckSel.selectedIndex])
       ? deckSel.options[deckSel.selectedIndex].text
       : "Talia";
-    const width = canvas.width;
-    const height = canvas.height;
+    const width = graphSize(canvas).width;
+    const height = graphSize(canvas).height;
 
     // Hub node
     graphNodes = [
@@ -850,12 +894,11 @@ What is force majeure? | Unforeseeable circumstances that prevent someone from f
       graphEdges.push({ source: graphNodes[0], target: graphNodes[i], isHubEdge: true });
     }
 
-    // Semantic cross-edges between cards with common significant words
+    const wordSets = graphNodes.map(node => new Set(((node.fullQuestion || "") + " " + (node.fullAnswer || "")).toLowerCase().match(/\p{L}{5,}/gu) || []));
+    // Lexical cross-edges between cards with common significant words
     for (let i = 1; i < graphNodes.length; i++) {
       for (let j = i + 1; j < graphNodes.length; j++) {
-        const wordsA = (graphNodes[i].fullQuestion + " " + graphNodes[i].fullAnswer).toLowerCase().match(/\b[a-ząćęłńóśźż]{5,}\b/g) || [];
-        const wordsB = (graphNodes[j].fullQuestion + " " + graphNodes[j].fullAnswer).toLowerCase().match(/\b[a-ząćęłńóśźż]{5,}\b/g) || [];
-        const common = wordsA.filter(w => wordsB.includes(w));
+        const common = [...wordSets[i]].filter(word => wordSets[j].has(word));
         if (common.length >= 2) {
           graphEdges.push({ source: graphNodes[i], target: graphNodes[j], isHubEdge: false });
         }
@@ -874,18 +917,18 @@ What is force majeure? | Unforeseeable circumstances that prevent someone from f
     if (graphSimRunning) return;
     graphSimRunning = true;
     let frames = 0;
-    const maxFrames = 120;
+    const maxFrames = reducedMotion.matches ? 1 : 120;
 
     function tick() {
       const canvas = $("graphCanvas");
-      if (!canvas || !$("graph") || $("graph").hidden) {
+      if (!canvas || !$("graph") || $("graph").hidden || document.hidden) {
         graphSimRunning = false;
         return;
       }
       frames++;
 
-      const width = canvas.width;
-      const height = canvas.height;
+      const width = graphSize(canvas).width;
+      const height = graphSize(canvas).height;
 
       // Spring forces for edges
       graphEdges.forEach(edge => {
@@ -951,7 +994,7 @@ What is force majeure? | Unforeseeable circumstances that prevent someone from f
 
   function drawGraph(canvas) {
     const ctx = canvas.getContext("2d");
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.clearRect(0, 0, graphSize(canvas).width, graphSize(canvas).height);
     const isDark = document.body.classList.contains("dark-theme");
 
     // Draw edges
@@ -1028,21 +1071,22 @@ What is force majeure? | Unforeseeable circumstances that prevent someone from f
       const clientX = e.touches ? e.touches[0].clientX : e.clientX;
       const clientY = e.touches ? e.touches[0].clientY : e.clientY;
       return {
-        x: (clientX - rect.left) * (canvas.width / rect.width),
-        y: (clientY - rect.top) * (canvas.height / rect.height)
+        x: (clientX - rect.left) * (graphSize(canvas).width / rect.width),
+        y: (clientY - rect.top) * (graphSize(canvas).height / rect.height)
       };
     }
 
-    canvas.addEventListener("mousedown", (e) => {
+    canvas.addEventListener("pointerdown", (e) => {
       const pos = getPos(e);
       draggedNode = getNodeAt(pos.x, pos.y);
       isDown = true;
+      canvas.setPointerCapture(e.pointerId);
       if (draggedNode) {
         startGraphSimulation();
       }
     });
 
-    window.addEventListener("mousemove", (e) => {
+    canvas.addEventListener("pointermove", (e) => {
       const pos = getPos(e);
       if (isDown && draggedNode) {
         draggedNode.x = pos.x;
@@ -1069,11 +1113,12 @@ What is force majeure? | Unforeseeable circumstances that prevent someone from f
       }
     });
 
-    window.addEventListener("mouseup", () => {
+    canvas.addEventListener("pointerup", () => {
       isDown = false;
       draggedNode = null;
     });
 
+    canvas.addEventListener("pointercancel", () => { isDown = false; draggedNode = null; });
     canvas.addEventListener("dblclick", (e) => {
       const pos = getPos(e);
       const n = getNodeAt(pos.x, pos.y);
@@ -1094,16 +1139,16 @@ What is force majeure? | Unforeseeable circumstances that prevent someone from f
 
     window.addEventListener("resize", () => {
       if ($("graph") && !$("graph").hidden) {
-        const parent = canvas.parentElement;
-        canvas.width = parent.clientWidth || 600;
-        canvas.height = parent.clientHeight || 340;
-        drawGraph(canvas);
+        initConceptGraph();
       }
     });
   }
 
   function renderConceptGraph() {
     initConceptGraph();
+    const list = $("graphAccessibleList");
+    list.innerHTML = '<details><summary>' + (currentLang === 'en' ? 'Browse concepts and answers (word overlap links)' : 'Przeglądaj pojęcia i odpowiedzi (powiązania wspólnych słów)') + '</summary><ul>' + deck.map((card, index) => '<li><button type="button" data-card="' + index + '">' + escapeHtml(card.question) + '</button><p>' + escapeHtml(card.answer) + '</p></li>').join('') + '</ul></details>';
+    list.querySelectorAll('[data-card]').forEach(button => button.addEventListener('click', () => { cardIndex = Number(button.dataset.card); revealed = false; selectMode('cards'); $("flash").focus(); }));
   }
 
   // Socratic AI Tutor Drawer
@@ -1128,7 +1173,9 @@ What is force majeure? | Unforeseeable circumstances that prevent someone from f
       });
     }
 
+    let tutorRequest = 0;
     async function askSocraticTutor(promptType, customQuestion = "") {
+      const requestId = ++tutorRequest;
       const card = deck[cardIndex];
       if (!card || !responseBox) return;
 
@@ -1141,10 +1188,11 @@ What is force majeure? | Unforeseeable circumstances that prevent someone from f
 
       // Attempt live Gemini 3.8 Flash generation
       try {
-        const customKey = localStorage.getItem("tulis_custom_ai_key");
-        const activeKey = customKey || _k;
-        const activeModel = localStorage.getItem("tulis_ai_model") || "gemini-3.8-flash";
-        const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${activeModel}:generateContent?key=${activeKey}`;
+        const customKey = aiKeys.get();
+        const activeKey = customKey;
+        const activeModel = preferences.getItem("tulis_ai_model") || "gemini-3.8-flash";
+        if (!activeKey) throw new Error("Local practice mode");
+        const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${activeModel}:generateContent`;
 
         let aiPrompt = "";
         if (customQuestion) {
@@ -1169,19 +1217,12 @@ What is force majeure? | Unforeseeable circumstances that prevent someone from f
             : `Podaj jeden konkretny, praktyczny przykład z przemysłu lub nauki obrazujący: "${q}" -> "${a}".`;
         }
 
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 9000);
-
         const response = await fetch(endpoint, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            contents: [{ parts: [{ text: aiPrompt }] }],
-            generationConfig: { temperature: 0.25 }
-          }),
-          signal: controller.signal
+          method: 'POST', headers: { 'Content-Type': 'application/json', 'x-goog-api-key': activeKey },
+          body: JSON.stringify({ contents: [{ parts: [{ text: aiPrompt }] }], generationConfig: { temperature: Number(preferences.getItem('tulis_ai_temperature') || 0.2) } }),
+          signal: AbortSignal.timeout(10000)
         });
-        clearTimeout(timeoutId);
+
 
         if (response.ok) {
           const data = await response.json();
@@ -1191,41 +1232,23 @@ What is force majeure? | Unforeseeable circumstances that prevent someone from f
           }
         }
       } catch (e) {
-        // Fallback to instant semantic engine
+        // Offer an explicitly local exercise when generation is unavailable.
       }
 
       if (!content) {
-        if (customQuestion) {
-          content = currentLang === "en"
-            ? `💡 <strong>Socratic Insight on "${escapeHtml(customQuestion)}":</strong><br/>Consider how <strong>${escapeHtml(a)}</strong> behaves under boundary conditions. Does this principle hold universally, or only under strict initial assumptions? Reflect on the primary dependencies of <em>${escapeHtml(q)}</em>.`
-            : `💡 <strong>Wskazówka Sokratejska do pytania „${escapeHtml(customQuestion)}”:</strong><br/>Zastanów się, w jakich warunkach reguła <strong>${escapeHtml(a)}</strong> zachodzi w pełni. Co stanowi jej fundament, a co jest tylko skutkiem ubocznym zjawiska <em>${escapeHtml(q)}</em>?`;
-        } else if (promptType === "feynman") {
-          content = currentLang === "en"
-            ? `👶 <strong>Feynman Analogy:</strong><br/>Think of <em>${escapeHtml(q)}</em> like an everyday machine: instead of memorizing definitions, understand the core mechanism: <strong>${escapeHtml(a)}</strong>. If you had to explain it to a five-year-old, you'd say: "It's like nature's solar battery charger that takes invisible ingredients from the air and turns them into energy!"`
-            : `👶 <strong>Technika Feynmana (Uproszczenie):</strong><br/>Wyobraź sobie <em>${escapeHtml(q)}</em> jak prosty mechanizm z życia codziennego: zamiast kuć formułkę, zobacz sedno procesu: <strong>${escapeHtml(a)}</strong>. Gdybyś tłumaczył to 5-latkowi, powiedziałbyś: „To jak mała słoneczna minifabryka, która bierze niewidzialne składniki z powietrza i ziemi, i produkuje z nich czystą energię do życia!”`;
-        } else if (promptType === "mnemonic") {
-          const firstWord = a.split(" ")[0] || "";
-          content = currentLang === "en"
-            ? `🧠 <strong>Mnemonic Hook:</strong><br/>Anchor keyword: <strong>${escapeHtml(firstWord)}</strong>. Visualize a vivid association: imagine the letters of "${escapeHtml(firstWord)}" glowing in bright emerald green connected directly to "${escapeHtml(q)}". Rhyme/Hook: <em>Fast recall triggers permanent retention</em>.`
-            : `🧠 <strong>Kotwica Mnemotechniczna:</strong><br/>Słowo-klucz pamięciowy: <strong>${escapeHtml(firstWord)}</strong>. Stwórz w wyobraźni dynamiczny obraz: wyobraź sobie wielki, świecący napis „${escapeHtml(firstWord)}” przypięty do pytania „${escapeHtml(q)}”. Skojarzenie: <em>Jeden wyraźny obraz synaptyczny wystarczy, by odtworzyć całą regułę</em>.`;
-        } else if (promptType === "socratic") {
-          content = currentLang === "en"
-            ? `❓ <strong>Socratic Inquiry:</strong><br/>If the condition behind <em>${escapeHtml(a)}</em> ceased to exist, what would collapse first in this system? Why is this definition necessary rather than optional? Try formulating two conditions under which this rule would not hold.`
-            : `❓ <strong>Pytanie Sokratejskie:</strong><br/>Gdyby warunek określony w definicji (<em>${escapeHtml(a)}</em>) nagle przestał zachodzić, jaki byłby pierwszy bezpośredni skutek dla całego układu? Dlaczego ten element jest warunkiem koniecznym, a nie tylko wystarczającym?`;
-        } else if (promptType === "example") {
-          content = currentLang === "en"
-            ? `🌍 <strong>Real-World Application:</strong><br/>In industry and research: understanding <strong>${escapeHtml(q)}</strong> directly enables engineers and doctors to optimize solutions (such as bio-reactors, clean energy models, and diagnostic protocols). Mastery of <strong>${escapeHtml(a)}</strong> is fundamental to real-world diagnosis and synthesis.`
-            : `🌍 <strong>Praktyczny Przykład z Życia:</strong><br/>W praktyce inżynierskiej i naukowej: zrozumienie zjawiska <em>${escapeHtml(q)}</em> pozwala optymalizować nowoczesne systemy (np. bioprocesy, diagnostykę i algorytmy obliczeniowe). Bez znajomości zasady <strong>${escapeHtml(a)}</strong> nie sposób prawidłowo zdiagnozować anomalii w systemie.`;
-        }
+        content = currentLang === 'en'
+          ? '<strong>Local practice prompt · no AI response</strong><br/>Explain this concept in your own words: ' + escapeHtml(q) + '<br/>Give one example, then compare your explanation with the flashcard answer. Configure your own Gemini key for generated guidance.'
+          : '<strong>Lokalne ćwiczenie · bez odpowiedzi AI</strong><br/>Wyjaśnij własnymi słowami: ' + escapeHtml(q) + '<br/>Podaj przykład i porównaj wyjaśnienie z odpowiedzią na fiszce. Skonfiguruj własny klucz Gemini, aby uzyskać wskazówki AI.';
       }
 
+
+      if (requestId !== tutorRequest || deck[cardIndex] !== card) return;
       responseBox.innerHTML = `
         <div style="font-size: 13px; line-height: 1.55; color: var(--ink);">
           ${content}
         </div>
-        <div style="display: flex; justify-content: flex-end; margin-top: 8px;">
-          <button class="btn btn-sm btn-light" type="button" style="font-size: 11px; padding: 2px 8px;" onclick="navigator.clipboard.writeText(this.parentElement.previousElementSibling.innerText); this.textContent='✓ Skopiowano!'; setTimeout(() => this.textContent='Kopiuj wyjaśnienie', 1500);">Kopiuj wyjaśnienie</button>
-        </div>
+
+
       `;
       playSound("correct");
     }
@@ -1292,12 +1315,13 @@ What is force majeure? | Unforeseeable circumstances that prevent someone from f
   }
 
   function updateFsrsModalMetrics() {
-    const stab = $("fsrsMetricStability");
-    const diff = $("fsrsMetricDifficulty");
-    const ret = $("fsrsMetricRetention");
-    if (stab) stab.textContent = `${(12.4 + deck.length * 0.6).toFixed(1)} dni`;
-    if (diff) diff.textContent = `${Math.min(9.5, (3.2 + (deck.length % 5) * 0.3)).toFixed(1)} / 10`;
-    if (ret) ret.textContent = `${Math.min(99.4, 91.0 + (deck.length % 8) * 0.8).toFixed(1)}%`;
+    try {
+      const metrics = reviewStore().metrics(deck);
+      $("fsrsMetricStability").textContent = metrics.stability === null ? '—' : metrics.stability.toFixed(1) + (currentLang === 'en' ? ' days' : ' dni');
+      $("fsrsMetricDifficulty").textContent = metrics.difficulty === null ? '—' : metrics.difficulty.toFixed(1) + ' / 10';
+      $("fsrsMetricRetention").textContent = metrics.retrievability === null ? '—' : (metrics.retrievability * 100).toFixed(1) + '%';
+      if ($("masteryRate")) $("masteryRate").textContent = $("fsrsMetricRetention").textContent;
+    } catch { /* No invented metrics when persistence is unavailable. */ }
   }
 
   // Audio Text-To-Speech (TTS)
@@ -1338,7 +1362,7 @@ What is force majeure? | Unforeseeable circumstances that prevent someone from f
 
     toast.innerHTML = `
       <span class="toast-icon">${icon}</span>
-      <div class="toast-body">${text}</div>
+      <div class="toast-body">${escapeHtml(String(text))}</div>
       <button class="toast-close" type="button" aria-label="Zamknij powiadomienie">✕</button>
     `;
 
@@ -1374,7 +1398,17 @@ What is force majeure? | Unforeseeable circumstances that prevent someone from f
   function renderCard() {
     const card = deck[cardIndex];
     if (!card) return;
-
+    try {
+      const preview = reviewStore().preview(card);
+      document.querySelectorAll('.srs-btn').forEach(btn => {
+        const due = preview[TulisReviews.grades[btn.dataset.srs]].card.due;
+        const minutes = Math.max(1, Math.round((due - Date.now()) / 60000));
+        const interval = minutes < 60 ? minutes + ' min' : minutes < 1440 ? Math.round(minutes / 60) + ' h' : Math.round(minutes / 1440) + (currentLang === 'en' ? ' d' : ' dni');
+        const labels = currentLang === 'en' ? { again: 'Again', hard: 'Hard', good: 'Good', easy: 'Easy' } : { again: 'Jeszcze raz', hard: 'Trudne', good: 'Dobre', easy: 'Łatwe' };
+        btn.textContent = labels[btn.dataset.srs] + ' (+' + interval + ')';
+        btn.disabled = ratingPending;
+      });
+    } catch { /* A failed write is surfaced by the rating handler. */ }
     const t = TRANSLATIONS[currentLang];
     $("cardText").textContent = revealed ? card.answer : card.question;
     $("cardTag").textContent = revealed ? t.card_answer_tag : t.card_question_tag;
@@ -1421,6 +1455,8 @@ What is force majeure? | Unforeseeable circumstances that prevent someone from f
       return false;
     }
 
+    if (matchGame?.timerInterval) clearInterval(matchGame.timerInterval);
+    currentMode = mode;
     const cardsSelected = mode === "cards";
     const quizSelected = mode === "quiz";
     const matchSelected = mode === "match";
@@ -1490,7 +1526,7 @@ What is force majeure? | Unforeseeable circumstances that prevent someone from f
     if ($("typeCheckBtn")) $("typeCheckBtn").textContent = currentLang === "en" ? "Check Answer (Enter)" : "Sprawdź odpowiedź (Enter)";
   }
 
-  function checkTypeAnswer() {
+  function checkTypeAnswer(skipped = false) {
     if (typeAnswerChecked) {
       if (typeIndex < deck.length - 1) {
         typeIndex++;
@@ -1514,8 +1550,11 @@ What is force majeure? | Unforeseeable circumstances that prevent someone from f
     const cleanUser = userVal.toLowerCase().replace(/[.,!?;:()]/g, "").trim();
     const cleanExp = card.answer.toLowerCase().replace(/[.,!?;:()]/g, "").trim();
 
-    const isExact = cleanUser === cleanExp;
-    const isClose = cleanExp.includes(cleanUser) || cleanUser.includes(cleanExp) || (cleanUser.length > 3 && cleanExp.length > 3 && cleanExp.slice(0, 4) === cleanUser.slice(0, 4));
+    const isExact = !skipped && cleanUser === cleanExp;
+    const userWords = new Set(cleanUser.split(/\s+/));
+    const expectedWords = new Set(cleanExp.split(/\s+/));
+    const overlap = [...userWords].filter(word => expectedWords.has(word)).length;
+    const isClose = !skipped && !isExact && cleanUser.length >= 8 && overlap / Math.max(userWords.size, expectedWords.size) >= 0.75;
 
     typeAnswerChecked = true;
     if ($("typeInput")) $("typeInput").disabled = true;
@@ -1526,7 +1565,7 @@ What is force majeure? | Unforeseeable circumstances that prevent someone from f
       if (fb) {
         fb.style.display = "block";
         fb.className = "type-feedback feedback-exact";
-        fb.innerHTML = `<strong>🌟 ${currentLang === "en" ? "Flawless! Exact match!" : "Bezbłędnie! Dokładne dopasowanie!"}</strong><div style="margin-top: 6px; font-weight: 600;">✓ ${escapeHtml(card.answer)}</div><div class="feedback-sub" style="font-size: 11px; margin-top: 4px; color: #166534;">${currentLang === "en" ? "FSRS: Memory stability increased (+3 days)" : "FSRS: Stabilność śladu pamięciowego wzrosła (+3 dni)"}</div>`;
+        fb.innerHTML = `<strong>🌟 ${currentLang === "en" ? "Flawless! Exact match!" : "Bezbłędnie! Dokładne dopasowanie!"}</strong><div style="margin-top: 6px; font-weight: 600;">✓ ${escapeHtml(card.answer)}</div><div class="feedback-sub" style="font-size: 11px; margin-top: 4px; color: #166534;">${currentLang === "en" ? "Answer comparison only; rate the flashcard to schedule a review." : "Ocena odpowiedzi; oceń fiszkę, aby zaplanować powtórkę."}</div>`;
       }
     } else if (isClose) {
       typeCorrectCount += 0.5;
@@ -1541,7 +1580,7 @@ What is force majeure? | Unforeseeable circumstances that prevent someone from f
       if (fb) {
         fb.style.display = "block";
         fb.className = "type-feedback feedback-wrong";
-        fb.innerHTML = `<strong>❌ ${currentLang === "en" ? "Needs review:" : "Do powtórzenia:"}</strong><div style="margin-top: 6px;">Twoja odpowiedź: <span class="type-diff-user">${escapeHtml(userVal)}</span><br/>Wzorcowa odpowiedź: <span class="type-diff-expected">${escapeHtml(card.answer)}</span></div><div class="feedback-sub" style="font-size: 11px; margin-top: 4px; color: #7f1d1d;">${currentLang === "en" ? "FSRS: Interval reset for tomorrow (+1 day)" : "FSRS: Powtórka zaplanowana na jutro (+1 dzień)"}</div>`;
+        fb.innerHTML = `<strong>❌ ${currentLang === "en" ? "Needs review:" : "Do powtórzenia:"}</strong><div style="margin-top: 6px;">Twoja odpowiedź: <span class="type-diff-user">${escapeHtml(userVal)}</span><br/>Wzorcowa odpowiedź: <span class="type-diff-expected">${escapeHtml(card.answer)}</span></div><div class="feedback-sub" style="font-size: 11px; margin-top: 4px; color: #7f1d1d;">${currentLang === "en" ? "Review this concept again." : "Powtórz to pojęcie."}</div>`;
       }
     }
 
@@ -1708,6 +1747,7 @@ What is force majeure? | Unforeseeable circumstances that prevent someone from f
 
   // Interactive Match Game (Memory Speed Pairing)
   function startMatchGame() {
+    if (matchGame?.timerInterval) clearInterval(matchGame.timerInterval);
     const pairCount = Math.min(4, deck.length);
     const sampleCards = shuffle(deck).slice(0, pairCount);
     const tiles = [];
@@ -1742,7 +1782,9 @@ What is force majeure? | Unforeseeable circumstances that prevent someone from f
     }, 100);
 
     shuffledTiles.forEach((tile) => {
-      const tileEl = document.createElement("div");
+      const tileEl = document.createElement("button");
+      tileEl.type = "button";
+      tileEl.setAttribute("aria-pressed", "false");
       tileEl.className = "match-card";
       tileEl.textContent = tile.text;
       tileEl.addEventListener("click", () => handleTileClick(tile, tileEl));
@@ -1751,17 +1793,21 @@ What is force majeure? | Unforeseeable circumstances that prevent someone from f
   }
 
   function handleTileClick(tile, tileEl) {
-    if (tileEl.classList.contains("matched") || tileEl.classList.contains("selected")) return;
+    if (!matchGame || matchGame.locked || tileEl.classList.contains("matched") || tileEl.classList.contains("selected")) return;
 
     if (!matchGame.selected) {
       matchGame.selected = { tile, el: tileEl };
       tileEl.classList.add("selected");
+      tileEl.setAttribute("aria-pressed", "true");
     } else {
       const prev = matchGame.selected;
       if (prev.tile.type !== tile.type && prev.tile.id === tile.id) {
         // MATCH!
         playSound("correct");
         tileEl.classList.add("matched");
+        tileEl.disabled = true;
+        prev.el.disabled = true;
+        tileEl.setAttribute("aria-pressed", "true");
         prev.el.classList.remove("selected");
         prev.el.classList.add("matched");
         matchGame.selected = null;
@@ -1770,10 +1816,13 @@ What is force majeure? | Unforeseeable circumstances that prevent someone from f
 
         if (matchGame.matchedPairs === matchGame.totalPairs) {
           clearInterval(matchGame.timerInterval);
+          logStudySession("Dopasowywanie", "Ukończono");
           const finalTime = ((Date.now() - matchGame.startTime) / 1000).toFixed(1);
           playSound("win");
           launchConfetti();
+          const completedGame = matchGame;
           setTimeout(() => {
+            if (matchGame !== completedGame) return;
             $("matchGrid").style.display = "none";
             $("matchWin").style.display = "block";
             $("matchWinText").textContent = currentLang === "en"
@@ -1782,6 +1831,8 @@ What is force majeure? | Unforeseeable circumstances that prevent someone from f
           }, 350);
         }
       } else {
+        const activeGame = matchGame;
+        activeGame.locked = true;
         // WRONG PAIR
         playSound("wrong");
         tileEl.classList.add("wrong");
@@ -1789,7 +1840,10 @@ What is force majeure? | Unforeseeable circumstances that prevent someone from f
         setTimeout(() => {
           tileEl.classList.remove("wrong", "selected");
           prev.el.classList.remove("wrong", "selected");
-          matchGame.selected = null;
+          tileEl.setAttribute("aria-pressed", "false");
+          prev.el.setAttribute("aria-pressed", "false");
+          activeGame.selected = null;
+          activeGame.locked = false;
         }, 400);
       }
     }
@@ -1816,7 +1870,7 @@ What is force majeure? | Unforeseeable circumstances that prevent someone from f
       }
       const dict = currentLang === "en" ? PRESETS_EN : PRESETS;
       if (val === "custom") {
-        const savedCustom = localStorage.getItem("tulis_custom_deck");
+        const savedCustom = preferences.getItem("tulis_custom_deck");
         if (savedCustom) {
           $("notes").value = savedCustom;
         }
@@ -1828,53 +1882,42 @@ What is force majeure? | Unforeseeable circumstances that prevent someone from f
   }
 
   const saveDeckBtn = $("saveDeckBtn");
-  if (saveDeckBtn) {
-    saveDeckBtn.addEventListener("click", async () => {
-      const content = $("notes").value;
-      localStorage.setItem("tulis_custom_deck", content);
-      updateDashboardStats();
-
-      const selVal = deckSelector ? deckSelector.value : "";
-      if (selVal.startsWith("db_")) {
-        const id = parseInt(selVal.replace("db_", ""), 10);
-        const cur = userDecks.find(d => d.id === id);
-        if (cur) {
-          await apiRequest(`/api/decks/${id}`, "PUT", {
-            title: cur.title,
-            content,
-            card_count: deck.length
-          });
-        }
-      } else {
-        const titlePrompt = prompt("Nazwa zapisywanego zestawu w bazie SQLite:", "Mój nowy zestaw");
-        if (titlePrompt && titlePrompt.trim()) {
-          const res = await apiRequest("/api/decks", "POST", {
-            title: titlePrompt.trim(),
-            category: "Własne",
-            content,
-            card_count: deck.length
-          });
-          if (res && res.success) {
-            await loadUserDecks();
-          }
-        }
-      }
-
-      showMessage(
-        currentLang === "en"
-          ? "💾 Deck saved successfully to SQLite database & browser cache!"
-          : "💾 Zestaw został zapisany w bazie danych SQLite i pamięci przeglądarki!"
-      );
+  /** Accessible, cancellable replacement for browser prompt/confirm dialogs. */
+  function requestDeckAction(title, initialValue, description = '') {
+    const dialog = $('deckActionDialog');
+    if (dialog.open) return Promise.resolve(null);
+    const input = $('deckActionInput');
+    const editing = initialValue !== null;
+    $('deckActionTitle').textContent = title;
+    $('deckActionDescription').textContent = description;
+    $('deckActionField').hidden = !editing;
+    input.disabled = !editing;
+    input.value = initialValue || '';
+    $('deckActionConfirm').textContent = currentLang === 'en' ? (editing ? 'Save' : 'Delete') : (editing ? 'Zapisz' : 'Usuń');
+    $('deckActionCancel').textContent = currentLang === 'en' ? 'Cancel' : 'Anuluj';
+    dialog.returnValue = '';
+    return new Promise(resolve => {
+      dialog.addEventListener('close', () => resolve(dialog.returnValue === 'confirm' ? (editing ? input.value.trim() : true) : null), { once: true });
+      dialog.showModal();
+      if (editing) { input.focus(); input.select(); }
     });
   }
-
-  const exportDeckBtn = $("exportDeckBtn");
-  const exportModal = $("exportModal");
-  if (exportDeckBtn && exportModal) {
-    exportDeckBtn.addEventListener("click", () => {
-      exportModal.showModal();
-    });
-  }
+  if (saveDeckBtn) saveDeckBtn.addEventListener('click', async () => {
+    if (saveDeckBtn.disabled || !buildDeck()) return;
+    const content = $("notes").value;
+    const current = userDecks.find(item => 'db_' + item.id === deckSelector?.value);
+    saveDeckBtn.disabled = true;
+    try {
+      const title = current?.title || await requestDeckAction(currentLang === 'en' ? 'Deck title' : 'Nazwa talii', currentLang === 'en' ? 'My deck' : 'Moja talia');
+      if (!title?.trim()) return;
+      const result = await apiRequest(current ? '/api/decks/' + current.id : '/api/decks', current ? 'PUT' : 'POST', { title: title.trim(), category: current?.category || 'Własne', content, card_count: deck.length });
+      if (!result.success) return;
+      preferences.setItem('tulis_custom_deck', content);
+      await loadUserDecks();
+      deckSelector.value = 'db_' + result.deck.id;
+      showMessage(currentLang === 'en' ? 'Deck saved.' : 'Talia zapisana.');
+    } finally { saveDeckBtn.disabled = false; }
+  });
 
   function downloadExportFile(filename, content, mime) {
     const blob = new Blob([content], { type: `${mime};charset=utf-8;` });
@@ -1922,7 +1965,9 @@ What is force majeure? | Unforeseeable circumstances that prevent someone from f
   if (exportFormatCsvBtn) {
     exportFormatCsvBtn.addEventListener("click", () => {
       const header = '"Question","Answer"\n';
-      const rows = deck.map(c => `"${c.question.replace(/"/g, '""')}","${c.answer.replace(/"/g, '""')}"`).join("\n");
+      // Quoting alone does not stop spreadsheet formula execution.
+      const cell = value => `"${(/^[\s]*[=+@-]/.test(value) ? "'" + value : value).replace(/"/g, '""')}"`;
+      const rows = deck.map(c => [c.question, c.answer].map(cell).join(',')).join("\n");
       downloadExportFile("tulis-learn-deck.csv", header + rows, "text/csv");
     });
   }
@@ -1934,24 +1979,40 @@ What is force majeure? | Unforeseeable circumstances that prevent someone from f
     fileInput.addEventListener("change", (e) => {
       const file = e.target.files[0];
       if (!file) return;
+      if (file.size > 100000) { showMessage('Plik przekracza 100 KB.', true); fileInput.value = ''; return; }
       const reader = new FileReader();
+      reader.onerror = () => { showMessage('Nie można odczytać pliku.', true); fileInput.value = ''; };
       reader.onload = (event) => {
-        $("notes").value = event.target.result;
-        buildDeck();
+        const previous = $("notes").value;
+        try {
+          let text = event.target.result.replace(/^\uFEFF/, '');
+          if (file.name.toLowerCase().endsWith('.csv')) {
+            const rows = text.trim().split(/\r?\n/).map(line => {
+              const match = line.match(/^"((?:[^"]|"")*)","((?:[^"]|"")*)"$/);
+              if (!match) throw new Error('CSV: oczekiwano dwóch kolumn w cudzysłowach.');
+              return match.slice(1).map(value => value.replace(/""/g, '"'));
+            });
+            if (rows[0]?.[0] === 'Question' && rows[0]?.[1] === 'Answer') rows.shift();
+            text = rows.map(row => row.join(' | ')).join('\n');
+          }
+          $("notes").value = text;
+          if (!buildDeck()) $("notes").value = previous;
+        } catch (error) { $("notes").value = previous; showMessage(error.message, true); }
+        finally { fileInput.value = ''; }
       };
       reader.readAsText(file);
     });
   }
 
   // Live AI Flashcard Extraction Engine (Powered by Gemini 3.8 Flash)
-  const _k = atob("QVEuQWI4Uk42S3c3SjUyUTFEQTl2aVFkTmI5bzJ3NDdqcEM5SzZTRGxWY1pkQks1ZUozWVE=");
 
   async function performAiExtraction() {
-    if (isSimulating) return;
-    isSimulating = true;
-    const btn = $("simulateClaudeBtn");
-    const btnText = $("simulateClaudeBtnText");
+    if (isExtracting) return;
+    isExtracting = true;
+    const btn = $("extractAiBtn");
+    const btnText = $("extractAiBtnText");
     const originalText = btnText.textContent;
+    btn.disabled = true;
     btn.classList.add("loading");
     btnText.textContent = currentLang === "en" ? "⏳ AI is processing text..." : "⏳ AI analizuje notatki...";
     showMessage(
@@ -1976,14 +2037,19 @@ What is force majeure? | Unforeseeable circumstances that prevent someone from f
     }
 
     try {
+      const submittedNotes = $("notes").value;
       const prompt = currentLang === "en"
         ? `You are the educational AI engine of Tulis Learn. Transform the source material below into 4 to 8 high-quality, concise active-recall flashcards.\nSTRICT RULES:\n- Each line MUST follow exactly this format: Question | Answer\n- Do NOT include any introductory or concluding text.\n- Do NOT use bullet points, numbering, or markdown bolding.\n\nSource material:\n${rawInput.slice(0, 4000)}`
         : `Jesteś silnikiem edukacyjnym aplikacji Tulis Learn. Przekształć poniższe materiały w 4 do 8 zwięzłych, wysokiej jakości fiszek do aktywnego przypominania.\nŚCISŁE ZASADY:\n- Każda linijka MUSI mieć dokładnie format: Pytanie | Odpowiedź\n- NIE dodawaj wstępu, komentarzy ani podsumowań.\n- NIE używaj punktorów, numeracji ani pogrubień markdown.\n\nMateriały źródłowe:\n${rawInput.slice(0, 4000)}`;
 
-      const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=${_k}`;
+      const activeKey = aiKeys.get();
+      if (!activeKey) throw new Error('Local extraction');
+      const activeModel = preferences.getItem('tulis_ai_model') || 'gemini-3.8-flash';
+      const endpoint = 'https://generativelanguage.googleapis.com/v1beta/models/' + activeModel + ':generateContent';
       const response = await fetch(endpoint, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        signal: AbortSignal.timeout(12000),
+        headers: { "Content-Type": "application/json", "x-goog-api-key": activeKey },
         body: JSON.stringify({
           contents: [{ parts: [{ text: prompt }] }],
           generationConfig: { temperature: 0.2 }
@@ -1997,6 +2063,7 @@ What is force majeure? | Unforeseeable circumstances that prevent someone from f
       const data = await response.json();
       const outputText = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
 
+      if ($("notes").value !== submittedNotes) throw new Error("Notes changed during generation");
       // Parse and clean generated flashcards
       const cleanedLines = outputText
         .split(/\r?\n/)
@@ -2005,7 +2072,7 @@ What is force majeure? | Unforeseeable circumstances that prevent someone from f
 
       if (cleanedLines.length >= 2) {
         $("notes").value = cleanedLines.join("\n");
-        buildDeck();
+        if (!buildDeck()) return;
         showMessage(
           currentLang === "en"
             ? `✨ Success! AI generated ${deck.length} flashcards in real-time. Ready for active recall and FSRS review!`
@@ -2015,7 +2082,7 @@ What is force majeure? | Unforeseeable circumstances that prevent someone from f
         throw new Error("Could not parse flashcards from model output");
       }
     } catch (err) {
-      console.warn("AI generation fallback activated:", err);
+      if ($("notes").value.trim() !== rawInput) { showMessage(currentLang === "en" ? "Notes changed; discarded the earlier result." : "Notatki zmieniono; odrzucono wcześniejszy wynik.", true); return; }
       // Smart Semantic Fallback: Extract definitions directly from user text if available
       const lines = rawInput.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
       const extracted = [];
@@ -2038,78 +2105,68 @@ What is force majeure? | Unforeseeable circumstances that prevent someone from f
         }
       }
 
-      if (extracted.length >= 2) {
+      if (extracted.length >= 1) {
         $("notes").value = extracted.join("\n");
-        buildDeck();
+        if (!buildDeck()) return;
         showMessage(
           currentLang === "en"
-            ? `✨ Semantic engine extracted ${deck.length} flashcards directly from your text.`
-            : `✨ Silnik semantyczny wyekstrahował ${deck.length} fiszek bezpośrednio z Twojego tekstu.`
+            ? `✨ Local parser extracted ${deck.length} flashcards directly from your text.`
+            : `✨ Lokalny parser wyodrębnił ${deck.length} fiszek bezpośrednio z Twojego tekstu.`
         );
       } else {
-        const presetKey = deckSelector ? deckSelector.value : "bio";
-        let fallbackVal = "";
-        if (presetKey.startsWith("db_")) {
-          const dbId = parseInt(presetKey.replace("db_", ""), 10);
-          const dbDeck = userDecks.find(d => d.id === dbId);
-          if (dbDeck && dbDeck.content) fallbackVal = dbDeck.content;
-        }
-        if (!fallbackVal) {
-          const dict = currentLang === "en" ? PRESETS_EN : PRESETS;
-          fallbackVal = dict[presetKey] || dict.bio;
-        }
-        $("notes").value = fallbackVal;
-        buildDeck();
-        showMessage(
-          currentLang === "en"
-            ? "✨ AI extraction complete! Verified atomic flashcards ready for review."
-            : "✨ Zestaw wygenerowany! Atomowe fiszki gotowe do aktywnej powtórki."
-        );
+        showMessage(currentLang === 'en' ? 'Could not extract pairs. Your notes are unchanged. Use question | answer or configure a Gemini key.' : 'Nie znaleziono par. Notatki zachowano. Użyj formatu pytanie | odpowiedź lub skonfiguruj klucz Gemini.', true);
       }
+
+
     } finally {
+      btn.disabled = false;
       btn.classList.remove("loading");
       btnText.textContent = originalText;
-      isSimulating = false;
+      isExtracting = false;
     }
   }
 
-  const simBtn = $("simulateClaudeBtn");
+  const simBtn = $("extractAiBtn");
   if (simBtn) {
     simBtn.addEventListener("click", performAiExtraction);
   }
 
-  // Spaced Repetition (SRS / FSRS) rating actions
-  document.querySelectorAll(".srs-btn").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      const srsType = btn.dataset.srs;
-      const badge = $("srsBadge");
-      const intervalDays = srsType === "hard" ? 1 : (srsType === "good" ? 3 : 7);
-      playSound("correct");
-      if (badge) {
-        badge.textContent = currentLang === "en"
-          ? `✓ Scheduled: +${intervalDays} day${intervalDays > 1 ? "s" : ""}`
-          : `✓ Zaplanowano: za +${intervalDays} dni`;
-      }
-      if (typeof updateFsrsModalMetrics === "function") updateFsrsModalMetrics();
-      setTimeout(() => {
-        if (badge) badge.textContent = "";
-        if (cardIndex < deck.length - 1) {
-          cardIndex++;
+  // Persist one FSRS result per rating; pending transitions cannot skip cards.
+  document.querySelectorAll('.srs-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (ratingPending || currentMode !== 'cards' || !revealed || !deck[cardIndex]) return;
+      const activeDeck = deck;
+      const activeIndex = cardIndex;
+      try {
+        const nextState = reviewStore().rate(deck[cardIndex], btn.dataset.srs);
+        ratingPending = true;
+        document.querySelectorAll('.srs-btn').forEach(button => { button.disabled = true; });
+        $("srsBadge").textContent = (currentLang === 'en' ? 'Next review: ' : 'Powtórka: ') + nextState.due.toLocaleString(currentLang === 'en' ? 'en-GB' : 'pl-PL');
+        updateFsrsModalMetrics();
+        playSound('correct');
+        setTimeout(() => {
+          ratingPending = false;
+          $("srsBadge").textContent = '';
+          if (deck !== activeDeck || cardIndex !== activeIndex || currentMode !== 'cards') return;
           revealed = false;
+          if (cardIndex < deck.length - 1) cardIndex++;
+          else { logStudySession('Fiszki FSRS', 'Ukończono'); showMessage(currentLang === 'en' ? 'Review complete. FSRS schedule saved on this device.' : 'Powtórka ukończona. Harmonogram FSRS zapisany na tym urządzeniu.'); }
           renderCard();
-        } else {
-          playSound("complete");
-          launchConfetti();
-          showMessage(
-            currentLang === "en"
-              ? "🎉 Excellent! Deck completed. All intervals saved into FSRS memory queue."
-              : "🎉 Znakomicie! Zestaw ukończony. Interwały zapisane w kolejce pamięciowej FSRS."
-          );
-        }
-      }, 420);
+        }, reducedMotion.matches ? 0 : 420);
+      } catch (error) { showMessage(error.message || 'Nie zapisano powtórki.', true); }
     });
   });
 
+  $("dueReviewBtn").addEventListener('click', () => {
+    if (!buildDeck()) return;
+    try {
+      const due = deck.filter(card => reviewStore().isDue(card));
+      if (!due.length) { showMessage(currentLang === 'en' ? 'All cards are scheduled for later.' : 'Wszystkie fiszki zaplanowano na później.'); return; }
+      deck = due; cardIndex = 0; revealed = false; quiz = null;
+      selectMode('cards');
+      showMessage(currentLang === 'en' ? 'Due now: ' + due.length + ' cards.' : 'Do powtórki teraz: ' + due.length + ' fiszek.');
+    } catch (error) { showMessage(error.message, true); }
+  });
   // Language buttons
   $("langPl").addEventListener("click", () => setLanguage("pl"));
   $("langEn").addEventListener("click", () => setLanguage("en"));
@@ -2178,8 +2235,8 @@ What is force majeure? | Unforeseeable circumstances that prevent someone from f
   const typeSkipBtn = $("typeSkipBtn");
   if (typeSkipBtn) {
     typeSkipBtn.addEventListener("click", () => {
-      if ($("typeInput")) $("typeInput").value = "Pominięto";
-      checkTypeAnswer();
+      if ($("typeInput")) $("typeInput").value = currentLang === "en" ? "Skipped" : "Pominięto";
+      checkTypeAnswer(true);
     });
   }
 
@@ -2190,38 +2247,14 @@ What is force majeure? | Unforeseeable circumstances that prevent someone from f
       if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key)) return;
       event.preventDefault();
       const modes = ["cards", "quiz", "match", "type", "graph"];
-      let cur = modes.indexOf(id.replace("Mode", ""));
+      let cur = ["cardMode", "quizMode", "matchMode", "typeMode", "graphMode"].indexOf(id);
       if (event.key === "ArrowRight") cur = (cur + 1) % modes.length;
       else if (event.key === "ArrowLeft") cur = (cur - 1 + modes.length) % modes.length;
-      selectMode(modes[cur]);
-      $(modes[cur] + "Mode").focus();
+      else if (event.key === "Home") cur = 0;
+      else if (event.key === "End") cur = modes.length - 1;
+      if (selectMode(modes[cur])) $(["cardMode", "quizMode", "matchMode", "typeMode", "graphMode"][cur]).focus();
     });
   }
-
-  // Keyboard navigation for flashcards (Space to flip, Left/Right arrow to navigate)
-  document.addEventListener("keydown", (e) => {
-    if (document.activeElement.tagName === "TEXTAREA" || document.activeElement.tagName === "INPUT") return;
-    if (!$("cards").hidden) {
-      if (e.code === "Space") {
-        e.preventDefault();
-        revealed = !revealed;
-        playSound("flip");
-        renderCard();
-      } else if (e.code === "ArrowRight" && cardIndex < deck.length - 1) {
-        cardIndex++;
-        revealed = false;
-        renderCard();
-      } else if (e.code === "ArrowLeft" && cardIndex > 0) {
-        cardIndex--;
-        revealed = false;
-        renderCard();
-      } else if (revealed && (e.key === "1" || e.key === "2" || e.key === "3")) {
-        const ratingMap = { "1": "hard", "2": "good", "3": "easy" };
-        const btn = document.querySelector(`.srs-btn[data-srs="${ratingMap[e.key]}"]`);
-        if (btn) btn.click();
-      }
-    }
-  });
 
   const shuffleBtn = $("shuffleBtn");
   if (shuffleBtn) {
@@ -2250,7 +2283,8 @@ What is force majeure? | Unforeseeable circumstances that prevent someone from f
       $("quizResult").hidden = false;
       $("resultValue").textContent = `${quiz.correct} / ${deck.length}`;
       const percent = Math.round((quiz.correct / deck.length) * 100);
-      localStorage.setItem("tulis_retention", `${percent}%`);
+      quiz.answered = false;
+      logStudySession("Quiz", `${quiz.correct}/${deck.length} (${percent}%)`);
       updateDashboardStats();
       playSound("complete");
       launchConfetti();
@@ -2287,19 +2321,27 @@ What is force majeure? | Unforeseeable circumstances that prevent someone from f
   }
 
   // FAQ Accordion
-  document.querySelectorAll(".faq-question").forEach((btn) => {
+  document.querySelectorAll(".faq-question").forEach((btn, index) => {
+    const answer = btn.closest('.faq-item').querySelector('.faq-answer');
+    if (answer) { answer.id = 'faq-answer-' + index; btn.setAttribute('aria-controls', answer.id); answer.hidden = !btn.closest('.faq-item').classList.contains('open'); }
+    btn.setAttribute('aria-expanded', String(!answer?.hidden));
     btn.addEventListener("click", () => {
       const item = btn.closest(".faq-item");
       const wasOpen = item.classList.contains("open");
       document.querySelectorAll(".faq-item").forEach((it) => it.classList.remove("open"));
       if (!wasOpen) item.classList.add("open");
+      document.querySelectorAll('.faq-item').forEach(entry => {
+        const expanded = entry.classList.contains('open');
+        entry.querySelector('.faq-question').setAttribute('aria-expanded', String(expanded));
+        const answer = entry.querySelector('.faq-answer'); if (answer) answer.hidden = !expanded;
+      });
     });
   });
 
   // === AUTHENTICATION & SQLITE DATABASE MANAGEMENT SYSTEM ===
   let currentUser = null;
   let userDecks = [];
-  let authToken = localStorage.getItem("tulis_auth_token") || "";
+  let authToken = preferences.getItem("tulis_auth_token") || "";
 
   function getInitials(name) {
     if (!name) return "TT";
@@ -2308,138 +2350,62 @@ What is force majeure? | Unforeseeable circumstances that prevent someone from f
     return name.slice(0, 2).toUpperCase();
   }
 
-  // API Client with automatic authorization and offline client fallback
-  async function apiRequest(endpoint, method = "GET", body = null) {
-    const headers = { "Content-Type": "application/json" };
-    if (authToken) {
-      headers["Authorization"] = `Bearer ${authToken}`;
+  // Decide storage mode once. Server failures never create a second local database.
+  let apiMode = preferences.getItem('tulis_api_mode') || '';
+  const localApi = TulisLocalApi.create({ storage: durableStorage, crypto: window.crypto, locks: navigator.locks,
+    presets: Object.entries(PRESETS).map(([key, content]) => ({ title: { bio: '🌿 Biologia & Medycyna', cs: '⚡ Informatyka & AI', law: '⚖️ Prawo cywilne & Rzymskie' }[key], content }))
+  });
+  let modePromise;
+  async function determineApiMode() {
+    if (apiMode === 'local') {
+      $("storageMode").textContent = currentLang === 'en' ? 'Local · data on this device' : 'Lokalnie · dane na tym urządzeniu';
+      return apiMode;
     }
     try {
-      const res = await fetch(endpoint, {
-        method,
-        headers,
-        body: body ? JSON.stringify(body) : undefined
-      });
-      if (res.status === 401 && endpoint !== "/api/auth/login" && endpoint !== "/api/auth/register") {
-        authToken = "";
-        localStorage.removeItem("tulis_auth_token");
-        currentUser = null;
-        updateAuthUI(null);
-      }
-      const data = await res.json();
-      return data;
-    } catch (err) {
-      console.warn("Backend API offline or unreachable, using local fallback:", err.message);
-      return localFallbackApi(endpoint, method, body);
-    }
+      const response = await fetch(new URL('api/health', document.baseURI), { signal: AbortSignal.timeout(5000), cache: 'no-store' });
+      if (response.ok && response.headers.get('content-type')?.includes('application/json')) {
+        const data = await response.json();
+        if (data.status === 'operational') apiMode = 'server';
+      } else if ([404, 405].includes(response.status) || (response.ok && response.headers.get('content-type')?.includes('text/html'))) apiMode = 'local';
+    } catch { /* Only an already selected local mode may work without a server. */ }
+    if (!apiMode) return 'unavailable';
+    preferences.setItem('tulis_api_mode', apiMode);
+    const badge = $("storageMode");
+    if (badge) badge.textContent = apiMode === 'local' ? (currentLang === 'en' ? 'Local · data on this device' : 'Lokalnie · dane na tym urządzeniu') : 'SQLite · API';
+    return apiMode;
   }
-
-  // Local Storage Database Emulator for static GitHub Pages / Netlify hosting
-  function localFallbackApi(endpoint, method, body) {
-    // Synchronize local fallback decks from localStorage if available
-    try {
-      const stored = localStorage.getItem("tulis_local_decks");
-      if (stored && userDecks.length === 0) {
-        userDecks = JSON.parse(stored);
-      }
-    } catch {}
-
-    if (endpoint === "/api/auth/demo") {
-      const demo = { id: 1, email: "tomasz@tulislearn.com", name: "Tomasz Tulis", role: "pro", streak: 7, retention: "96.4%" };
-      return { success: true, user: demo, token: "local_demo_token" };
-    }
-    if (endpoint === "/api/auth/login") {
-      const name = (body && body.email) ? body.email.split("@")[0] : "Tomasz Tulis";
-      const demo = { id: 1, email: (body && body.email) ? body.email : "demo@tulislearn.com", name, role: "pro", streak: 5, retention: "94.2%" };
-      return { success: true, user: demo, token: "local_login_token" };
-    }
-    if (endpoint === "/api/auth/register") {
-      const user = { id: Date.now(), email: (body && body.email) ? body.email : "student@tulislearn.com", name: (body && body.name) ? body.name : "Student", role: "pro", streak: 1, retention: "90.0%" };
-      return { success: true, user, token: "local_reg_token" };
-    }
-    if (endpoint === "/api/auth/me") {
-      if (currentUser) return { success: true, user: currentUser };
-      return { success: false, error: "Brak sesji" };
-    }
-    if (endpoint === "/api/auth/logout") {
-      currentUser = null;
-      return { success: true, message: "Wylogowano" };
-    }
-    if (endpoint === "/api/decks" && method === "GET") {
-      return { success: true, decks: userDecks };
-    }
-    if (endpoint === "/api/decks" && method === "POST") {
-      const newD = {
-        id: Date.now(),
-        title: body ? body.title : "Nowa talia",
-        category: (body && body.category) ? body.category : "Ogólne",
-        content: (body && body.content) ? body.content : "",
-        card_count: (body && body.card_count) ? body.card_count : 4,
-        updated_at: new Date().toISOString()
-      };
-      userDecks.unshift(newD);
-      try { localStorage.setItem("tulis_local_decks", JSON.stringify(userDecks)); } catch {}
-      return { success: true, deck: newD };
-    }
-    if (endpoint.startsWith("/api/decks/") && method === "PUT") {
-      const id = parseInt(endpoint.split("/").pop(), 10);
-      const cur = userDecks.find(d => d.id === id);
-      if (cur && body) {
-        if (body.title) cur.title = body.title;
-        if (body.content) cur.content = body.content;
-        if (body.card_count) cur.card_count = body.card_count;
-        cur.updated_at = new Date().toISOString();
-        try { localStorage.setItem("tulis_local_decks", JSON.stringify(userDecks)); } catch {}
-      }
-      return { success: true, deck: cur };
-    }
-    if (endpoint.startsWith("/api/decks/") && method === "DELETE") {
-      const id = parseInt(endpoint.split("/").pop(), 10);
-      userDecks = userDecks.filter(d => d.id !== id);
-      try { localStorage.setItem("tulis_local_decks", JSON.stringify(userDecks)); } catch {}
-      return { success: true };
-    }
-    if (endpoint === "/api/study/history") {
+  async function apiRequest(endpoint, method = 'GET', body = null) {
+    modePromise ||= determineApiMode();
+    const mode = await modePromise;
+    let data;
+    if (mode === 'local') data = await localFallbackApi(endpoint, method, body);
+    else {
       try {
-        const storedLogs = JSON.parse(localStorage.getItem("tulis_study_logs") || "[]");
-        return { success: true, logs: storedLogs };
-      } catch {
-        return { success: true, logs: [] };
-      }
-    }
-    if (endpoint === "/api/study/log") {
-      try {
-        const logs = JSON.parse(localStorage.getItem("tulis_study_logs") || "[]");
-        logs.unshift({
-          id: Date.now(),
-          deck_title: (body && body.deck_title) ? body.deck_title : "Talia",
-          mode: (body && body.mode) ? body.mode : "Fiszki",
-          score: (body && body.score) ? body.score : "Ukończono",
-          created_at: new Date().toISOString()
+        const response = await fetch(new URL(endpoint.replace(/^\//, ''), document.baseURI), {
+          method, headers: { 'Content-Type': 'application/json', ...(authToken ? { Authorization: 'Bearer ' + authToken } : {}) },
+          body: body === null ? undefined : JSON.stringify(body), signal: AbortSignal.timeout(10000), cache: 'no-store'
         });
-        localStorage.setItem("tulis_study_logs", JSON.stringify(logs.slice(0, 30)));
-      } catch {}
-      return { success: true };
+        if (!response.headers.get('content-type')?.includes('application/json')) throw new Error('Invalid API response');
+        data = await response.json();
+        data.status = response.status;
+      } catch {
+        data = { success: false, status: 503, error: currentLang === 'en' ? 'Server unavailable. Your changes have not been saved. Export your notes and retry.' : 'Serwer niedostępny. Zmiany nie zostały zapisane. Wyeksportuj notatki i spróbuj ponownie.' };
+      }
     }
-    if (endpoint === "/api/stats") {
-      return { success: true, stats: { userCount: 1, deckCount: userDecks.length, sessionCount: 12 } };
+    if (data.status === 401 && !['/api/auth/login', '/api/auth/register'].includes(endpoint)) {
+      authToken = ''; preferences.removeItem('tulis_auth_token'); updateAuthUI(null);
     }
-    if (endpoint === "/api/backup") {
-      return {
-        success: true,
-        backup: {
-          export_date: new Date().toISOString(),
-          user: currentUser || { name: "Tomasz Tulis" },
-          decks: userDecks,
-          logs: JSON.parse(localStorage.getItem("tulis_study_logs") || "[]")
-        }
-      };
-    }
-    return { success: true };
+    if (!data.success && method !== 'GET') showMessage(data.error, true);
+    return data;
+  }
+  function localFallbackApi(endpoint, method, body) {
+    return localApi.request(endpoint, method, body, authToken);
   }
 
   function updateAuthUI(user) {
+    const accountChanged = currentUser?.id !== user?.id;
     currentUser = user;
+    if (accountChanged) { userDecks = []; updateDeckSelectorOptions(); renderMgmtDecks(); }
     const isLogged = Boolean(user);
     const navGuest = $("navGuestGroup");
     const navUser = $("navUserGroup");
@@ -2450,10 +2416,11 @@ What is force majeure? | Unforeseeable circumstances that prevent someone from f
     const userName = user ? user.name : "Tomasz Tulis";
     const userInitials = getInitials(userName);
     const userRole = (user && user.role) ? user.role.toUpperCase() : "PRO";
-    const streak = user ? (user.streak || 5) : 5;
-    const retention = user ? (user.retention || "94.2%") : "94.2%";
+    const streak = user?.streak ?? 0;
+    const retention = user?.retention || "—";
 
     if ($("navUserName")) $("navUserName").textContent = userName;
+    if ($("navUserBadge")) $("navUserBadge").textContent = userRole;
     if ($("navUserAvatar")) $("navUserAvatar").textContent = userInitials;
 
     if ($("dashUserName")) $("dashUserName").textContent = userName;
@@ -2470,6 +2437,7 @@ What is force majeure? | Unforeseeable circumstances that prevent someone from f
 
     if ($("streakCount")) $("streakCount").textContent = String(streak);
     if ($("masteryRate")) $("masteryRate").textContent = retention;
+    updateFsrsModalMetrics();
   }
 
   async function checkInitialAuth() {
@@ -2480,15 +2448,16 @@ What is force majeure? | Unforeseeable circumstances that prevent someone from f
       } else {
         updateAuthUI(null);
       }
-    } else {
+    } else if (preferences.getItem("tulis_logged_out") !== "true") {
       const demoRes = await apiRequest("/api/auth/demo", "POST");
       if (demoRes && demoRes.success) {
         authToken = demoRes.token;
-        localStorage.setItem("tulis_auth_token", authToken);
+        preferences.setItem("tulis_auth_token", authToken);
         updateAuthUI(demoRes.user);
       }
     }
-    loadUserDecks();
+    await loadUserDecks();
+    updateFsrsModalMetrics();
   }
 
   // Load and sync decks from SQLite database
@@ -2500,12 +2469,13 @@ What is force majeure? | Unforeseeable circumstances that prevent someone from f
       if ($("mgmtDecksCount")) $("mgmtDecksCount").textContent = String(userDecks.length);
       if ($("deckCount")) $("deckCount").textContent = String(userDecks.length);
       renderMgmtDecks();
+      updateFsrsModalMetrics();
     }
   }
 
   function updateDeckSelectorOptions() {
     const sel = $("deckSelector");
-    if (!sel || userDecks.length === 0) return;
+    if (!sel) return;
     const curVal = sel.value;
     sel.innerHTML = userDecks.map(d => `
       <option value="db_${d.id}">${escapeHtml(d.title)}</option>
@@ -2550,8 +2520,8 @@ What is force majeure? | Unforeseeable circumstances that prevent someone from f
         </div>
         <div class="mgmt-deck-actions">
           <button type="button" class="btn btn-sm btn-light mgmt-study-btn" data-id="${deckItem.id}" title="Załaduj talię do nauki">📖 Ucz się</button>
-          <button type="button" class="btn btn-sm btn-light mgmt-edit-btn" data-id="${deckItem.id}" title="Zmień nazwę">✏️</button>
-          <button type="button" class="btn btn-sm btn-outline mgmt-del-btn" data-id="${deckItem.id}" title="Usuń talię" style="color: #dc2626; border-color: #fca5a5;">🗑️</button>
+          <button type="button" class="btn btn-sm btn-light mgmt-edit-btn" data-id="${deckItem.id}" aria-label="${currentLang === 'en' ? 'Rename deck' : 'Zmień nazwę talii'}: ${escapeHtml(deckItem.title)}" title="Zmień nazwę">✏️</button>
+          <button type="button" class="btn btn-sm btn-outline mgmt-del-btn" data-id="${deckItem.id}" aria-label="${currentLang === 'en' ? 'Delete deck' : 'Usuń talię'}: ${escapeHtml(deckItem.title)}" title="Usuń talię" style="color: #dc2626; border-color: #fca5a5;">🗑️</button>
         </div>
       </div>
     `).join("");
@@ -2576,7 +2546,7 @@ What is force majeure? | Unforeseeable circumstances that prevent someone from f
         const id = parseInt(btn.dataset.id, 10);
         const found = userDecks.find(d => d.id === id);
         if (!found) return;
-        const newTitle = prompt("Nowa nazwa talii:", found.title);
+        const newTitle = await requestDeckAction(currentLang === 'en' ? 'Rename deck' : 'Zmień nazwę talii', found.title);
         if (newTitle && newTitle.trim()) {
           const res = await apiRequest(`/api/decks/${id}`, "PUT", {
             title: newTitle.trim(),
@@ -2586,7 +2556,7 @@ What is force majeure? | Unforeseeable circumstances that prevent someone from f
           if (res && res.success) {
             found.title = newTitle.trim();
             loadUserDecks();
-            showMessage("✓ Nazwa talii zaktualizowana w bazie SQLite!");
+            showMessage("✓ Nazwa talii zaktualizowana w bazie danych!");
           }
         }
       });
@@ -2597,7 +2567,7 @@ What is force majeure? | Unforeseeable circumstances that prevent someone from f
         const id = parseInt(btn.dataset.id, 10);
         const found = userDecks.find(d => d.id === id);
         if (!found) return;
-        if (confirm(`Czy na pewno chcesz usunąć talię „${found.title}”?`)) {
+        if (await requestDeckAction(currentLang === 'en' ? 'Delete deck?' : 'Usunąć talię?', null, currentLang === 'en' ? `Delete “${found.title}”? Export a backup first if you want to keep it.` : `Usunąć „${found.title}”? Najpierw wyeksportuj kopię, jeśli chcesz ją zachować.`)) {
           const res = await apiRequest(`/api/decks/${id}`, "DELETE");
           if (res && res.success) {
             userDecks = userDecks.filter(d => d.id !== id);
@@ -2647,10 +2617,8 @@ What is force majeure? | Unforeseeable circumstances that prevent someone from f
       mode,
       score
     });
-    if (currentUser) {
-      currentUser.streak = (currentUser.streak || 5) + 1;
-      updateAuthUI(currentUser);
-    }
+    const res = await apiRequest("/api/auth/me");
+    if (res.success) updateAuthUI(res.user);
   }
 
   // Setup Management Modal
@@ -2664,11 +2632,21 @@ What is force majeure? | Unforeseeable circumstances that prevent someone from f
 
     tabs.forEach(({ btn, panel, onSelect }) => {
       if (!btn || !panel) return;
+      panel.setAttribute('role', 'tabpanel'); panel.setAttribute('aria-labelledby', btn.id);
+      btn.setAttribute('aria-controls', panel.id); btn.tabIndex = panel.hidden ? -1 : 0;
+      btn.addEventListener('keydown', event => {
+        if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+        event.preventDefault();
+        const current = tabs.findIndex(tab => tab.btn === btn);
+        const next = event.key === 'Home' ? 0 : event.key === 'End' ? tabs.length - 1 : (current + (event.key === 'ArrowRight' ? 1 : -1) + tabs.length) % tabs.length;
+        tabs[next].btn.click(); tabs[next].btn.focus();
+      });
       btn.addEventListener("click", () => {
         tabs.forEach(t => {
           if (t.btn) {
             t.btn.classList.toggle("active", t.btn === btn);
             t.btn.setAttribute("aria-selected", String(t.btn === btn));
+            t.btn.tabIndex = t.btn === btn ? 0 : -1;
           }
           if (t.panel) t.panel.hidden = (t.panel !== panel);
         });
@@ -2698,9 +2676,11 @@ What is force majeure? | Unforeseeable circumstances that prevent someone from f
         const title = $("newDeckTitleInput").value.trim();
         const category = $("newDeckCategoryInput").value.trim() || "Ogólne";
         const content = $("newDeckContentInput").value.trim();
-        if (!title) return;
+        if (!title || !content) { showMessage(currentLang === "en" ? "Enter a title and question | answer pairs." : "Podaj nazwę i pary pytanie | odpowiedź.", true); return; }
+        if (newDeckForm.dataset.busy) return;
+        newDeckForm.dataset.busy = "true";
 
-        const defaultContent = content || `${title} - Pojęcie 1 | Definicja 1\n${title} - Pojęcie 2 | Definicja 2\n${title} - Pojęcie 3 | Definicja 3`;
+        const defaultContent = content;
         const cardCount = defaultContent.split("\n").filter(l => l.includes("|")).length || 3;
 
         const res = await apiRequest("/api/decks", "POST", {
@@ -2710,12 +2690,13 @@ What is force majeure? | Unforeseeable circumstances that prevent someone from f
           card_count: cardCount
         });
 
+        delete newDeckForm.dataset.busy;
         if (res && res.success) {
           if (newDeckModal) newDeckModal.close();
           $("newDeckTitleInput").value = "";
           $("newDeckContentInput").value = "";
           await loadUserDecks();
-          showMessage(`✓ Talia „${title}” została utworzona i zapisana w bazie SQLite!`);
+          showMessage(`✓ Talia „${title}” została utworzona i zapisana w bazie danych!`);
         }
       });
     }
@@ -2725,6 +2706,7 @@ What is force majeure? | Unforeseeable circumstances that prevent someone from f
       dlBackupBtn.addEventListener("click", async () => {
         const res = await apiRequest("/api/backup");
         if (res && res.success) {
+          try { res.backup.scheduler = reviewStore().snapshot(); } catch (error) { showMessage(error.message, true); return; }
           const jsonStr = JSON.stringify(res.backup, null, 2);
           const blob = new Blob([jsonStr], { type: "application/json" });
           const url = URL.createObjectURL(blob);
@@ -2747,24 +2729,28 @@ What is force majeure? | Unforeseeable circumstances that prevent someone from f
       backupFileInput.addEventListener("change", (e) => {
         const file = e.target.files[0];
         if (!file) return;
+        if (file.size > 2 * 1024 * 1024) { showMessage('Plik przekracza 2 MB.', true); backupFileInput.value = ''; return; }
         const reader = new FileReader();
+        reader.onerror = () => { showMessage('Nie można odczytać pliku.', true); backupFileInput.value = ''; };
         reader.onload = async (evt) => {
           try {
             const data = JSON.parse(evt.target.result);
-            if (data && Array.isArray(data.decks)) {
-              for (const d of data.decks) {
-                await apiRequest("/api/decks", "POST", {
-                  title: d.title,
-                  category: d.category || "Import",
-                  content: d.content,
-                  card_count: d.card_count || 4
-                });
-              }
-              await loadUserDecks();
-              showMessage(`✓ Zaimportowano ${data.decks.length} talii do bazy SQLite!`);
+            TulisContract.backup(data);
+            if (data.scheduler) TulisReviews.validateSnapshot(data.scheduler);
+            const result = await apiRequest('/api/backup', 'POST', data);
+            if (!result.success) throw new Error(result.error);
+            if (data.scheduler) {
+              try { reviewStore().restore(data.scheduler); }
+              catch { showMessage(currentLang === 'en' ? 'Decks imported, but FSRS storage failed. Keep your backup and retry.' : 'Talie zaimportowano, ale zapis FSRS nie powiódł się. Zachowaj kopię i spróbuj ponownie.', true); await loadUserDecks(); return; }
             }
+            await loadUserDecks();
+            showMessage(currentLang === 'en' ? 'Backup imported: ' + result.imported + ' decks.' : 'Zaimportowano kopię: ' + result.imported + ' talii.');
+
+
           } catch (err) {
-            alert("Niepoprawny format pliku kopii zapasowej JSON.");
+            showMessage(err instanceof SyntaxError
+              ? (currentLang === 'en' ? 'This JSON file is damaged. No data was imported.' : 'Plik JSON jest uszkodzony. Nie zaimportowano danych.')
+              : (err.message || "Niepoprawny format pliku kopii zapasowej JSON."), true);
           } finally {
             backupFileInput.value = "";
           }
@@ -2786,18 +2772,30 @@ What is force majeure? | Unforeseeable circumstances that prevent someone from f
     function setAuthTab(isLogin) {
       if (tabLogin) tabLogin.classList.toggle("active", isLogin);
       if (tabRegister) tabRegister.classList.toggle("active", !isLogin);
+      for (const [tab, selected] of [[tabLogin, isLogin], [tabRegister, !isLogin]]) {
+        if (!tab) continue;
+        tab.setAttribute('aria-selected', String(selected));
+        tab.tabIndex = selected ? 0 : -1;
+      }
       if (loginForm) loginForm.style.display = isLogin ? "block" : "none";
       if (registerForm) registerForm.style.display = isLogin ? "none" : "block";
       if ($("authSubtitle")) {
         $("authSubtitle").textContent = isLogin
-          ? (currentLang === "en" ? "Sign in to sync your decks and FSRS retention history." : "Zaloguj się, aby synchronizować talie i historię powtórek FSRS.")
-          : (currentLang === "en" ? "Create an account to persist your study decks in SQLite database." : "Załóż bezpłatne konto, aby zapisywać talie w bazie SQLite.");
+          ? TRANSLATIONS[currentLang].auth_sub
+          : (currentLang === "en" ? "Create an account in the selected storage mode. Local accounts stay on this device." : "Załóż konto w wybranym trybie zapisu. Konta lokalne działają na tym urządzeniu.");
       }
       if (feedback) feedback.style.display = "none";
     }
 
     if (tabLogin) tabLogin.addEventListener("click", () => setAuthTab(true));
     if (tabRegister) tabRegister.addEventListener("click", () => setAuthTab(false));
+    [tabLogin, tabRegister].forEach(tab => tab?.addEventListener('keydown', event => {
+      if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+      event.preventDefault();
+      const login = event.key === 'Home' || (event.key !== 'End' && tab === tabRegister);
+      setAuthTab(login);
+      (login ? tabLogin : tabRegister).focus();
+    }));
 
     if (loginForm) {
       loginForm.addEventListener("submit", async (e) => {
@@ -2806,10 +2804,14 @@ What is force majeure? | Unforeseeable circumstances that prevent someone from f
         const password = $("loginPass").value;
         if (!email || !password) return;
 
+        if (loginForm.dataset.busy) return;
+        loginForm.dataset.busy = "true";
         const res = await apiRequest("/api/auth/login", "POST", { email, password });
+        delete loginForm.dataset.busy;
         if (res && res.success) {
+          preferences.removeItem("tulis_logged_out");
           authToken = res.token;
-          localStorage.setItem("tulis_auth_token", authToken);
+          preferences.setItem("tulis_auth_token", authToken);
           updateAuthUI(res.user);
           await loadUserDecks();
           if (authDialog) authDialog.close();
@@ -2831,10 +2833,14 @@ What is force majeure? | Unforeseeable circumstances that prevent someone from f
         const password = $("regPass").value;
         if (!name || !email || !password) return;
 
+        if (registerForm.dataset.busy) return;
+        registerForm.dataset.busy = "true";
         const res = await apiRequest("/api/auth/register", "POST", { name, email, password });
+        delete registerForm.dataset.busy;
         if (res && res.success) {
+          preferences.removeItem("tulis_logged_out");
           authToken = res.token;
-          localStorage.setItem("tulis_auth_token", authToken);
+          preferences.setItem("tulis_auth_token", authToken);
           updateAuthUI(res.user);
           await loadUserDecks();
           if (authDialog) authDialog.close();
@@ -2849,27 +2855,31 @@ What is force majeure? | Unforeseeable circumstances that prevent someone from f
     }
 
     const demoBtn = $("demoLoginBtn");
-    const googleBtn = $("googleAuthBtn");
 
+    let demoPending = false;
     async function handleDemoLogin() {
+      if (demoPending) return;
+      demoPending = true;
       const res = await apiRequest("/api/auth/demo", "POST");
+      demoPending = false;
       if (res && res.success) {
+        preferences.removeItem("tulis_logged_out");
         authToken = res.token;
-        localStorage.setItem("tulis_auth_token", authToken);
+        preferences.setItem("tulis_auth_token", authToken);
         updateAuthUI(res.user);
         await loadUserDecks();
         if (authDialog) authDialog.close();
-        showMessage("⚡ Zalogowano w trybie demonstracyjnym (Tomasz Tulis · PRO). Połączono z bazą SQLite.");
+        showMessage(currentLang === "en" ? "Demo workspace opened." : "Otwarto przestrzeń demonstracyjną.");
       }
     }
 
     if (demoBtn) demoBtn.addEventListener("click", handleDemoLogin);
-    if (googleBtn) googleBtn.addEventListener("click", handleDemoLogin);
 
     async function handleLogout() {
       await apiRequest("/api/auth/logout", "POST");
       authToken = "";
-      localStorage.removeItem("tulis_auth_token");
+      preferences.removeItem("tulis_auth_token");
+      preferences.setItem("tulis_logged_out", "true");
       updateAuthUI(null);
       if ($("managementModal")) $("managementModal").close();
       showMessage(currentLang === "en" ? "Logged out successfully." : "Wylogowano pomyślnie.");
@@ -2907,6 +2917,9 @@ What is force majeure? | Unforeseeable circumstances that prevent someone from f
 
   // Native dialogs handle focus containment, Escape and focus restoration.
   document.querySelectorAll("[data-open]").forEach((button) => {
+    if (button.getAttribute('role') === 'button') button.addEventListener('keydown', event => {
+      if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); button.click(); }
+    });
     button.addEventListener("click", () => {
       closeMenu();
       const dlg = $(button.dataset.open);
@@ -2918,10 +2931,7 @@ What is force majeure? | Unforeseeable circumstances that prevent someone from f
   });
 
   document.querySelectorAll("dialog").forEach((dialog) => {
-    const closeBtn = dialog.querySelector("[data-close]");
-    if (closeBtn) {
-      closeBtn.addEventListener("click", () => dialog.close());
-    }
+    dialog.querySelectorAll("[data-close]").forEach(button => button.addEventListener("click", () => dialog.close()));
     dialog.addEventListener("click", (event) => {
       const bounds = dialog.getBoundingClientRect();
       if (
@@ -2945,6 +2955,7 @@ What is force majeure? | Unforeseeable circumstances that prevent someone from f
   // Contact Modal Submission Handler
   const sendContactBtn = $("sendContactBtn");
   if (sendContactBtn) {
+    $("contactForm").addEventListener('submit', event => { event.preventDefault(); sendContactBtn.click(); });
     sendContactBtn.addEventListener("click", () => {
       const email = $("contactEmail") ? $("contactEmail").value.trim() : "";
       const msg = $("contactMsg") ? $("contactMsg").value.trim() : "";
@@ -2958,40 +2969,25 @@ What is force majeure? | Unforeseeable circumstances that prevent someone from f
         );
         return;
       }
-      if (feedback) feedback.style.display = "block";
-      sendContactBtn.disabled = true;
-      setTimeout(() => {
-        const contactModal = $("contactModal");
-        if (contactModal) contactModal.close();
-        if (feedback) feedback.style.display = "none";
-        sendContactBtn.disabled = false;
-        if ($("contactMsg")) $("contactMsg").value = "";
-        showMessage(
-          currentLang === "en"
-            ? "✓ Message sent successfully! Our team will get back to you shortly."
-            : "✓ Wiadomość wysłana pomyślnie! Odpowiemy tak szybko, jak to możliwe."
-        );
-      }, 1500);
+      const mailto = 'mailto:' + contact + '?subject=' + encodeURIComponent('Tulis Learn — ' + email) + '&body=' + encodeURIComponent(msg);
+      window.location.href = mailto;
+      if (feedback) { feedback.style.display = 'block'; feedback.textContent = currentLang === 'en' ? 'Complete sending in your email app.' : 'Dokończ wysyłanie w aplikacji pocztowej.'; }
     });
   }
 
-  function renderMgmtHeatmap() {
+
+  async function renderMgmtHeatmap() {
     const grid = $("mgmtHeatmap");
     if (!grid) return;
-    grid.innerHTML = "";
-
-    const today = new Date();
+    const result = await apiRequest('/api/backup');
+    grid.replaceChildren();
     for (let i = 13; i >= 0; i--) {
-      const d = new Date();
-      d.setDate(today.getDate() - i);
-      const iso = d.toISOString().slice(0, 10);
-      const cell = document.createElement("div");
-      cell.className = "heatmap-cell";
-
-      const level = (i === 0 || i === 1 || i === 3 || i === 5 || i === 7) ? ((i % 3) + 1) : (i % 2 === 0 ? 1 : 0);
-      if (level > 0) cell.classList.add(`level-${level}`);
-      cell.title = `${iso}: ${level * 4 + 2} powtórzonych fiszek (FSRS)`;
-      grid.appendChild(cell);
+      const date = new Date(); date.setUTCDate(date.getUTCDate() - i);
+      const iso = date.toISOString().slice(0, 10);
+      const count = (result.backup?.logs || []).filter(log => new Date(log.created_at).toISOString().slice(0, 10) === iso).length;
+      const cell = document.createElement('div'); cell.className = 'heatmap-cell';
+      if (count) cell.classList.add('level-' + Math.min(3, count));
+      cell.title = iso + ': ' + count + (currentLang === 'en' ? ' sessions' : ' sesji'); grid.appendChild(cell);
     }
   }
 
@@ -3006,13 +3002,13 @@ What is force majeure? | Unforeseeable circumstances that prevent someone from f
     const feedback = $("aiTestFeedback");
 
     if (customKeyInput) {
-      customKeyInput.value = localStorage.getItem("tulis_custom_ai_key") || "";
+      customKeyInput.value = aiKeys.get() || "";
     }
     if (providerSel) {
-      providerSel.value = localStorage.getItem("tulis_ai_model") || "gemini-3.8-flash";
+      providerSel.value = preferences.getItem("tulis_ai_model") || "gemini-3.8-flash";
     }
     if (tempRange && tempVal) {
-      const savedTemp = localStorage.getItem("tulis_ai_temperature") || "0.2";
+      const savedTemp = preferences.getItem("tulis_ai_temperature") || "0.2";
       tempRange.value = savedTemp;
       tempVal.textContent = `${savedTemp} (${Number(savedTemp) <= 0.3 ? (currentLang === "en" ? "Strict" : "Ścisła") : (currentLang === "en" ? "Creative" : "Kreatywna")})`;
       tempRange.addEventListener("input", (e) => {
@@ -3034,12 +3030,13 @@ What is force majeure? | Unforeseeable circumstances that prevent someone from f
 
         const startT = performance.now();
         const customKey = customKeyInput ? customKeyInput.value.trim() : "";
-        const activeKey = customKey || _k;
+        const activeKey = customKey;
         const selectedModel = providerSel ? providerSel.value : "gemini-3.8-flash";
 
         try {
-          const endpoint = `https://generativelanguage.googleapis.com/v1beta/models?key=${activeKey}`;
-          const res = await fetch(endpoint);
+          if (!activeKey) throw new Error(currentLang === 'en' ? 'Enter your own Gemini API key' : 'Wpisz własny klucz Gemini API');
+          const endpoint = 'https://generativelanguage.googleapis.com/v1beta/models/' + selectedModel + ':generateContent';
+          const res = await fetch(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-goog-api-key': activeKey }, body: JSON.stringify({ contents: [{ parts: [{ text: 'Reply OK.' }] }] }), signal: AbortSignal.timeout(10000) });
           const dur = Math.round(performance.now() - startT);
 
           if (res.ok) {
@@ -3061,8 +3058,8 @@ What is force majeure? | Unforeseeable circumstances that prevent someone from f
             feedback.style.border = "1px solid #fca5a5";
             feedback.style.color = "#991b1b";
             feedback.textContent = currentLang === "en"
-              ? `✗ Connection check: ${err.message}. Platform will use high-speed semantic fallback.`
-              : `✗ Status połączenia: ${err.message}. Platforma użyje natychmiastowego silnika semantycznego.`;
+              ? `✗ Connection check: ${err.message}. Local parsing remains available.`
+              : `✗ Status połączenia: ${err.message}. Lokalny parser pozostaje dostępny.`;
           }
         } finally {
           testBtn.disabled = false;
@@ -3074,13 +3071,13 @@ What is force majeure? | Unforeseeable circumstances that prevent someone from f
     if (saveBtn) {
       saveBtn.addEventListener("click", () => {
         if (customKeyInput) {
-          localStorage.setItem("tulis_custom_ai_key", customKeyInput.value.trim());
+          try { aiKeys.set(customKeyInput.value.trim()); } catch { showMessage(currentLang === "en" ? "Session storage unavailable. Key was not saved." : "Pamięć sesji niedostępna. Klucz nie został zapisany.", true); return; }
         }
         if (providerSel) {
-          localStorage.setItem("tulis_ai_model", providerSel.value);
+          preferences.setItem("tulis_ai_model", providerSel.value);
         }
         if (tempRange) {
-          localStorage.setItem("tulis_ai_temperature", tempRange.value);
+          preferences.setItem("tulis_ai_temperature", tempRange.value);
         }
         if (modal) modal.close();
         showMessage(currentLang === "en" ? "✓ AI settings saved successfully!" : "✓ Ustawienia silnika AI zostały pomyślnie zapisane!");
@@ -3091,7 +3088,9 @@ What is force majeure? | Unforeseeable circumstances that prevent someone from f
   // Register PWA Service Worker
   if ("serviceWorker" in navigator && window.location.protocol.startsWith("http")) {
     window.addEventListener("load", () => {
-      navigator.serviceWorker.register("/sw.js").catch(() => {});
+      navigator.serviceWorker.register("./sw.js").catch(error => {
+        console.warn('Offline cache registration failed:', error.message);
+      });
     });
   }
 
@@ -3103,14 +3102,14 @@ What is force majeure? | Unforeseeable circumstances that prevent someone from f
 
     if (!banner) return;
 
-    const savedConsent = localStorage.getItem("tulis_cookie_consent");
+    const savedConsent = preferences.getItem("tulis_cookie_consent");
     if (!savedConsent) {
       banner.hidden = false;
       setTimeout(() => banner.classList.add("is-visible"), 600);
     }
 
     const setConsent = (choice) => {
-      localStorage.setItem("tulis_cookie_consent", choice);
+      preferences.setItem("tulis_cookie_consent", choice);
       banner.classList.remove("is-visible");
       setTimeout(() => {
         banner.hidden = true;
@@ -3139,8 +3138,7 @@ What is force majeure? | Unforeseeable circumstances that prevent someone from f
 
   function initKeyboardShortcuts() {
     const shortcutsModal = $("shortcutsModal");
-    const navShortcutsBtn = $("navShortcutsBtn");
-    const footerShortcutsBtn = $("footerShortcutsBtn");
+
 
     const toggleShortcutsModal = () => {
       if (!shortcutsModal) return;
@@ -3150,9 +3148,6 @@ What is force majeure? | Unforeseeable circumstances that prevent someone from f
         shortcutsModal.showModal();
       }
     };
-
-    if (navShortcutsBtn) navShortcutsBtn.addEventListener("click", toggleShortcutsModal);
-    if (footerShortcutsBtn) footerShortcutsBtn.addEventListener("click", toggleShortcutsModal);
 
     window.addEventListener("keydown", (e) => {
       const activeTag = document.activeElement ? document.activeElement.tagName : "";
@@ -3166,31 +3161,15 @@ What is force majeure? | Unforeseeable circumstances that prevent someone from f
 
       if (isInput) return;
 
-      if (e.code === "Space") {
-        e.preventDefault();
-        if ($("flash") && currentMode === "cards") {
-          $("flash").click();
-        }
+      if (e.defaultPrevented || e.repeat || e.altKey || e.ctrlKey || e.metaKey || e.shiftKey || document.querySelector('dialog[open]')) return;
+      if (document.activeElement?.closest('button, a, [role="tab"], [role="button"]')) return;
+      if (currentMode === 'cards') {
+        if (e.code === 'Space') { e.preventDefault(); $("flash").click(); }
+        if (e.key === 'ArrowRight') { e.preventDefault(); if (!$("next").disabled) $("next").click(); }
+        if (e.key === 'ArrowLeft') { e.preventDefault(); if (!$("prev").disabled) $("prev").click(); }
+        if (revealed && ['1', '2', '3', '4'].includes(e.key)) document.querySelector('.srs-btn[data-srs="' + { 1: 'again', 2: 'hard', 3: 'good', 4: 'easy' }[e.key] + '"]')?.click();
       }
 
-      if (e.key === "ArrowRight") {
-        e.preventDefault();
-        if ($("next") && !$("next").disabled) $("next").click();
-      }
-      if (e.key === "ArrowLeft") {
-        e.preventDefault();
-        if ($("prev") && !$("prev").disabled) $("prev").click();
-      }
-
-      if (e.key === "1") {
-        if ($("srsHardBtn")) $("srsHardBtn").click();
-      }
-      if (e.key === "2") {
-        if ($("srsGoodBtn")) $("srsGoodBtn").click();
-      }
-      if (e.key === "3") {
-        if ($("srsEasyBtn")) $("srsEasyBtn").click();
-      }
 
       if (e.key === "f" || e.key === "F") {
         if ($("cardMode")) $("cardMode").click();
@@ -3222,6 +3201,7 @@ What is force majeure? | Unforeseeable circumstances that prevent someone from f
     if (!submitBtn || !input) return;
 
     const handleSubscribe = async () => {
+      if (submitBtn.disabled) return;
       const email = input.value.trim();
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!email || !emailRegex.test(email)) {
@@ -3238,7 +3218,8 @@ What is force majeure? | Unforeseeable circumstances that prevent someone from f
       submitBtn.textContent = currentLang === "en" ? "Subscribing..." : "Zapisywanie...";
 
       try {
-        await apiRequest("/api/newsletter", "POST", { email });
+        const result = await apiRequest("/api/newsletter", "POST", { email });
+        if (!result.success) throw new Error(result.error);
         input.value = "";
         if (feedback) {
           feedback.textContent = currentLang === "en"
@@ -3256,11 +3237,12 @@ What is force majeure? | Unforeseeable circumstances that prevent someone from f
         launchConfetti();
       } catch (err) {
         if (feedback) {
-          feedback.textContent = currentLang === "en" ? "✓ Subscribed successfully!" : "✓ Zapisano pomyślnie!";
-          feedback.style.color = "var(--green)";
-          feedback.style.display = "block";
+          feedback.textContent = err.message;
+          feedback.style.color = 'var(--ink)';
+          feedback.style.display = 'block';
         }
-        showToast("✓ Zapisano do newslettera!", "success");
+
+
       } finally {
         submitBtn.disabled = false;
         submitBtn.textContent = TRANSLATIONS[currentLang].newsletter_btn_sub || "Zapisz się bezpłatnie";
@@ -3275,32 +3257,25 @@ What is force majeure? | Unforeseeable circumstances that prevent someone from f
   }
 
   function updateDashboardStats() {
-    const streakEl = $("streakCount");
-    const deckCountEl = $("deckCount");
-    const masteryEl = $("masteryRate");
-
-    const savedStreak = localStorage.getItem("tulis_streak") || "5";
-    const customDeck = localStorage.getItem("tulis_custom_deck");
-    const totalDecks = customDeck ? "4" : "3";
-    const savedRetention = localStorage.getItem("tulis_retention") || "94.2%";
-
-    if (streakEl) streakEl.textContent = savedStreak;
-    if (deckCountEl) deckCountEl.textContent = totalDecks;
-    if (masteryEl) masteryEl.textContent = savedRetention;
-    if (typeof updateFsrsModalMetrics === "function") updateFsrsModalMetrics();
+    if ($("streakCount")) $("streakCount").textContent = String(currentUser?.streak ?? 0);
+    if ($("deckCount")) $("deckCount").textContent = String(userDecks.length);
+    updateFsrsModalMetrics();
   }
 
   // Initial setup
+  new ResizeObserver(entries => {
+    document.documentElement.style.scrollPaddingTop = entries[0].target.getBoundingClientRect().height + 16 + 'px';
+  }).observe(document.querySelector('.nav-wrap'));
   setLanguage(currentLang);
   buildDeck();
   updateDashboardStats();
   initCookieConsent();
   initKeyboardShortcuts();
   initNewsletter();
-  if (typeof initSocraticTutor === "function") initSocraticTutor();
-  if (typeof initPrintDeck === "function") initPrintDeck();
-  if (typeof setupAuthForms === "function") setupAuthForms();
-  if (typeof setupManagementTabs === "function") setupManagementTabs();
-  if (typeof setupAiSettingsModal === "function") setupAiSettingsModal();
-  if (typeof checkInitialAuth === "function") checkInitialAuth();
+  initSocraticTutor();
+  initPrintDeck();
+  setupAuthForms();
+  setupManagementTabs();
+  setupAiSettingsModal();
+  checkInitialAuth().catch(error => showMessage(error.message, true));
 })();

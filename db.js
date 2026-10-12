@@ -1,13 +1,15 @@
 const { DatabaseSync } = require('node:sqlite');
 const crypto = require('node:crypto');
 const path = require('node:path');
+const contract = require('./api-contract.js');
 
-const dbPath = path.join(__dirname, 'tulis.db');
+const dbPath = process.env.TULIS_DB_PATH || path.join(__dirname, 'tulis.db');
 const db = new DatabaseSync(dbPath);
 
 // Enable WAL mode and foreign keys for high concurrency & integrity
 db.exec('PRAGMA journal_mode = WAL;');
 db.exec('PRAGMA foreign_keys = ON;');
+db.exec('PRAGMA busy_timeout = 5000;');
 
 // Initialize schema
 db.exec(`
@@ -17,8 +19,8 @@ db.exec(`
     name TEXT NOT NULL,
     password_hash TEXT NOT NULL,
     role TEXT DEFAULT 'pro',
-    streak INTEGER DEFAULT 5,
-    retention TEXT DEFAULT '94.2%',
+    streak INTEGER DEFAULT 0,
+    retention TEXT DEFAULT '—',
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
   );
 
@@ -63,7 +65,7 @@ function hashPassword(password) {
 }
 
 function verifyPassword(password, stored) {
-  if (!stored || !stored.includes(':')) return false;
+  if (typeof password !== 'string' || typeof stored !== 'string' || !/^[a-f0-9]{32}:[a-f0-9]{128}$/.test(stored)) return false;
   const [salt, key] = stored.split(':');
   if (!salt || !key) return false;
   const hash = crypto.scryptSync(password, salt, 64).toString('hex');
@@ -75,6 +77,7 @@ function createUser(email, name, password, role = 'pro') {
   const passwordHash = hashPassword(password);
   const stmt = db.prepare('INSERT INTO users (email, name, password_hash, role) VALUES (?, ?, ?, ?)');
   const res = stmt.run(email.trim().toLowerCase(), name.trim(), passwordHash, role);
+  db.prepare("UPDATE users SET streak = 0, retention = '—' WHERE id = ?").run(res.lastInsertRowid);
   return getUserById(res.lastInsertRowid);
 }
 
@@ -85,17 +88,14 @@ function getUserByEmail(email) {
 
 function getUserById(id) {
   const stmt = db.prepare('SELECT id, email, name, role, streak, retention, created_at FROM users WHERE id = ?');
-  return stmt.get(id);
-}
-
-function updateUserStats(userId, streak, retention) {
-  const stmt = db.prepare('UPDATE users SET streak = ?, retention = ? WHERE id = ?');
-  stmt.run(streak, retention, userId);
-  return getUserById(userId);
+  const user = stmt.get(id);
+  if (user) user.streak = contract.studyStats(db.prepare('SELECT created_at FROM study_logs WHERE user_id = ?').all(id));
+  return user;
 }
 
 // Session management
 function createSession(userId) {
+  db.prepare('DELETE FROM sessions WHERE expires_at < ?').run(new Date().toISOString());
   const token = crypto.randomBytes(32).toString('hex');
   const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(); // 30 days
   const stmt = db.prepare('INSERT INTO sessions (token, user_id, expires_at) VALUES (?, ?, ?)');
@@ -118,6 +118,7 @@ function getUserByToken(token) {
     return null;
   }
   const { expires_at, ...user } = row;
+  user.streak = contract.studyStats(db.prepare('SELECT created_at FROM study_logs WHERE user_id = ?').all(user.id));
   return user;
 }
 
@@ -139,11 +140,11 @@ function createDeck(userId, title, category, content, cardCount) {
   return getStmt.get(res.lastInsertRowid);
 }
 
-function updateDeck(deckId, userId, title, content, cardCount) {
-  const stmt = db.prepare('UPDATE decks SET title = ?, content = ?, card_count = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ?');
-  stmt.run(title, content, cardCount, deckId, userId);
-  const getStmt = db.prepare('SELECT * FROM decks WHERE id = ?');
-  return getStmt.get(deckId);
+function updateDeck(deckId, userId, title, content, cardCount, category) {
+  const stmt = db.prepare('UPDATE decks SET title = ?, content = ?, card_count = ?, category = COALESCE(?, category), updated_at = ? WHERE id = ? AND user_id = ?');
+  const result = stmt.run(title, content, cardCount, category ?? null, new Date().toISOString(), deckId, userId);
+  if (!result.changes) return null;
+  return db.prepare('SELECT * FROM decks WHERE id = ? AND user_id = ?').get(deckId, userId);
 }
 
 function deleteDeck(deckId, userId) {
@@ -154,13 +155,41 @@ function deleteDeck(deckId, userId) {
 
 // Study Logs
 function logStudy(userId, deckTitle, mode, score) {
-  const stmt = db.prepare('INSERT INTO study_logs (user_id, deck_title, mode, score) VALUES (?, ?, ?, ?)');
-  stmt.run(userId, deckTitle, mode, score);
+  const stmt = db.prepare('INSERT INTO study_logs (user_id, deck_title, mode, score, created_at) VALUES (?, ?, ?, ?, ?)');
+  stmt.run(userId, deckTitle, mode, score, new Date().toISOString());
+  const logs = db.prepare('SELECT created_at FROM study_logs WHERE user_id = ?').all(userId);
+  db.prepare('UPDATE users SET streak = ? WHERE id = ?').run(contract.studyStats(logs), userId);
 }
 
 function getUserStudyLogs(userId, limit = 20) {
   const stmt = db.prepare('SELECT id, deck_title, mode, score, created_at FROM study_logs WHERE user_id = ? ORDER BY id DESC LIMIT ?');
   return stmt.all(userId, limit);
+}
+
+/** Import is atomic: validate the complete payload before entering a transaction. */
+function importBackup(userId, payload) {
+  const data = contract.backup(payload);
+  db.exec('BEGIN IMMEDIATE');
+  try {
+    for (const item of data.decks) createDeck(userId, item.title, item.category, item.content, item.card_count);
+    const insert = db.prepare('INSERT INTO study_logs (user_id, deck_title, mode, score, created_at) VALUES (?, ?, ?, ?, ?)');
+    for (const log of data.logs) insert.run(userId, log.deck_title, log.mode, log.score, log.created_at || new Date().toISOString());
+    const logs = db.prepare('SELECT created_at FROM study_logs WHERE user_id = ?').all(userId);
+    db.prepare('UPDATE users SET streak = ? WHERE id = ?').run(contract.studyStats(logs), userId);
+    db.exec('COMMIT');
+    return { imported: data.decks.length, decks: getUserDecks(userId) };
+  } catch (error) {
+    db.exec('ROLLBACK');
+    throw error;
+  }
+}
+
+/** Each visitor gets a separate demo workspace, never the shared seed account. */
+function createDemoSession() {
+  const template = getUserByEmail('tomasz@tulislearn.com');
+  const user = createUser(`demo-${crypto.randomUUID()}@tulis.invalid`, 'Tomasz Tulis', crypto.randomBytes(32).toString('hex'), 'demo');
+  for (const deck of getUserDecks(template.id).slice(-3)) createDeck(user.id, deck.title, deck.category, deck.content, deck.card_count);
+  return { user: getUserById(user.id), token: createSession(user.id).token };
 }
 
 // Platform Stats
@@ -173,11 +202,9 @@ function getPlatformStats() {
 
 // Seed Demo User and Default Decks if empty
 function seedIfEmpty() {
-  const existing = db.prepare('SELECT COUNT(*) as count FROM users').get();
-  if (existing.count === 0) {
+  if (!getUserByEmail('tomasz@tulislearn.com')) {
     console.log('Seeding initial demo database...');
     const demoUser = createUser('tomasz@tulislearn.com', 'Tomasz Tulis', 'demo1234', 'pro');
-    updateUserStats(demoUser.id, 7, '96.4%');
 
     createDeck(
       demoUser.id,
@@ -231,7 +258,6 @@ module.exports = {
   createUser,
   getUserByEmail,
   getUserById,
-  updateUserStats,
   createSession,
   getUserByToken,
   deleteSession,
@@ -241,6 +267,8 @@ module.exports = {
   deleteDeck,
   logStudy,
   getUserStudyLogs,
+  importBackup,
+  createDemoSession,
   getPlatformStats,
   subscribeNewsletter,
   getNewsletterSubscribersCount
