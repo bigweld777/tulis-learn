@@ -2420,9 +2420,9 @@ What is force majeure? | Unforeseeable circumstances that prevent someone from f
     if (navGuest) navGuest.style.display = isLogged ? "none" : "flex";
     if (navUser) navUser.style.display = isLogged ? "flex" : "none";
 
-    const userName = user ? user.name : "Tomasz Tulis";
-    const userInitials = getInitials(userName);
-    const userRole = (user && user.role) ? user.role.toUpperCase() : "PRO";
+    const userName = user ? user.name : (currentLang === "en" ? "Guest" : "Gość");
+    const userInitials = user ? getInitials(userName) : "👤";
+    const userRole = (user && user.role) ? user.role.toUpperCase() : "FREE";
     const streak = user?.streak ?? 0;
     const retention = user?.retention || "—";
 
@@ -2435,12 +2435,12 @@ What is force majeure? | Unforeseeable circumstances that prevent someone from f
     if ($("dashUserBadge")) $("dashUserBadge").textContent = userRole;
 
     if ($("mgmtUserName")) $("mgmtUserName").textContent = userName;
-    if ($("mgmtUserEmail")) $("mgmtUserEmail").textContent = user ? user.email : "demo@tulislearn.com";
+    if ($("mgmtUserEmail")) $("mgmtUserEmail").textContent = user ? user.email : "guest@tulislearn.com";
     if ($("mgmtAvatar")) $("mgmtAvatar").textContent = userInitials;
     if ($("mgmtUserBadge")) $("mgmtUserBadge").textContent = userRole;
     if ($("mgmtStreak")) $("mgmtStreak").textContent = `${streak} dni`;
     if ($("mgmtRetention")) $("mgmtRetention").textContent = retention;
-    if ($("mgmtPlan")) $("mgmtPlan").textContent = `Student ${userRole}`;
+    if ($("mgmtPlan")) $("mgmtPlan").textContent = user ? `Student ${userRole}` : (currentLang === "en" ? "Guest (Free)" : "Gość (Darmowy)");
 
     if ($("streakCount")) $("streakCount").textContent = String(streak);
     if ($("masteryRate")) $("masteryRate").textContent = retention;
@@ -2455,13 +2455,8 @@ What is force majeure? | Unforeseeable circumstances that prevent someone from f
       } else {
         updateAuthUI(null);
       }
-    } else if (preferences.getItem("tulis_logged_out") !== "true") {
-      const demoRes = await apiRequest("/api/auth/demo", "POST");
-      if (demoRes && demoRes.success) {
-        authToken = demoRes.token;
-        preferences.setItem("tulis_auth_token", authToken);
-        updateAuthUI(demoRes.user);
-      }
+    } else {
+      updateAuthUI(null);
     }
     await loadUserDecks();
     updateFsrsModalMetrics();
