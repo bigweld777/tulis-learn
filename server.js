@@ -91,9 +91,9 @@ function createServer() {
           if (!user || !db.verifyPassword(body.password, user.password_hash)) contract.fail('Nieprawidłowy e-mail lub hasło.', 401);
           return sendJson(res, 200, { success: true, user: db.getUserById(user.id), token: db.createSession(user.id).token });
         }
-        if (route === 'POST /api/auth/demo') {
-          if (process.env.DISABLE_DEMO === '1') contract.fail('Demo disabled', 403);
-          return sendJson(res, 200, { success: true, ...db.createDemoSession() });
+        if (route === 'POST /api/auth/quick-start') {
+          if (process.env.DISABLE_QUICK_START === '1') contract.fail('Quick Start disabled', 403);
+          return sendJson(res, 200, { success: true, ...db.createQuickStartSession() });
         }
         if (route === 'POST /api/newsletter') {
           const body = await parseJsonBody(req);

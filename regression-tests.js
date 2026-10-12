@@ -12,6 +12,25 @@ module.exports = async function ({ assert, base, db }) {
   const memory = { getItem: key => storage.get(key) ?? null, setItem: (key, value) => storage.set(key, value) };
   // Same scenarios exercise both adapters, not just mock HTTP responses.
   const local = createLocal({ storage: memory, crypto, presets: [sample] });
+  const secureStorage = new Map();
+  const secureMemory = { getItem: key => secureStorage.get(key) ?? null, setItem: (key, value) => secureStorage.set(key, value) };
+  const secureLocal = createLocal({ storage: secureMemory, crypto, presets: [sample] });
+  const member = await secureLocal.request('/api/auth/register', 'POST', { email: 'member@example.test', name: 'Member', password: 'password123' });
+  const memberState = JSON.parse(secureMemory.getItem('tulis_local_database_v1'));
+  memberState.users.find(user => user.id === member.user.id).role = 'pro';
+  secureMemory.setItem('tulis_local_database_v1', JSON.stringify(memberState));
+  const instant = await secureLocal.request('/api/auth/quick-start', 'POST');
+  const instantMe = await secureLocal.request('/api/auth/me', 'GET', null, instant.token);
+  assert(instant.success && instant.user.id !== member.user.id && instantMe.user.role === 'pro' && instantMe.user.email === 'tomasz@tulislearn.com', 'Quick Start: local PRO access never opens a password-protected member account');
+  const instantDeck = await secureLocal.request('/api/decks', 'POST', sample, instant.token);
+  const resumed = await secureLocal.request('/api/auth/quick-start', 'POST');
+  assert(resumed.user.id === instant.user.id && (await secureLocal.request('/api/decks', 'GET', null, resumed.token)).decks.some(deck => deck.id === instantDeck.deck.id), 'Quick Start: returning local access preserves its own decks');
+  const sqliteInstant = db.createQuickStartSession();
+  const sqliteOther = db.createQuickStartSession();
+  const sqliteMe = db.getUserByToken(sqliteInstant.token);
+  assert(sqliteInstant.user.email === 'tomasz@tulislearn.com' && sqliteMe.email === sqliteInstant.user.email && sqliteMe.role === 'pro' && sqliteOther.user.id !== sqliteInstant.user.id, 'Quick Start: SQLite preserves separate identities with a consistent PRO profile');
+  const privateDeck = db.createDeck(sqliteInstant.user.id, sample.title, sample.category, sample.content, 1);
+  assert(!db.getUserDecks(sqliteOther.user.id).some(deck => deck.id === privateDeck.id), 'Quick Start: separate SQLite sessions never share private decks');
   async function http(endpoint, method = 'GET', body, token, extra = {}) {
     const response = await fetch(base + endpoint, { method, headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: 'Bearer ' + token } : {}), ...extra }, body: body === undefined ? undefined : JSON.stringify(body), signal: AbortSignal.timeout(5000) });
     return { ...await response.json(), status: response.status, headers: response.headers };
@@ -76,9 +95,9 @@ module.exports = async function ({ assert, base, db }) {
   memory.setItem('tulis_local_database_v1', JSON.stringify(localState));
   assert((await reloaded.request('/api/auth/me', 'GET', null, login.token)).status === 401, 'localStorage: expired sessions are rejected after reload');
   const corrupt = createLocal({ storage: { getItem: () => '{broken', setItem() { throw Error('must not overwrite'); } }, crypto });
-  assert(!(await corrupt.request('/api/auth/demo', 'POST')).success, 'localStorage: corrupt JSON fails safely without overwriting it');
+  assert(!(await corrupt.request('/api/auth/quick-start', 'POST')).success, 'localStorage: corrupt JSON fails safely without overwriting it');
   const blank = createLocal({ storage: { getItem: () => null, setItem() { throw Error('blocked'); } }, crypto });
-  assert(!(await blank.request('/api/auth/demo', 'POST')).success, 'localStorage: blocked persistence does not create a false session');
+  assert(!(await blank.request('/api/auth/quick-start', 'POST')).success, 'localStorage: blocked persistence does not create a false session');
 
   assert(db.verifyPassword('anything', 'a:ff') === false, 'Malformed stored password hash does not crash timingSafeEqual');
   const inactive = db.createUser('inactive@example.test', 'Inactive', 'password123', 'starter');
@@ -139,7 +158,7 @@ module.exports = async function ({ assert, base, db }) {
   handlers.fetch({ request: { url: 'https://example.test/tulis-learn/', method: 'GET', mode: 'navigate' }, waitUntil: () => {}, respondWith: p => { offline = p; } });
   assert(await (await offline).text() === 'offline shell', 'PWA: offline navigation returns the scoped application shell');
   offline = undefined;
-  handlers.fetch({ request: { url: 'https://example.test/tulis-learn/?source=demo#aplikacja', method: 'GET', mode: 'navigate' }, waitUntil: () => {}, respondWith: p => { offline = p; } });
+  handlers.fetch({ request: { url: 'https://example.test/tulis-learn/?source=quick-start#aplikacja', method: 'GET', mode: 'navigate' }, waitUntil: () => {}, respondWith: p => { offline = p; } });
   assert(offline && await (await offline).text() === 'offline shell', 'PWA: query strings and fragments preserve offline navigation');
   let intercepted = false;
   handlers.fetch({ request: { url: 'https://example.test/tulis-learn/api/backup', method: 'GET' }, respondWith: () => { intercepted = true; } });

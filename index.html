@@ -505,14 +505,14 @@
         font-size: 13px;
         max-width: 330px;
       }
-      .demo-shell {
+      .workspace-shell {
         border: 1px solid var(--line);
         border-radius: var(--radius);
         background: var(--surface);
         box-shadow: var(--shadow);
         overflow: hidden;
       }
-      .demo-toolbar {
+      .workspace-toolbar {
         display: flex;
         align-items: center;
         justify-content: space-between;
@@ -521,7 +521,7 @@
         border-bottom: 1px solid var(--line);
         background: var(--paper);
       }
-      .demo-toolbar-title {
+      .workspace-toolbar-title {
         display: flex;
         align-items: center;
         gap: 8px;
@@ -542,7 +542,7 @@
         width: 13px;
         height: 13px;
       }
-      .demo-grid {
+      .workspace-grid {
         display: grid;
         grid-template-columns: 0.95fr 1.05fr;
       }
@@ -737,7 +737,7 @@
         color: var(--muted);
         margin-top: 10px;
       }
-      .demo-note {
+      .workspace-note {
         display: flex;
         align-items: flex-start;
         justify-content: center;
@@ -749,7 +749,7 @@
         font-size: 10px;
         line-height: 1.75;
       }
-      .demo-note .icon {
+      .workspace-note .icon {
         width: 15px;
         height: 15px;
         margin-top: 2px;
@@ -1463,16 +1463,16 @@
           max-width: 100%;
           font-size: 12px;
         }
-        .demo-toolbar {
+        .workspace-toolbar {
           padding: 14px 17px;
         }
-        .demo-toolbar-title {
+        .workspace-toolbar-title {
           font-size: 11px;
         }
         .local-label {
           font-size: 9px;
         }
-        .demo-grid {
+        .workspace-grid {
           grid-template-columns: 1fr;
         }
         .editor {
@@ -1492,7 +1492,7 @@
         .flashcard {
           min-height: 255px;
         }
-        .demo-note {
+        .workspace-note {
           text-align: left;
           font-size: 10px;
         }
@@ -2003,18 +2003,18 @@
         border-color: #203528;
       }
 
-      /* Workspace / Demo Shell in Dark Mode */
+      /* Workspace Shell in Dark Mode */
       body.dark-theme .user-dashboard-strip {
         background: #131f17;
         border-color: #203528;
         color: #eaf3ed;
       }
-      body.dark-theme .demo-shell {
+      body.dark-theme .workspace-shell {
         background: #131f17;
         border-color: #203528;
         box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5);
       }
-      body.dark-theme .demo-toolbar {
+      body.dark-theme .workspace-toolbar {
         background: #16241b;
         border-bottom-color: #203528;
       }
@@ -3507,7 +3507,7 @@
       .theme-toggle-btn { flex-shrink: 0; }
       body:has(dialog[open]) { overflow: hidden; }
       @media (max-width: 960px) {
-        .demo-grid { grid-template-columns: minmax(0, 1fr); }
+        .workspace-grid { grid-template-columns: minmax(0, 1fr); }
         .editor { border-right: 0; border-bottom: 1px solid var(--line); }
       }
       @media (max-width: 600px) {
@@ -3759,17 +3759,17 @@
           >Gotowe do nauki w kilka sekund</span
         >
       </div>
-      <section id="aplikacja" class="section" aria-labelledby="demoTitle">
+      <section id="aplikacja" class="section" aria-labelledby="workspaceTitle">
         <div class="section-heading">
           <div>
             <div class="eyebrow">
               <span class="dot" aria-hidden="true"></span><span data-i18n="workspace_eyebrow">INTERAKTYWNY WARSZTAT NAUKI</span>
             </div>
-            <h2 id="demoTitle" data-i18n="workspace_title">Mniej teorii. Więcej pamiętania.</h2>
+            <h2 id="workspaceTitle" data-i18n="workspace_title">Mniej teorii. Więcej pamiętania.</h2>
           </div>
           <p class="section-description" data-i18n="workspace_desc">Wybierz talię lub wpisz pary pytanie | odpowiedź. Lokalny parser działa offline; generacja AI wymaga własnego klucza Gemini.</p>
         </div>
-        <div class="demo-shell">
+        <div class="workspace-shell">
           <div class="user-dashboard-strip">
             <div class="dash-stats-group">
               <div class="dash-stat">🔥 <strong id="streakCount">5</strong> <span data-i18n="dash_streak">dni serii</span></div>
@@ -3782,7 +3782,7 @@
               <span class="badge-plan" id="dashUserBadge">PRO</span>
             </div>
           </div>
-          <div class="demo-grid">
+          <div class="workspace-grid">
             <div class="editor">
               <div class="deck-library-bar">
                 <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
@@ -4227,7 +4227,7 @@ Jaki gaz roślina pobiera podczas fotosyntezy? | Dwutlenek węgla.</textarea>
             <div class="pipeline-step">
               <span class="pipeline-step-badge" data-i18n="pipe3_badge">KROK 3 · Pętla Sokratyczna</span>
               <h4 data-i18n="pipe3_h">Pętla Sokratyczna</h4>
-              <p data-i18n="pipe3_p">Wybierz pytanie sokratejskie lub prośbę o wyjaśnienie. Bez klucza otrzymasz lokalne ćwiczenie do samodzielnej refleksji.</p>
+              <p data-i18n="pipe3_p">Interaktywny tutor sokratyczny prowadzi Cię przez tok myślenia i wyjaśnia błędy kognitywne.</p>
             </div>
             <div class="pipeline-step">
               <span class="pipeline-step-badge" data-i18n="pipe4_badge">KROK 4 · Algorytm FSRS</span>
@@ -4618,9 +4618,9 @@ Jaki gaz roślina pobiera podczas fotosyntezy? | Dwutlenek węgla.</textarea>
 
         </select>
 
-        <label class="field-label" for="customApiKeyInput" style="margin-top: 12px;" data-i18n="ai_custom_key_label">Własny klucz Gemini API (tylko sesja):</label>
-        <input type="password" id="customApiKeyInput" class="field-input" autocomplete="off" placeholder="Klucz Gemini API — tylko na czas sesji tej karty" />
-        <span style="font-size: 11px; color: var(--muted);" data-i18n="ai_key_hint">Bez klucza działa lokalny parser i ćwiczenia. Klucz pozostaje w tej karcie do końca sesji. Użycie AI wysyła wybrany tekst do Google zgodnie z zasadami dostawcy.</span>
+        <label class="field-label" for="customApiKeyInput" style="margin-top: 12px;" data-i18n="ai_custom_key_label">Własny klucz Gemini API (zapisany w tej przeglądarce):</label>
+        <input type="password" id="customApiKeyInput" class="field-input" autocomplete="off" placeholder="Gemini API key" />
+        <span style="font-size: 11px; color: var(--muted);" data-i18n="ai_key_hint">Rozpocznij od parsowania fiszek i aktywnego przypominania. Dodaj własny klucz Gemini, aby włączyć wskazówki AI. Klucz jest zapisywany w tej przeglądarce; AI wysyła wybrany tekst do Google zgodnie z zasadami dostawcy.</span>
 
         <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 16px;">
           <label for="aiTempRange" style="font-size: 12px; font-weight: 600;" data-i18n="ai_temp_label">Temperatura wnioskowania:</label>
@@ -4679,7 +4679,7 @@ Jaki gaz roślina pobiera podczas fotosyntezy? | Dwutlenek węgla.</textarea>
       </form>
 
 <div style="margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--line); text-align: center;">
-        <button type="button" class="text-button" id="demoLoginBtn" style="font-weight: 700; color: var(--green);" data-i18n="auth_demo_btn">
+        <button type="button" class="text-button" id="quickStartBtn" style="font-weight: 700; color: var(--green);" data-i18n="auth_quick_start_btn">
           ⚡ Szybki start (dostęp natychmiastowy)
         </button>
       </div>
@@ -4865,7 +4865,7 @@ Jaki gaz roślina pobiera podczas fotosyntezy? | Dwutlenek węgla.</textarea>
           <div style="font-size: 10px; color: var(--muted);" data-i18n="fsrs_m_diff_sub">współczynnik złożoności</div>
         </div>
         <div style="background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 12px; text-align: center;">
-          <div style="font-size: 11px; color: var(--muted); text-transform: uppercase; font-weight: 700;" data-i18n="fsrs_m_ret_lbl">Szacowana pamięć (R)</div>
+          <div style="font-size: 11px; color: var(--muted); text-transform: uppercase; font-weight: 700;" data-i18n="fsrs_m_ret_lbl">Szacowane przypomnienie (R)</div>
           <div style="font-size: 20px; font-weight: 800; color: var(--green); margin-top: 4px;" id="fsrsMetricRetention">—</div>
           <div style="font-size: 10px; color: var(--muted);" data-i18n="fsrs_m_ret_sub">na podstawie ocenionych fiszek</div>
         </div>

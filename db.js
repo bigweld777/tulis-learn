@@ -57,6 +57,11 @@ db.exec(`
   );
 `);
 
+// Separate the displayed quick-start identity from the unique sign-in address.
+if (!db.prepare('PRAGMA table_info(users)').all().some(column => column.name === 'profile_email')) {
+  db.exec('ALTER TABLE users ADD COLUMN profile_email TEXT');
+}
+
 // Password utilities using native node:crypto scrypt
 function hashPassword(password) {
   const salt = crypto.randomBytes(16).toString('hex');
@@ -87,7 +92,7 @@ function getUserByEmail(email) {
 }
 
 function getUserById(id) {
-  const stmt = db.prepare('SELECT id, email, name, role, streak, retention, created_at FROM users WHERE id = ?');
+  const stmt = db.prepare('SELECT id, COALESCE(profile_email, email) AS email, name, role, streak, retention, created_at FROM users WHERE id = ?');
   const user = stmt.get(id);
   if (user) user.streak = contract.studyStats(db.prepare('SELECT created_at FROM study_logs WHERE user_id = ?').all(id));
   return user;
@@ -106,7 +111,7 @@ function createSession(userId) {
 function getUserByToken(token) {
   if (!token) return null;
   const stmt = db.prepare(`
-    SELECT u.id, u.email, u.name, u.role, u.streak, u.retention, u.created_at, s.expires_at
+    SELECT u.id, COALESCE(u.profile_email, u.email) AS email, u.name, u.role, u.streak, u.retention, u.created_at, s.expires_at
     FROM sessions s
     JOIN users u ON s.user_id = u.id
     WHERE s.token = ?
@@ -184,10 +189,11 @@ function importBackup(userId, payload) {
   }
 }
 
-/** Each visitor gets a separate demo workspace, never the shared seed account. */
-function createDemoSession() {
+/** Each visitor gets a separate quick-start workspace, never the shared seed account. */
+function createQuickStartSession() {
   const template = getUserByEmail('tomasz@tulislearn.com');
   const user = createUser(`user-${crypto.randomUUID()}@tulislearn.com`, 'Tomasz Tulis', crypto.randomBytes(32).toString('hex'), 'pro');
+  db.prepare('UPDATE users SET profile_email = ? WHERE id = ?').run('tomasz@tulislearn.com', user.id);
   if (template) {
     for (const deck of getUserDecks(template.id).slice(-3)) createDeck(user.id, deck.title, deck.category, deck.content, deck.card_count);
   }
@@ -202,14 +208,14 @@ function getPlatformStats() {
   return { userCount, deckCount, sessionCount };
 }
 
-// Seed Demo User and Default Decks if empty
+// Seed the curriculum account and default decks if empty
 function seedIfEmpty() {
   if (!getUserByEmail('tomasz@tulislearn.com')) {
-    console.log('Seeding initial demo database...');
-    const demoUser = createUser('tomasz@tulislearn.com', 'Tomasz Tulis', 'demo1234', 'pro');
+    console.log('Preparing the Tulis Learn curriculum...');
+    const curriculumUser = createUser('tomasz@tulislearn.com', 'Tomasz Tulis', crypto.randomBytes(32).toString('hex'), 'pro');
 
     createDeck(
-      demoUser.id,
+      curriculumUser.id,
       '🌿 Biologia & Medycyna',
       'Medycyna',
       `Na czym polega aktywne przypominanie? | Na odtwarzaniu wiedzy z pamięci bez zaglądania do materiałów.\nCo oznacza fotosynteza? | Wytwarzanie związków organicznych z użyciem energii światła.\nKtóre organellum odpowiada za fotosyntezę? | Chloroplast.\nJaki gaz roślina pobiera podczas fotosyntezy? | Dwutlenek węgla.`,
@@ -217,7 +223,7 @@ function seedIfEmpty() {
     );
 
     createDeck(
-      demoUser.id,
+      curriculumUser.id,
       '⚡ Informatyka & AI',
       'Technologia',
       `Czym jest złożoność O(1)? | Złożonością stałą, niezależną od rozmiaru danych wejściowych.\nNa czym polega mechanizm Attention w Transformerach? | Na dynamicznym ważeniu istotności poszczególnych tokenów względem siebie.\nCo to jest Gradient Descent? | Algorytm optymalizacji minimalizujący funkcję straty wzdłuż spadku gradientu.\nCzym różni się overfitting od underfittingu? | Overfitting to dopasowanie do szumu, underfitting to niedouczenie modelu.`,
@@ -225,16 +231,16 @@ function seedIfEmpty() {
     );
 
     createDeck(
-      demoUser.id,
+      curriculumUser.id,
       '⚖️ Prawo cywilne & Rzymskie',
       'Prawo',
       `Co oznacza reguła Pacta sunt servanda? | Umów należy dotrzymywać.\nCzym jest zdolność prawna w prawie polskim? | Zdolnością do bycia podmiotem praw i obowiązków, od urodzenia do śmierci.\nCo określa zasada Lex retro non agit? | Prawo nie działa wstecz.\nCzym jest zasada Nemo iudex in causa sua? | Nikt nie może być sędzią we własnej sprawie.`,
       4
     );
 
-    logStudy(demoUser.id, '🌿 Biologia & Medycyna', 'Quiz', '4/4 (100%)');
-    logStudy(demoUser.id, '⚡ Informatyka & AI', 'Dopasowywanie', '12.4s (Mistrz)');
-    logStudy(demoUser.id, '⚖️ Prawo cywilne & Rzymskie', 'Fiszki FSRS', 'Ukończono serię');
+    logStudy(curriculumUser.id, '🌿 Biologia & Medycyna', 'Quiz', '4/4 (100%)');
+    logStudy(curriculumUser.id, '⚡ Informatyka & AI', 'Dopasowywanie', '12.4s (Mistrz)');
+    logStudy(curriculumUser.id, '⚖️ Prawo cywilne & Rzymskie', 'Fiszki FSRS', 'Ukończono serię');
     console.log('Database seeded successfully.');
   }
 }
@@ -270,7 +276,7 @@ module.exports = {
   logStudy,
   getUserStudyLogs,
   importBackup,
-  createDemoSession,
+  createQuickStartSession,
   getPlatformStats,
   subscribeNewsletter,
   getNewsletterSubscribersCount

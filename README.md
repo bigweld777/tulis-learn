@@ -12,6 +12,8 @@ node server.js
 
 Otwórz `http://localhost:3000/`. Aplikacja jest gotowa do natychmiastowej nauki z trzema domyślnymi taliami. Dostępna jest rejestracja konta lub szybki start. Wylogowanie jest zachowywane po odświeżeniu.
 
+Szybki start korzysta z `POST /api/auth/quick-start` i otwiera profil Student PRO z adresem `tomasz@tulislearn.com`. SQLite tworzy osobny obszar danych dla każdej nowej sesji szybkiego startu: unikalny adres logowania i e-mail wyświetlany w profilu są przechowywane oddzielnie. Hosting statyczny zachowuje własny profil szybkiego startu w tej przeglądarce, bez otwierania kont zabezpieczonych hasłem.
+
 Konfiguracja przez zmienne środowiskowe:
 
 | Zmienna | Domyślnie | Znaczenie |
@@ -20,7 +22,7 @@ Konfiguracja przez zmienne środowiskowe:
 | `HOST` | `127.0.0.1` | Interfejs nasłuchiwania |
 | `TULIS_DB_PATH` | `tulis.db` obok kodu | Lokalizacja SQLite; testy używają `:memory:` |
 | `PUBLIC_ORIGIN` | lokalny origin żądania | Docelowy origin HTTPS za reverse proxy; walidacja Host i Origin |
-| `DISABLE_DEMO` | `0` | Ustaw `1`, aby wyłączyć tworzenie kont demo |
+| `DISABLE_QUICK_START` | `0` | Ustaw `1`, aby wyłączyć szybki start |
 
 Przy publicznym wdrożeniu Node skonfiguruj HTTPS, stały `PUBLIC_ORIGIN`, trwały dysk dla SQLite i kopie bazy. Limiter działa na adres połączenia, bez zaufania do dowolnego `X-Forwarded-For`; przy reverse proxy trzeba także zastosować limitowanie na brzegu infrastruktury.
 
@@ -51,15 +53,15 @@ Newsletter w SQLite rejestruje adres na liście; wysyłka wiadomości wymaga oso
 
 Biblioteka `ts-fsrs` oblicza stabilność, trudność, szacowane przypomnienie i termin następnej powtórki. Przyciski prezentują interwały obliczone dla konkretnej fiszki. Dostępne są cztery oceny: Again, Hard, Good i Easy. Przycisk „Powtórz zaplanowane” wybiera fiszki wymagające nauki teraz.
 
-Harmonogram jest lokalny, rozdzielony według profilu i trybu zapisu, a fiszki są identyfikowane przez parę pytanie–odpowiedź. Identyczna para w dwóch taliach tego samego profilu współdzieli stan pamięci. Zmiana treści tworzy nową fiszkę. Domyślna docelowa retencja to 90%, bez losowego fuzzingu. Wykres w oknie analityki jest ilustracją; wartości liczbowe pochodzą z ocenionych fiszek. Quiz i porównanie wpisanego tekstu nie udają pomiaru pamięci ani automatycznej oceny FSRS.
+Harmonogram jest lokalny, rozdzielony według profilu i trybu zapisu, a fiszki są identyfikowane przez parę pytanie–odpowiedź. Identyczna para w dwóch taliach tego samego profilu współdzieli stan pamięci. Zmiana treści tworzy nową fiszkę. Domyślna docelowa retencja to 90%, bez losowego fuzzingu. Krzywe w oknie analityki przedstawiają mechanizm powtórek; metryki liczbowe są obliczane z ocenionych fiszek. Quiz i porównanie wpisanego tekstu nie udają pomiaru pamięci ani automatycznej oceny FSRS.
 
 Kopia pobierana z panelu obejmuje talie, historię oraz lokalny harmonogram FSRS. Samo REST `GET /api/backup` zwraca talie i historię. Import jest dodający: nie usuwa istniejących talii. Dane SQLite są importowane w jednej transakcji, lokalna baza jednym zapisem. Harmonogram jest walidowany przed importem i łączony oddzielnie, zachowując nowsze oceny. Błąd jego zapisu po imporcie talii jest zgłaszany wprost. Historia ocen FSRS obejmuje ostatnie 2000 ocen; serwerowa kopia historii do 10 000 sesji.
 
 ### AI i prywatność
 
-Własny klucz Gemini jest przechowywany w `sessionStorage` bieżącej karty, nigdy w kodzie ani w kopii zapasowej. Wywołania używają nagłówka `x-goog-api-key`, limitu czasu i wybranego modelu. Test połączenia wykonuje małą generację na wybranym modelu i może podlegać rozliczeniu dostawcy. Wywołania AI przesyłają wybrany tekst do Google; zasady retencji i wykorzystania danych wynikają z warunków dostawcy. Projekt nie gwarantuje Zero Data Retention.
+Własny klucz Gemini jest zapisywany w pamięci tej przeglądarki (`localStorage`, z rezerwowym `sessionStorage`), aby zachować ustawienia między wizytami. Nie trafia do kodu ani kopii zapasowej. Można go usunąć w ustawieniach AI. Wywołania używają nagłówka `x-goog-api-key`, limitu czasu i wybranego modelu. Test połączenia wykonuje małą generację na wybranym modelu i może podlegać rozliczeniu dostawcy. Wywołania AI przesyłają wybrany tekst do Google; zasady retencji i wykorzystania danych wynikają z warunków dostawcy. Projekt nie gwarantuje Zero Data Retention.
 
-Bez klucza parser wyodrębnia istniejące pary i proste definicje. Asystent pokazuje wyraźnie oznaczone ćwiczenie lokalne. Nie zmyśla odpowiedzi i nie zastępuje nieudanego wyniku przykładową talią. Generowane odpowiedzi wymagają sprawdzenia przez użytkownika. Integracja Anthropic i Google OAuth nie są zaimplementowane i nie są oferowane w interfejsie.
+Parser wyodrębnia istniejące pary i proste definicje, a tryb aktywnego przypominania pomaga samodzielnie wyjaśniać pojęcia. Własny klucz Gemini włącza generowanie fiszek i wskazówek sokratejskich. Nie zmyśla odpowiedzi i nie zastępuje nieudanego wyniku przykładową talią. Generowane odpowiedzi wymagają sprawdzenia przez użytkownika. Integracja Anthropic i Google OAuth nie są zaimplementowane i nie są oferowane w interfejsie.
 
 ## Testy
 
@@ -81,9 +83,9 @@ PWA wymaga HTTPS albo localhost. Po pierwszym udanym załadowaniu cache pozwala 
 ## Funkcjonalności produkcyjne
 
 - **5 trybów nauki**: Fiszki, Quiz, Dopasowywanie (Speed Match), Wpisywanie (Type-In Recall) oraz Semantyczny Graf Pojęć.
-- **Silnik powtórek FSRS 5.4.2**: Matematycznie optymalny harmonogram powtórek oparty na krzywej zapominania Ebbinghausa.
+- **Silnik powtórek FSRS 5.4.2**: Adaptacyjny harmonogram powtórek uwzględniający stabilność, trudność i docelową retencję.
 - **Asystent Sokratyczny i Ekstrakcja AI**: Integracja z modelami Google Gemini (z kluczem użytkownika).
-- **Bezpieczeństwo i prywatność**: Klucz API przechowywany w sesji klienta, pełna izolacja baz danych SQLite i ochrona CSP.
+- **Bezpieczeństwo i prywatność**: Klucz API przechowywany w przeglądarce użytkownika, pełna izolacja baz danych SQLite i ochrona CSP.
 
 ## Źródła i licencja zależności
 

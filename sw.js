@@ -1,5 +1,5 @@
 // Network-first public shell with a scoped offline fallback.
-const CACHE_NAME = 'tulis-learn-v5';
+const CACHE_NAME = 'tulis-learn-v6';
 const STATIC_ASSETS = [
   './', './index.html', './app.js', './api-contract.js', './local-api.js',
   './review-store.js', './vendor/ts-fsrs.js', './favicon.svg', './icon-192.png', './icon-512.png', './manifest.json'

@@ -68,8 +68,10 @@
         if (!user || await passwordHash(input.password, user.salt) !== user.password_hash) C.fail('Nieprawidłowy e-mail lub hasło.', 401);
         return sessionFor(user);
       }
-      if (route === 'POST /api/auth/demo') {
-        let user = state.users.find(user => user.role === 'pro');
+      if (route === 'POST /api/auth/quick-start') {
+        // Password-protected accounts must never be selected by instant access.
+        // Profiles without a password are migrated from the previous quick-start format.
+        let user = state.users.find(user => !user.password_hash && (user.account_type === 'quick-start' || !user.account_type));
         if (!user) {
           user = { id: state.nextId++, email: 'tomasz@tulislearn.com', name: 'Tomasz Tulis', role: 'pro', streak: 0, retention: '—', created_at: new Date().toISOString() };
           state.users.push(user);
@@ -78,6 +80,7 @@
           const legacy = storage.getItem('tulis_local_decks');
           if (legacy) for (const deck of C.backup({ decks: JSON.parse(legacy) }).decks) addDeck(state, user, deck);
         }
+        Object.assign(user, { account_type: 'quick-start', email: 'tomasz@tulislearn.com', role: 'pro' });
         return sessionFor(user);
       }
       const session = state.sessions.find(item => item.token === token && Date.parse(item.expires_at) > Date.now());

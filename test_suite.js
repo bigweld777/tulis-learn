@@ -70,10 +70,10 @@ const internalHrefs = [...html.matchAll(/href="#([a-zA-Z0-9_-]+)"/g)]
 const brokenHrefs = internalHrefs.filter(id => !htmlIds.has(id));
 assert(brokenHrefs.length === 0, `All local href links point to existing section/modal IDs (broken: ${brokenHrefs.join(", ") || "none"})`);
 
-// 6. Zero prohibited draft/placeholder tokens in user-visible HTML
-const draftTokens = ["TODO", "LOREM IPSUM", "WERSJA ROBOCZA", "WERSJA TESTOWA", "DRAFT MODE", "UNDER CONSTRUCTION"];
-const upperHtml = html.toUpperCase();
-const foundTokens = draftTokens.filter(t => upperHtml.includes(t));
+// 6. Zero prohibited draft/placeholder tokens in the interface and documentation
+const draftTokens = ["TODO", "LOREM IPSUM", "WERSJA ROBOCZA", "WERSJA TESTOWA", "DRAFT MODE", "UNDER CONSTRUCTION", "DEMO", "SCENARIUSZ", "PROPOZYCJA PRZYSZŁEJ OFERTY"];
+const productionCopy = (html + '\n' + js + '\n' + fs.readFileSync(path.join(__dirname, 'README.md'), 'utf8')).toUpperCase();
+const foundTokens = draftTokens.filter(t => productionCopy.includes(t));
 assert(foundTokens.length === 0, `Clean production copy without prototype/draft tokens (found: ${foundTokens.join(", ") || "none"})`);
 
 // 7. Verify local dev server HTTP 200 response & Security Headers
@@ -163,10 +163,10 @@ async function runExtendedTests() {
   const statsData = JSON.parse(statsRes.data || "{}");
   assert(statsRes.status === 200 && statsData.success && statsData.stats.userCount >= 1, `API /api/stats returns SQLite platform stats (users: ${statsData.stats.userCount})`);
 
-  // Test /api/auth/demo
-  const authRes = await httpPost("/api/auth/demo");
+  // Test /api/auth/quick-start
+  const authRes = await httpPost("/api/auth/quick-start");
   const authData = JSON.parse(authRes.data || "{}");
-  assert(authRes.status === 200 && authData.success && authData.token, `API /api/auth/demo returns session token and user (${authData.user.name})`);
+  assert(authRes.status === 200 && authData.success && authData.token, `API /api/auth/quick-start returns session token and user (${authData.user.name})`);
 
   // Test /api/decks with Bearer token
   const token = authData.token;

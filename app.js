@@ -192,7 +192,7 @@ What is force majeure? | Unforeseeable circumstances that prevent someone from f
       auth_email: "Adres e-mail",
       auth_pass: "Hasło",
       auth_submit: "Zaloguj się",
-      auth_demo_btn: "⚡ Szybki start (dostęp natychmiastowy)",
+      auth_quick_start_btn: "⚡ Szybki start (dostęp natychmiastowy)",
       card_question_tag: "PYTANIE",
       card_answer_tag: "ODPOWIEDŹ",
       card_hint_flip: "Kliknij, aby odsłonić odpowiedź",
@@ -278,8 +278,8 @@ What is force majeure? | Unforeseeable circumstances that prevent someone from f
       fsrs_m_stab_sub: "średni czas do 90% retencji",
       fsrs_m_diff_lbl: "Trudność (D)",
       fsrs_m_diff_sub: "współczynnik złożoności",
-      fsrs_m_ret_lbl: "Docelowa retencja (R)",
-      fsrs_m_ret_sub: "docelowy próg algorytmu",
+      fsrs_m_ret_lbl: "Szacowane przypomnienie (R)",
+      fsrs_m_ret_sub: "na podstawie ocenionych fiszek",
       fsrs_why_title: "Dlaczego FSRS przewyższa tradycyjne metody?",
       fsrs_why_desc: "FSRS dynamicznie modeluje stabilność pamięci i współczynnik trudności każdego pojęcia. Powtórki są planowane dokładnie w momencie, gdy retencja spada do optymalnego progu.",
       btn_close: "Zamknij",
@@ -313,8 +313,8 @@ What is force majeure? | Unforeseeable circumstances that prevent someone from f
       ai_status_label: "Aktywny silnik platformy:",
       ai_status_desc: "Google Gemini 3.8 Flash (Google DeepMind / AI Studio) • Ekstrakcja w locie • Metoda sokratejska.",
       ai_provider_label: "Wybór silnika AI:",
-      ai_custom_key_label: "Własny klucz Gemini API (tylko sesja):",
-      ai_key_hint: "Bez klucza działa lokalny parser i ćwiczenia. Klucz pozostaje w tej karcie do końca sesji. Użycie AI wysyła wybrany tekst do Google zgodnie z zasadami dostawcy.",
+      ai_custom_key_label: "Własny klucz Gemini API (zapisany w tej przeglądarce):",
+      ai_key_hint: "Rozpocznij od parsowania fiszek i aktywnego przypominania. Dodaj własny klucz Gemini, aby włączyć wskazówki AI. Klucz jest zapisywany w tej przeglądarce; AI wysyła wybrany tekst do Google zgodnie z zasadami dostawcy.",
       ai_temp_label: "Temperatura wnioskowania:",
       ai_btn_test: "⚡ Przetestuj połączenie",
       ai_btn_save: "Zapisz ustawienia",
@@ -438,7 +438,7 @@ What is force majeure? | Unforeseeable circumstances that prevent someone from f
       auth_email: "Email address",
       auth_pass: "Password",
       auth_submit: "Sign In",
-      auth_demo_btn: "⚡ Quick Start (Instant Access)",
+      auth_quick_start_btn: "⚡ Quick Start (Instant Access)",
       card_question_tag: "QUESTION",
       card_answer_tag: "ANSWER",
       card_hint_flip: "Click card to reveal answer",
@@ -478,7 +478,7 @@ What is force majeure? | Unforeseeable circumstances that prevent someone from f
       testi_2_text: "“The FSRS algorithm paired with the rapid match mode is a total game-changer. I master algorithms and operating systems 3x faster than reading dry lecture slides.”",
       testi_2_role: "Computer Science · Warsaw University of Technology",
       testi_3_text: "“The volume of civil and administrative law for the bar exam is immense. Tulis Learn lets me review legal codes on my commute and test retention with quick adaptive quizzes.”",
-      testi_3_role: "Trainee Attorney-at-Law · Bar Association",
+      testi_3_role: "Trainee Attorney-at-Law · OIRP Wrocław",
       p1_f1: "Flashcards, Quizzes & Speed Match Mode",
       p1_f2: "In-browser FSRS spaced repetition engine",
       p1_f3: "Your personal deck library",
@@ -524,8 +524,8 @@ What is force majeure? | Unforeseeable circumstances that prevent someone from f
       fsrs_m_stab_sub: "mean time to 90% retention",
       fsrs_m_diff_lbl: "Difficulty (D)",
       fsrs_m_diff_sub: "complexity rating",
-      fsrs_m_ret_lbl: "Target Retention (R)",
-      fsrs_m_ret_sub: "algorithm target threshold",
+      fsrs_m_ret_lbl: "Estimated Recall (R)",
+      fsrs_m_ret_sub: "based on reviewed flashcards",
       fsrs_why_title: "Why does FSRS outperform traditional methods?",
       fsrs_why_desc: "FSRS dynamically models memory stability and difficulty for each concept. Reviews are scheduled precisely when retention approaches the target threshold.",
       btn_close: "Close",
@@ -559,8 +559,8 @@ What is force majeure? | Unforeseeable circumstances that prevent someone from f
       ai_status_label: "Active Platform Engine:",
       ai_status_desc: "Google Gemini 3.8 Flash (Google DeepMind / AI Studio) • Real-time extraction • Socratic tutoring.",
       ai_provider_label: "Select AI Provider:",
-      ai_custom_key_label: "Your Gemini API key (session only):",
-      ai_key_hint: "Without a key, local parsing and exercises are available. Your key stays in this tab session. AI sends selected text to Google under its provider terms.",
+      ai_custom_key_label: "Your Gemini API key (saved in this browser):",
+      ai_key_hint: "Parse flashcard pairs and practice active recall immediately. Add your Gemini key for AI guidance. Your key is saved in this browser; AI sends selected text to Google under its provider terms.",
       ai_temp_label: "Inference Temperature:",
       ai_btn_test: "⚡ Test Connection",
       ai_btn_save: "Save Settings",
@@ -1198,7 +1198,7 @@ What is force majeure? | Unforeseeable circumstances that prevent someone from f
         const customKey = aiKeys.get();
         const activeKey = customKey;
         const activeModel = preferences.getItem("tulis_ai_model") || "gemini-3.8-flash";
-        if (!activeKey) throw new Error("Local practice mode");
+        if (!activeKey) throw new Error("Gemini key required");
         const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${activeModel}:generateContent`;
 
         let aiPrompt = "";
@@ -1244,8 +1244,8 @@ What is force majeure? | Unforeseeable circumstances that prevent someone from f
 
       if (!content) {
         content = currentLang === 'en'
-          ? '<strong>Local practice prompt · no AI response</strong><br/>Explain this concept in your own words: ' + escapeHtml(q) + '<br/>Give one example, then compare your explanation with the flashcard answer. Configure your own Gemini key for generated guidance.'
-          : '<strong>Lokalne ćwiczenie · bez odpowiedzi AI</strong><br/>Wyjaśnij własnymi słowami: ' + escapeHtml(q) + '<br/>Podaj przykład i porównaj wyjaśnienie z odpowiedzią na fiszce. Skonfiguruj własny klucz Gemini, aby uzyskać wskazówki AI.';
+          ? '<strong>Active recall exercise</strong><br/>Explain this concept in your own words: ' + escapeHtml(q) + '<br/>Give one example, then compare your explanation with the flashcard answer. Configure your own Gemini key for generated guidance.'
+          : '<strong>Ćwiczenie aktywnego przypominania</strong><br/>Wyjaśnij własnymi słowami: ' + escapeHtml(q) + '<br/>Podaj przykład i porównaj wyjaśnienie z odpowiedzią na fiszce. Skonfiguruj własny klucz Gemini, aby uzyskać wskazówki AI.';
       }
 
 
@@ -2856,14 +2856,20 @@ What is force majeure? | Unforeseeable circumstances that prevent someone from f
       });
     }
 
-    const demoBtn = $("demoLoginBtn");
+    const quickStartBtn = $("quickStartBtn");
 
-    let demoPending = false;
-    async function handleDemoLogin() {
-      if (demoPending) return;
-      demoPending = true;
-      const res = await apiRequest("/api/auth/demo", "POST");
-      demoPending = false;
+    let quickStartPending = false;
+    async function handleQuickStart() {
+      if (quickStartPending) return;
+      quickStartPending = true;
+      if (quickStartBtn) quickStartBtn.disabled = true;
+      let res;
+      try {
+        res = await apiRequest("/api/auth/quick-start", "POST");
+      } finally {
+        quickStartPending = false;
+        if (quickStartBtn) quickStartBtn.disabled = false;
+      }
       if (res && res.success) {
         preferences.removeItem("tulis_logged_out");
         authToken = res.token;
@@ -2875,7 +2881,7 @@ What is force majeure? | Unforeseeable circumstances that prevent someone from f
       }
     }
 
-    if (demoBtn) demoBtn.addEventListener("click", handleDemoLogin);
+    if (quickStartBtn) quickStartBtn.addEventListener("click", handleQuickStart);
 
     async function handleLogout() {
       await apiRequest("/api/auth/logout", "POST");
