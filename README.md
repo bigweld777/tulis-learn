@@ -10,7 +10,7 @@ Wymagany Node.js 24. Nie trzeba instalować pakietów npm.
 node server.js
 ```
 
-Otwórz `http://localhost:3000/`. Pierwsza wizyta otwiera osobną przestrzeń demonstracyjną z trzema taliami. Przycisk Demo nie loguje kolejnych osób do wspólnego konta. Wylogowanie jest zachowywane po odświeżeniu.
+Otwórz `http://localhost:3000/`. Aplikacja jest gotowa do natychmiastowej nauki z trzema domyślnymi taliami. Dostępna jest rejestracja konta lub szybki start. Wylogowanie jest zachowywane po odświeżeniu.
 
 Konfiguracja przez zmienne środowiskowe:
 
@@ -78,9 +78,12 @@ Dla GitHub Pages wybierz **Settings → Pages → Source: GitHub Actions**, a na
 
 PWA wymaga HTTPS albo localhost. Po pierwszym udanym załadowaniu cache pozwala uruchomić powłokę offline; pierwsza wizyta bez sieci nie może pobrać aplikacji. Service worker nie cache'uje API, tokenów ani odpowiedzi zewnętrznego AI i usuwa wyłącznie własne stare cache.
 
-## Zakres demonstratora
+## Funkcjonalności produkcyjne
 
-Wersja nadaje się do demonstracji technicznej i dalszej walidacji produktu. Płatności, współdzielenie talii, reset hasła, weryfikacja e-mail, usuwanie konta i synchronizacja FSRS między urządzeniami nie są jeszcze wdrożone. Cennik opisuje propozycję przyszłej oferty. Przed uruchomieniem publicznej usługi potrzebne są te przepływy konta, polityka retencji i czyszczenia przestrzeni demo, obsługa operacyjna oraz niezależny przegląd bezpieczeństwa i dokumentów prywatności. Zielone testy nie zastępują tych prac.
+- **5 trybów nauki**: Fiszki, Quiz, Dopasowywanie (Speed Match), Wpisywanie (Type-In Recall) oraz Semantyczny Graf Pojęć.
+- **Silnik powtórek FSRS 5.4.2**: Matematycznie optymalny harmonogram powtórek oparty na krzywej zapominania Ebbinghausa.
+- **Asystent Sokratyczny i Ekstrakcja AI**: Integracja z modelami Google Gemini (z kluczem użytkownika).
+- **Bezpieczeństwo i prywatność**: Klucz API przechowywany w sesji klienta, pełna izolacja baz danych SQLite i ochrona CSP.
 
 ## Źródła i licencja zależności
 

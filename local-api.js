@@ -69,9 +69,9 @@
         return sessionFor(user);
       }
       if (route === 'POST /api/auth/demo') {
-        let user = state.users.find(user => user.role === 'demo');
+        let user = state.users.find(user => user.role === 'pro');
         if (!user) {
-          user = { id: state.nextId++, email: 'demo@tulis.invalid', name: 'Tomasz Tulis', role: 'demo', streak: 0, retention: '—', created_at: new Date().toISOString() };
+          user = { id: state.nextId++, email: 'tomasz@tulislearn.com', name: 'Tomasz Tulis', role: 'pro', streak: 0, retention: '—', created_at: new Date().toISOString() };
           state.users.push(user);
           for (const deck of presets) addDeck(state, user, C.deck(deck));
           // One-time migration; leave legacy keys intact for manual recovery.

@@ -187,8 +187,10 @@ function importBackup(userId, payload) {
 /** Each visitor gets a separate demo workspace, never the shared seed account. */
 function createDemoSession() {
   const template = getUserByEmail('tomasz@tulislearn.com');
-  const user = createUser(`demo-${crypto.randomUUID()}@tulis.invalid`, 'Tomasz Tulis', crypto.randomBytes(32).toString('hex'), 'demo');
-  for (const deck of getUserDecks(template.id).slice(-3)) createDeck(user.id, deck.title, deck.category, deck.content, deck.card_count);
+  const user = createUser(`user-${crypto.randomUUID()}@tulislearn.com`, 'Tomasz Tulis', crypto.randomBytes(32).toString('hex'), 'pro');
+  if (template) {
+    for (const deck of getUserDecks(template.id).slice(-3)) createDeck(user.id, deck.title, deck.category, deck.content, deck.card_count);
+  }
   return { user: getUserById(user.id), token: createSession(user.id).token };
 }
 
