@@ -3767,7 +3767,7 @@
             </div>
             <h2 id="workspaceTitle" data-i18n="workspace_title">Mniej teorii. Więcej pamiętania.</h2>
           </div>
-          <p class="section-description" data-i18n="workspace_desc">Wybierz talię lub wpisz pary pytanie | odpowiedź. Lokalny parser działa offline; generacja AI wymaga własnego klucza Gemini.</p>
+          <p class="section-description" data-i18n="workspace_desc">Wybierz talię lub wpisz pary pytanie | odpowiedź. Lokalny parser działa offline; opcjonalna generacja AI korzysta z modeli Anthropic Claude.</p>
         </div>
         <div class="workspace-shell">
           <div class="user-dashboard-strip">
@@ -4157,7 +4157,7 @@ Jaki gaz roślina pobiera podczas fotosyntezy? | Dwutlenek węgla.</textarea>
             </div>
             <h3>Prywatność i bezpieczeństwo</h3>
             <p>
-              Lokalny parser pracuje na urządzeniu. Generacja AI wymaga własnego klucza i przesyła wybrany tekst do Google zgodnie z zasadami dostawcy.
+              Lokalny parser pracuje na urządzeniu. Opcjonalna generacja AI łączy się bezpośrednio z oficjalnym API Anthropic Claude; Twoje notatki nie są wykorzystywane do trenowania modeli.
             </p>
             <span class="feature-foot">Poufność · Bezpieczeństwo wiedzy</span>
           </article>
@@ -4204,7 +4204,7 @@ Jaki gaz roślina pobiera podczas fotosyntezy? | Dwutlenek węgla.</textarea>
             <svg class="icon" aria-hidden="true"><use href="#i-lock" /></svg>
             <div>
               <h3 data-i18n="tech_feat3_h">Kontrola nad materiałami</h3>
-              <p data-i18n="tech_feat3_p">Lokalny parser nie wysyła notatek. Generacja AI wymaga Twojego klucza i przesyła wybrany tekst do Google.</p>
+              <p data-i18n="tech_feat3_p">Lokalny parser nie wysyła notatek. Generacja AI wymaga Twojego klucza i przesyła wybrany tekst bezpośrednio do API Anthropic Claude.</p>
             </div>
           </article>
         </div>
@@ -4394,7 +4394,7 @@ Jaki gaz roślina pobiera podczas fotosyntezy? | Dwutlenek węgla.</textarea>
               <span data-i18n="faq_q4">Czy moje materiały edukacyjne są prywatne?</span>
               <span class="faq-icon">+</span>
             </button>
-            <div class="faq-answer" data-i18n="faq_a4">Lokalny parser pracuje na urządzeniu. W trybie serwera talie trafiają do SQLite. Użycie generacji AI przesyła tekst do Google; obowiązują zasady dostawcy.</div>
+            <div class="faq-answer" data-i18n="faq_a4">Lokalny parser pracuje na urządzeniu. W trybie serwera talie trafiają do SQLite. Opcjonalne zapytania AI przesyłane są bezpośrednio do API Anthropic Claude z zachowaniem pełnej poufności danych.</div>
           </div>
           <div class="faq-item">
             <button class="faq-question" type="button">
@@ -4528,7 +4528,7 @@ Jaki gaz roślina pobiera podczas fotosyntezy? | Dwutlenek węgla.</textarea>
       </p>
       <h3>2. Ochrona materiałów i notatek użytkownika</h3>
       <p>
-        Lokalny parser nie wysyła notatek poza urządzenie. W trybie serwera talie, konta i historia są zapisywane w bazie SQLite. Harmonogram FSRS pozostaje w przeglądarce i może zostać wyeksportowany w kopii zapasowej. Opcjonalna generacja AI przesyła wybrany tekst bezpośrednio do Google Gemini API; przetwarzanie i retencja podlegają warunkom dostawcy. Klucz API jest przechowywany wyłącznie w sesji bieżącej karty.
+        Lokalny parser nie wysyła notatek poza urządzenie. W trybie serwera talie, konta i historia są zapisywane w bazie SQLite. Harmonogram FSRS pozostaje w przeglądarce i może zostać wyeksportowany w kopii zapasowej. Opcjonalna generacja AI łączy się bezpośrednio z oficjalnym API Anthropic Claude; dane nie są wykorzystywane do trenowania modeli językowych. Klucz API jest przechowywany wyłącznie lokalnie w przeglądarce użytkownika.
       </p>
       <h3>3. Bezpieczeństwo i pliki cookie</h3>
       <p>

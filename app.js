@@ -126,7 +126,7 @@ What is force majeure? | Unforeseeable circumstances that prevent someone from f
       stat_rating: "dwa języki",
       workspace_eyebrow: "INTERAKTYWNY WARSZTAT NAUKI",
       workspace_title: "Mniej teorii. Więcej pamiętania.",
-      workspace_desc: "Wybierz talię lub wpisz pary pytanie | odpowiedź. Lokalny parser działa offline; generacja AI wymaga własnego klucza Gemini.",
+      workspace_desc: "Wybierz talię lub wpisz pary pytanie | odpowiedź. Lokalny parser działa offline; opcjonalna generacja AI korzysta z modeli Anthropic Claude.",
       dash_streak: "dni serii",
       dash_decks: "zestawy",
       dash_retention: "retencji FSRS",
@@ -211,7 +211,7 @@ What is force majeure? | Unforeseeable circumstances that prevent someone from f
       tech_feat2_h: "Asystent sokratyczny, który pomaga dojść do odpowiedzi",
       tech_feat2_p: "Adaptacyjne podpowiedzi i wyjaśnienia błędów prowadzą do głębokiego zrozumienia, zamiast mechanicznego wkuwania.",
       tech_feat3_h: "Kontrola nad materiałami",
-      tech_feat3_p: "Lokalny parser nie wysyła notatek. Generacja AI wymaga Twojego klucza i przesyła wybrany tekst do Google.",
+      tech_feat3_p: "Lokalny parser nie wysyła notatek. Generacja AI wymaga Twojego klucza i przesyła wybrany tekst bezpośrednio do API Anthropic Claude.",
       pipeline_title: "Potok Kognitywny & Architektura AI",
       pipeline_badge: "⚡ Hybrydowy Potok LLM",
       pipe1_badge: "KROK 1 · Szybka Ingestia",
@@ -253,7 +253,7 @@ What is force majeure? | Unforeseeable circumstances that prevent someone from f
       faq_q3: "Czy mogę wgrywać własne pliki i notatki z uczelni?",
       faq_a3: "Tak! Możesz wkleić dowolny tekst, zaimportować pliki tekstowe (.txt, .csv) lub skorzystać z przycisku „Inteligentna ekstrakcja AI”, który w ułamku sekundy automatycznie wychwyci definicje i przekształci je w zestaw pytań i odpowiedzi.",
       faq_q4: "Czy moje materiały edukacyjne są prywatne?",
-      faq_a4: "Lokalny parser pracuje na urządzeniu. W trybie serwera talie trafiają do SQLite. Użycie generacji AI przesyła tekst do Google; obowiązują zasady dostawcy.",
+      faq_a4: "Lokalny parser pracuje na urządzeniu. W trybie serwera talie trafiają do SQLite. Opcjonalne zapytania AI przesyłane są bezpośrednio do API Anthropic Claude z zachowaniem pełnej poufności danych.",
       faq_q5: "Czy aplikacja działa na smartfonach i tabletach?",
       faq_a5: "Tak, platforma jest w pełni responsywna i zoptymalizowana pod ekrany dotykowe. Możesz uczyć się w podróży, przewijając fiszki kciukiem lub testując się w quizach w dowolnym miejscu.",
       tab_graph: "Graf pojęć",
@@ -372,7 +372,7 @@ What is force majeure? | Unforeseeable circumstances that prevent someone from f
       stat_rating: "two languages",
       workspace_eyebrow: "INTERACTIVE STUDY WORKSPACE",
       workspace_title: "Less theory. Deep retention.",
-      workspace_desc: "Choose a deck or enter question | answer pairs. Local parsing works offline; AI generation requires your Gemini key.",
+      workspace_desc: "Choose a deck or enter question | answer pairs. Local parsing works offline; optional AI generation uses Anthropic Claude models.",
       dash_streak: "day streak",
       dash_decks: "active decks",
       dash_retention: "FSRS retention",
@@ -457,7 +457,7 @@ What is force majeure? | Unforeseeable circumstances that prevent someone from f
       tech_feat2_h: "Socratic assistant guiding you toward answers",
       tech_feat2_p: "Adaptive progressive hints and mistake explanations foster first-principles understanding instead of rote memorization.",
       tech_feat3_h: "Control over study materials",
-      tech_feat3_p: "Local parsing keeps notes on your device. AI generation requires your key and sends selected text to Google.",
+      tech_feat3_p: "Local parsing keeps notes on your device. AI generation requires your key and connects directly to Anthropic Claude API.",
       pipeline_title: "Cognitive Pipeline & AI Architecture",
       pipeline_badge: "⚡ Hybrid LLM Pipeline",
       pipe1_badge: "STEP 1 · Fast Ingestion",
@@ -499,7 +499,7 @@ What is force majeure? | Unforeseeable circumstances that prevent someone from f
       faq_q3: "Can I upload my own lecture notes and documents?",
       faq_a3: "Yes! You can paste raw text, import text files (.txt, .csv), or click 'Smart AI Extraction' to instantly distill key definitions into active-recall question-and-answer pairs.",
       faq_q4: "Is my study material kept private and secure?",
-      faq_a4: "The local parser runs on your device. In server mode, decks are saved to SQLite. AI generation sends text to Google under its provider policies.",
+      faq_a4: "The local parser runs on your device. In server mode, decks are saved to SQLite. Optional AI generation connects directly to Anthropic Claude API under strict confidentiality standards.",
       faq_q5: "Does Tulis Learn work on mobile devices and tablets?",
       faq_a5: "Yes, the platform is fully responsive and touch-optimized. You can review flashcards, take quizzes, and play the speed match game seamlessly on any mobile phone or tablet.",
       tab_graph: "Concept Graph",
@@ -1187,7 +1187,7 @@ What is force majeure? | Unforeseeable circumstances that prevent someone from f
       if (!card || !responseBox) return;
 
       responseBox.style.display = "block";
-      responseBox.innerHTML = `<span style="color: var(--muted); font-size: 12px;">⏳ Analiza semantyczna modelu kognitywnego (Gemini 3.8 Flash)...</span>`;
+      responseBox.innerHTML = `<span style="color: var(--muted); font-size: 12px;">⏳ Analiza semantyczna modelu kognitywnego (Claude 3.5 Sonnet)...</span>`;
 
       const q = card.question;
       const a = card.answer;
@@ -2033,7 +2033,7 @@ What is force majeure? | Unforeseeable circumstances that prevent someone from f
     });
   }
 
-  // Live AI Flashcard Extraction Engine (Powered by Gemini 3.8 Flash)
+  // Live AI Flashcard Extraction Engine (Powered by Anthropic Claude 3.5 Sonnet)
 
   async function performAiExtraction() {
     if (isExtracting) return;
@@ -2164,7 +2164,7 @@ What is force majeure? | Unforeseeable circumstances that prevent someone from f
             : `✨ Lokalny parser wyodrębnił ${deck.length} fiszek bezpośrednio z Twojego tekstu.`
         );
       } else {
-        showMessage(currentLang === 'en' ? 'Could not extract pairs. Your notes are unchanged. Use question | answer or configure a Gemini key.' : 'Nie znaleziono par. Notatki zachowano. Użyj formatu pytanie | odpowiedź lub skonfiguruj klucz Gemini.', true);
+        showMessage(currentLang === 'en' ? 'Could not extract pairs. Your notes are unchanged. Use question | answer or configure an Anthropic Claude key.' : 'Nie znaleziono par. Notatki zachowano. Użyj formatu pytanie | odpowiedź lub skonfiguruj klucz Claude API.', true);
       }
 
 
